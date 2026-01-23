@@ -118,19 +118,6 @@ Frontend/
 
 ---
 
-## 🎯 Những gì BỎ ĐI (so với bản enterprise)
-
-❌ **Không cần** nhiều layers phức tạp  
-❌ **Không cần** folder riêng cho từng component (Button.tsx đủ rồi, không cần Button/index.ts)  
-❌ **Không cần** tests (có thể test manual)  
-❌ **Không cần** middleware, interceptors phức tạp  
-❌ **Không cần** nhiều layouts  
-❌ **Không cần** i18n (chỉ tiếng Việt hoặc tiếng Anh)  
-❌ **Không cần** transfer, car rental, activities nếu chưa làm  
-
----
-
-## ✅ Những gì GIỮ LẠI (Essential)
 
 ### 1. **Components theo feature**
 ```
