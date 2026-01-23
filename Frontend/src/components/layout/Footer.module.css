@@ -1,0 +1,161 @@
+.footer {
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 64px 0 32px;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+}
+
+.gridContainer {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    margin-bottom: 48px;
+}
+
+@media (min-width: 768px) {
+    .gridContainer {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .gridContainer {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+    }
+}
+
+.brandSection {
+    grid-column: span 2;
+}
+
+@media (min-width: 1024px) {
+    .brandSection {
+        grid-column: span 1;
+    }
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.logo span.material-symbols-outlined {
+    color: #1BA0E2;
+    font-size: 30px;
+}
+
+.logo h2 {
+    color: #141414;
+    font-size: 20px;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.description {
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 400px;
+}
+
+.socialLinks {
+    display: flex;
+    gap: 16px;
+}
+
+.socialLinks a {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.socialLinks a:hover {
+    background-color: #e5e7eb;
+}
+
+.socialLinks span {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7280;
+}
+
+.linkSection h4 {
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #141414;
+    font-size: 16px;
+}
+
+.linkSection ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.linkSection li {
+    margin-bottom: 12px;
+}
+
+.linkSection a {
+    font-size: 14px;
+    color: #6b7280;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.linkSection a:hover {
+    color: #141414;
+}
+
+.bottomBar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 32px;
+    border-top: 1px solid #f3f4f6;
+}
+
+@media (min-width: 768px) {
+    .bottomBar {
+        flex-direction: row;
+    }
+}
+
+.bottomBar p {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.paymentLogos {
+    display: flex;
+    gap: 16px;
+}
+
+.paymentLogos img {
+    height: 24px;
+    object-fit: contain;
+}

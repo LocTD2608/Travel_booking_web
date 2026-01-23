@@ -1,0 +1,60 @@
+.wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rating {
+    display: flex;
+    gap: 4px;
+}
+
+.star {
+    position: relative;
+    display: inline-block;
+}
+
+.starContainer {
+    position: relative;
+    display: inline-block;
+}
+
+.starEmpty {
+    color: #d1d5db;
+}
+
+.starFilled {
+    color: #fbbf24;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.interactive {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.interactive:hover {
+    transform: scale(1.2);
+}
+
+/* Sizes */
+.small .star {
+    font-size: 16px;
+}
+
+.medium .star {
+    font-size: 20px;
+}
+
+.large .star {
+    font-size: 28px;
+}
+
+.value {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
