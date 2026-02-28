@@ -34,11 +34,15 @@ export const Button: React.FC<ButtonProps> = ({
             disabled={disabled || loading}
             {...props}
         >
-            {loading ? (
+            {loading && <span className={styles.spinner}></span>}
+            {children}
+            {/* {loading ? (
                 <span className={styles.spinner}></span>
             ) : (
                 children
-            )}
+            )} */}
         </button>
     );
 };
+
+export default Button;

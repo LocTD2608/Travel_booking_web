@@ -34,10 +34,10 @@ export const Footer: React.FC = () => {
                         <h4>About Traveloka</h4>
                         <ul>
                             <li><a href="#">How to Book</a></li>
-                            <li><a href="#">Contact Us</a></li>
+                            <li><Link to="/contact">Contact Us</Link></li>
                             <li><a href="#">Help Center</a></li>
                             <li><a href="#">Careers</a></li>
-                            <li><a href="#">About Us</a></li>
+                            <li><Link to="/about">About Us</Link></li>
                         </ul>
                     </div>
 

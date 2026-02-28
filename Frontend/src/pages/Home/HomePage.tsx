@@ -1,5 +1,5 @@
 import React from 'react';
-import { HeroSearch } from '../components/common/HeroSearch';
+import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 import styles from './HomePage.module.css';
 
 export const HomePage: React.FC = () => {
