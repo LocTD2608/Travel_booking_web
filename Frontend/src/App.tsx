@@ -6,6 +6,9 @@ import Flights from './pages/Flights'
 import Experience from './pages/Experience'
 import Contact from './pages/Contact/Contact'
 import AboutUs from './pages/AboutUs/AboutUs'
+import Trains from './pages/Trains'
+import Hotels from './pages/Hotels'
+import Apartments from './pages/Apartments'
 import ScrollToTop from './components/common/ScrollToTop'
 
 function App() {
@@ -19,6 +22,9 @@ function App() {
         <Route path="/experience" element={<Experience />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<AboutUs />} />
+        <Route path="/trains" element={<Trains />} />
+        <Route path="/hotels" element={<Hotels />} />
+        <Route path="/apartments" element={<Apartments />} />
       </Routes>
       <Footer />
     </>

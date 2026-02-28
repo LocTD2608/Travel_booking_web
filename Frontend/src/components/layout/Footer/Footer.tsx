@@ -47,8 +47,8 @@ export const Footer: React.FC = () => {
                         <ul>
                             <li><Link to="/hotels">Hotels</Link></li>
                             <li><Link to="/flights">Flights</Link></li>
-                            <li><a href="#">Apartments</a></li>
-                            <li><a href="#">Trains</a></li>
+                            <li><Link to="/apartments">Apartments</Link></li>
+                            <li><Link to="/trains">Trains</Link></li>
                             <li><Link to="/experience">Xperience</Link></li>
                         </ul>
                     </div>
