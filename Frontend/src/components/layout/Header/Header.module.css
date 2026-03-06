@@ -122,6 +122,10 @@
 }
 
 /* Main Navigation */
+.mainNavContainer {
+    position: relative;
+}
+
 .mainNav {
     display: none;
     justify-content: center;
@@ -180,6 +184,12 @@
     padding: 8px 16px;
     background-color: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 100%;
+    z-index: 40;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 @media (min-width: 1024px) {

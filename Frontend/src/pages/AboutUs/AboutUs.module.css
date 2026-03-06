@@ -1,0 +1,175 @@
+.container {
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #1a202c;
+}
+
+.hero {
+    background: linear-gradient(135deg, #0194f3, #0077c5);
+    color: white;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+/* Mission Section */
+.missionSection {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 80px;
+}
+
+.missionSection h2 {
+    font-size: 2.5rem;
+    color: #0194f3;
+    margin-bottom: 24px;
+}
+
+.missionSection p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #4a5568;
+}
+
+/* Stats Section */
+.statsSection {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 30px;
+    background-color: #f7fafc;
+    padding: 40px;
+    border-radius: 16px;
+    margin-bottom: 80px;
+}
+
+.statBox {
+    text-align: center;
+    padding: 20px;
+}
+
+.statBox h3 {
+    font-size: 3rem;
+    color: #0194f3;
+    margin-bottom: 8px;
+    font-weight: 800;
+}
+
+.statBox p {
+    font-size: 1.1rem;
+    color: #4a5568;
+    font-weight: 500;
+}
+
+/* Story Section */
+.storySection {
+    margin-bottom: 80px;
+}
+
+.storySection h2 {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #2d3748;
+}
+
+.storyGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+}
+
+.storyText p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #4a5568;
+}
+
+.storyImage img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
+    max-height: 400px;
+}
+
+/* Values Section */
+.valuesSection {
+    text-align: center;
+}
+
+.valuesSection h2 {
+    font-size: 2.5rem;
+    margin-bottom: 50px;
+    color: #2d3748;
+}
+
+.valuesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.valueCard {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.valueCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.valueCard span {
+    font-size: 40px;
+    color: #0194f3;
+    margin-bottom: 20px;
+}
+
+.valueCard h4 {
+    font-size: 1.3rem;
+    color: #2d3748;
+    margin-bottom: 16px;
+}
+
+.valueCard p {
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .storyGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .statBox h3 {
+        font-size: 2.5rem;
+    }
+}
