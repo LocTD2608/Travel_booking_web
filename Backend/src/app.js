@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const testRoutes = require("./routes/testRoutes");
+const searchRoutes = require("./routes/search.routes");
 const errorHandler = require("./middlewares/errorHandler");
 
 
@@ -10,6 +11,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api", testRoutes);
+
+// Search API
+app.use("/api/search", searchRoutes);
 
 // Test API
 app.get('/', (req, res) => {
