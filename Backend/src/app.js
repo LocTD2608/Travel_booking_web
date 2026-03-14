@@ -14,7 +14,7 @@ app.use("/api", testRoutes);
 // Test API
 app.get('/', (req, res) => {
   res.json({
-    message: 'Travel Booking Backend API is running 🚀'
+    message: 'Travel Booking Backend API is running'
   });
 });
 
