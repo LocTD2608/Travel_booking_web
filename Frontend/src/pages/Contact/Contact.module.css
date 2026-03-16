@@ -1,0 +1,142 @@
+.container {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    color: #1a202c;
+    margin-bottom: 16px;
+}
+
+.hero p {
+    font-size: 1.1rem;
+    color: #4a5568;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.content {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.info {
+    flex: 1;
+    min-width: 300px;
+    background-color: #f7fafc;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.info h2 {
+    font-size: 2rem;
+    color: #2d3748;
+    margin-bottom: 30px;
+}
+
+.infoItem {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.infoItem span {
+    font-size: 28px;
+    color: #0194f3;
+    /* Traveloka blue */
+    margin-right: 16px;
+}
+
+.infoItem p {
+    font-size: 1.05rem;
+    color: #4a5568;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.form {
+    flex: 2;
+    min-width: 300px;
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.form h2 {
+    font-size: 2rem;
+    color: #2d3748;
+    margin-bottom: 30px;
+}
+
+.formGroup {
+    margin-bottom: 24px;
+}
+
+.formGroup label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 8px;
+}
+
+.formGroup input,
+.formGroup textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+    outline: none;
+    border-color: #0194f3;
+    box-shadow: 0 0 0 4px rgba(1, 148, 243, 0.15);
+}
+
+.submitBtn {
+    background-color: #0194f3;
+    /* Traveloka blue */
+    color: white;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.submitBtn:hover {
+    background-color: #0077c5;
+    transform: translateY(-2px);
+}
+
+.submitBtn:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .content {
+        flex-direction: column;
+    }
+}
