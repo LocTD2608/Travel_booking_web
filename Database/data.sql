@@ -3,12 +3,12 @@ USE QUANLY_BOOKING;
 -- =========================
 -- USERS (20 users)
 -- =========================
-INSERT INTO USERS (Ho, Ten, Email, SDT, CCCD, Password, Role) VALUES
-('Nguyen', 'An', 'an1@gmail.com', '090000001', '001001001', '123456', 'USER'),
-('Tran', 'Binh', 'binh2@gmail.com', '090000002', '001001002', '123456', 'USER'),
-('Le', 'Chi', 'chi3@gmail.com', '090000003', '001001003', '123456', 'ADMIN'),
-('Pham', 'Dung', 'dung4@gmail.com', '090000004', '001001004', '123456', 'USER'),
-('Hoang', 'Ha', 'ha5@gmail.com', '090000005', '001001005', '123456', 'USER');
+INSERT INTO USERS (Ho, Ten, Email, SDT, CCCD, Password, Role, TrangThai, TinhTrangXacMinh, NgayTaoTK) VALUES
+('Nguyen', 'An', 'an1@gmail.com', '090000001', '001001001', '123456', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Tran', 'Binh', 'binh2@gmail.com', '090000002', '001001002', '123456', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-02 09:30:00'),
+('Le', 'Chi', 'chi3@gmail.com', '090000003', '001001003', '123456', 'ADMIN', 'ACTIVE', 'VERIFIED', '2026-01-01 07:00:00'),
+('Pham', 'Dung', 'dung4@gmail.com', '090000004', '001001004', '123456', 'USER', 'INACTIVE', 'PENDING', '2026-01-05 14:20:00'),
+('Hoang', 'Ha', 'ha5@gmail.com', '090000005', '001001005', '123456', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-10 10:15:00');
 
 -- =========================
 -- SAN BAY (10 sân bay)

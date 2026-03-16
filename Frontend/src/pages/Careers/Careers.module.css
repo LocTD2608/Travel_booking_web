@@ -1,0 +1,126 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    min-height: 60vh;
+}
+
+.hero {
+    text-align: center;
+    padding: 60px 0;
+    background: linear-gradient(135deg, #0194f3 0%, #00d2ff 100%);
+    border-radius: 16px;
+    color: white;
+    margin-bottom: 60px;
+}
+
+.hero h1 {
+    font-size: 42px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 20px;
+    opacity: 0.9;
+}
+
+.section {
+    margin-bottom: 60px;
+}
+
+.section h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.values {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.valueCard {
+    background: #f8fbff;
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #e1f0fa;
+}
+
+.valueIcon {
+    font-size: 48px;
+    color: #0194f3;
+    margin-bottom: 20px;
+}
+
+.valueCard h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.valueCard p {
+    color: #666;
+    line-height: 1.6;
+}
+
+.openings {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.jobCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.jobCard:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border-color: #0194f3;
+}
+
+.jobInfo h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.jobMeta {
+    display: flex;
+    gap: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.metaIcon {
+    font-size: 16px;
+}
+
+.applyBtn {
+    background: #0194f3;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.applyBtn:hover {
+    background: #007ce8;
+}

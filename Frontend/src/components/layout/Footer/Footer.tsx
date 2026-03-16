@@ -1,80 +1,67 @@
 import React from 'react';
-import styles from './Footer.module.css';
 import { Link } from 'react-router-dom';
 
-export const Footer: React.FC = () => {
+const Footer: React.FC = () => {
     return (
-        <footer className={styles.footer}>
-            <div className={styles.container}>
-                <div className={styles.gridContainer}>
-                    {/* Brand Section */}
-                    <div className={styles.brandSection}>
-                        <div className={styles.logo}>
-                            <span className="material-symbols-outlined">flight_takeoff</span>
-                            <h2>Traveloka</h2>
+        <footer className="bg-white border-t border-gray-200 pt-16 pb-8">
+            <div className="layout-container px-4 md:px-10 lg:px-40">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
+                    <div className="col-span-2 lg:col-span-2">
+                        <div className="flex items-center gap-2 mb-6">
+                            <span className="material-symbols-outlined text-travel-blue text-3xl">flight_takeoff</span>
+                            <h2 className="text-[#141414] text-xl font-black tracking-tight">Traveloka</h2>
                         </div>
-                        <p className={styles.description}>
+                        <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-sm">
                             Traveloka is Southeast Asia's leading travel platform, providing diverse travel needs in one platform. We are here to help you discover the world.
                         </p>
-                        <div className={styles.socialLinks}>
-                            <a href="#" aria-label="Facebook">
-                                <span>FB</span>
+                        <div className="flex gap-4">
+                            <a className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors" href="#">
+                                <span className="text-xs font-bold text-gray-600">FB</span>
                             </a>
-                            <a href="#" aria-label="Instagram">
-                                <span>IG</span>
+                            <a className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors" href="#">
+                                <span className="text-xs font-bold text-gray-600">IG</span>
                             </a>
-                            <a href="#" aria-label="Twitter">
-                                <span>TW</span>
+                            <a className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors" href="#">
+                                <span className="text-xs font-bold text-gray-600">TW</span>
                             </a>
                         </div>
                     </div>
-
-                    {/* About Section */}
-                    <div className={styles.linkSection}>
-                        <h4>About Traveloka</h4>
-                        <ul>
-                            <li><a href="#">How to Book</a></li>
-                            <li><Link to="/contact">Contact Us</Link></li>
-                            <li><a href="#">Help Center</a></li>
-                            <li><a href="#">Careers</a></li>
-                            <li><Link to="/about">About Us</Link></li>
+                    <div>
+                        <h4 className="font-bold mb-4">About Traveloka</h4>
+                        <ul className="space-y-3 text-sm text-gray-500">
+                            <li><Link className="hover:text-primary" to="/how-to-book">How to Book</Link></li>
+                            <li><Link className="hover:text-primary" to="/contact">Contact Us</Link></li>
+                            <li><Link className="hover:text-primary" to="/help-center">Help Center</Link></li>
+                            <li><Link className="hover:text-primary" to="/careers">Careers</Link></li>
+                            <li><Link className="hover:text-primary" to="/about">About Us</Link></li>
                         </ul>
                     </div>
-
-                    {/* Products Section */}
-                    <div className={styles.linkSection}>
-                        <h4>Products</h4>
-                        <ul>
-                            <li><Link to="/hotels">Hotels</Link></li>
-                            <li><Link to="/flights">Flights</Link></li>
-                            <li><Link to="/apartments">Apartments</Link></li>
-                            <li><Link to="/trains">Trains</Link></li>
-                            <li><Link to="/experience">Xperience</Link></li>
+                    <div>
+                        <h4 className="font-bold mb-4">Products</h4>
+                        <ul className="space-y-3 text-sm text-gray-500">
+                            <li><Link className="hover:text-primary" to="/hotels">Hotels</Link></li>
+                            <li><Link className="hover:text-primary" to="/flights">Flights</Link></li>
+                            <li><Link className="hover:text-primary" to="/apartments">Apartments</Link></li>
+                            <li><Link className="hover:text-primary" to="/trains">Trains</Link></li>
+                            <li><Link className="hover:text-primary" to="/experience">Experience</Link></li>
                         </ul>
                     </div>
-
-                    {/* Others Section */}
-                    <div className={styles.linkSection}>
-                        <h4>Others</h4>
-                        <ul>
-                            <li><a href="#">Traveloka Affiliate</a></li>
-                            <li><a href="#">Blog</a></li>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Terms & Conditions</a></li>
+                    <div>
+                        <h4 className="font-bold mb-4">Others</h4>
+                        <ul className="space-y-3 text-sm text-gray-500">
+                            <li><a className="hover:text-primary" href="#">Traveloka Affiliate</a></li>
+                            <li><a className="hover:text-primary" href="#">Blog</a></li>
+                            <li><a className="hover:text-primary" href="#">Privacy Policy</a></li>
+                            <li><a className="hover:text-primary" href="#">Terms & Conditions</a></li>
                         </ul>
                     </div>
                 </div>
-
-                {/* Bottom Bar */}
-                <div className={styles.bottomBar}>
-                    <p>© 2024 Traveloka. All rights reserved.</p>
-                    <div className={styles.paymentLogos}>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" />
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" />
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/American_Express_logo.svg" alt="Amex" />
-                    </div>
+                <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-gray-400">© 2024 Traveloka. All rights reserved.</p>
                 </div>
             </div>
         </footer>
     );
 };
+
+export default Footer;
