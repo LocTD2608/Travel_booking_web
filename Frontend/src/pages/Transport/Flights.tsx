@@ -1,21 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useUrlFilters } from '../hooks/useUrlFilters';
-import { fetchHotels } from '../services/searchApi';
-import type { HotelResult } from '../types/search';
+import { useUrlFilters } from '../../hooks/useUrlFilters';
+import { fetchFlights } from '../../services/searchApi';
+import type { FlightResult } from '../../types/search';
 
+// ─── Helper ──────────────────────────────────────────────────────────────────
 const fmt = (price: number) =>
-    price
-        ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
-        : 'Liên hệ';
+    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-const Stars: React.FC<{ count: number }> = ({ count }) => (
-    <span style={{ color: '#f59e0b', fontSize: 14 }}>
-        {'⭐'.repeat(Math.min(count ?? 0, 5))}
-    </span>
-);
+const fmtTime = (dt: string) =>
+    dt ? new Date(dt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '—';
 
-// ─── Hotel Card ───────────────────────────────────────────────────────────────
-const HotelCard: React.FC<{ hotel: HotelResult }> = ({ hotel }) => (
+// ─── Result Card ─────────────────────────────────────────────────────────────
+const FlightCard: React.FC<{ flight: FlightResult }> = ({ flight }) => (
     <div style={{
         background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12,
         padding: '20px 24px', display: 'flex', alignItems: 'center',
@@ -26,56 +22,74 @@ const HotelCard: React.FC<{ hotel: HotelResult }> = ({ hotel }) => (
         onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)')}
         onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)')}
     >
-        {/* Icon */}
-        <div style={{
-            width: 56, height: 56, background: '#dbeafe', borderRadius: 12,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 28, color: '#2563eb' }}>hotel</span>
+        {/* Left: Airline */}
+        <div style={{ minWidth: 120 }}>
+            <div style={{ fontWeight: 700, fontSize: 15, color: '#1e40af' }}>{flight.HangBay}</div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>CB-{flight.MaChuyenBay}</div>
+            <span style={{
+                display: 'inline-block', marginTop: 6, padding: '2px 8px',
+                background: flight.HangGhe === 'Business' ? '#fef3c7' : '#eff6ff',
+                color: flight.HangGhe === 'Business' ? '#92400e' : '#1d4ed8',
+                borderRadius: 20, fontSize: 11, fontWeight: 600,
+            }}>{flight.HangGhe || 'Economy'}</span>
         </div>
 
-        {/* Info */}
-        <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{hotel.name}</div>
-            <Stars count={hotel.stars} />
-            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>📍 {hotel.address}</div>
+        {/* Center: Route & Time */}
+        <div style={{ flex: 1, textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+                <div>
+                    <div style={{ fontSize: 22, fontWeight: 800 }}>{flight.from_code}</div>
+                    <div style={{ fontSize: 12, color: '#6b7280' }}>{flight.from_name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{fmtTime(flight.departure_time)}</div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#9ca3af' }}>
+                    <span style={{ fontSize: 18 }}>✈</span>
+                    <div style={{ height: 1, width: 60, background: '#d1d5db', margin: '4px 0' }} />
+                </div>
+                <div>
+                    <div style={{ fontSize: 22, fontWeight: 800 }}>{flight.to_code}</div>
+                    <div style={{ fontSize: 12, color: '#6b7280' }}>{flight.to_name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2 }}>{fmtTime(flight.arrival_time)}</div>
+                </div>
+            </div>
         </div>
 
-        {/* Price & Book */}
+        {/* Right: Price & Book */}
         <div style={{ textAlign: 'right', minWidth: 140 }}>
-            <div style={{ fontSize: 11, color: '#6b7280' }}>Từ</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#dc2626' }}>{fmt(hotel.min_price)}</div>
-            <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 10 }}>/ đêm</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#dc2626' }}>{fmt(flight.price)}</div>
+            <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 10 }}>/ khách</div>
             <button style={{
                 background: '#2563eb', color: '#fff', border: 'none',
                 borderRadius: 8, padding: '8px 20px', fontWeight: 700,
                 cursor: 'pointer', fontSize: 13,
             }}>
-                Xem phòng
+                Đặt ngay
             </button>
         </div>
     </div>
 );
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-const Hotels: React.FC = () => {
+const Flights: React.FC = () => {
     const { filters, setFilter, setPage, resetFilters, currentPage } = useUrlFilters();
 
-    const [results, setResults] = useState<HotelResult[]>([]);
+    const [results, setResults] = useState<FlightResult[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [searched, setSearched] = useState(false);
 
+    // Chạy tìm kiếm khi nhấn nút hoặc khi URL đã có params sẵn
     const doSearch = useCallback(async () => {
         setLoading(true);
         setError(null);
         setSearched(true);
         try {
-            const res = await fetchHotels({
-                city: filters.destination,
-                checkIn: filters.checkIn,
-                checkOut: filters.checkOut,
-                rating: filters.rating,
+            const res = await fetchFlights({
+                from: filters.from,
+                to: filters.to,
+                date: filters.date,
+                passengers: filters.passengers,
+                priceMax: filters.priceMax,
                 sortBy: filters.sortBy,
             });
             setResults(res.data ?? []);
@@ -84,15 +98,17 @@ const Hotels: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [filters.destination, filters.checkIn, filters.checkOut, filters.rating, filters.sortBy]);
+    }, [filters.from, filters.to, filters.date, filters.passengers, filters.priceMax, filters.sortBy]);
 
+    // Tự tìm kiếm lại khi sort thay đổi (nếu đã search rồi)
     useEffect(() => {
         if (searched) doSearch();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters.sortBy, filters.page]);
 
+    // Tự tìm nếu URL đã có filter khi load trang
     useEffect(() => {
-        if (filters.destination) doSearch();
+        if (filters.from || filters.to) doSearch();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -106,10 +122,10 @@ const Hotels: React.FC = () => {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     margin: '0 auto 16px',
                 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#2563eb' }}>hotel</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#2563eb' }}>flight</span>
                 </div>
-                <h1 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 8px' }}>Tìm khách sạn</h1>
-                <p style={{ color: '#6b7280', margin: 0 }}>Khách sạn tốt nhất với giá phòng ưu đãi</p>
+                <h1 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 8px' }}>Tìm vé máy bay</h1>
+                <p style={{ color: '#6b7280', margin: 0 }}>Đặt vé nội địa & quốc tế với giá tốt nhất</p>
             </div>
 
             {/* ── Filter Form ── */}
@@ -119,9 +135,11 @@ const Hotels: React.FC = () => {
             }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
                     {[
-                        { label: 'Thành phố / địa điểm', key: 'destination', placeholder: 'VD: Hà Nội' },
-                        { label: 'Ngày nhận phòng', key: 'checkIn', type: 'date' },
-                        { label: 'Ngày trả phòng', key: 'checkOut', type: 'date' },
+                        { label: 'Điểm đi (mã sân bay)', key: 'from', placeholder: 'VD: HAN' },
+                        { label: 'Điểm đến (mã sân bay)', key: 'to', placeholder: 'VD: DAD' },
+                        { label: 'Ngày đi', key: 'date', type: 'date' },
+                        { label: 'Hành khách', key: 'passengers', type: 'number', placeholder: '1' },
+                        { label: 'Giá tối đa (VNĐ)', key: 'priceMax', type: 'number', placeholder: 'VD: 3000000' },
                     ].map(({ label, key, type = 'text', placeholder }) => (
                         <div key={key}>
                             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
@@ -135,27 +153,11 @@ const Hotels: React.FC = () => {
                                 style={{
                                     width: '100%', boxSizing: 'border-box',
                                     border: '1px solid #d1d5db', borderRadius: 8,
-                                    padding: '8px 12px', fontSize: 14,
+                                    padding: '8px 12px', fontSize: 14, outline: 'none',
                                 }}
                             />
                         </div>
                     ))}
-
-                    <div>
-                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                            Sao tối thiểu
-                        </label>
-                        <select
-                            value={filters.rating ?? ''}
-                            onChange={e => setFilter({ rating: e.target.value })}
-                            style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 12px', fontSize: 14 }}
-                        >
-                            <option value="">Tất cả</option>
-                            <option value="3">3 sao ⭐⭐⭐</option>
-                            <option value="4">4 sao ⭐⭐⭐⭐</option>
-                            <option value="5">5 sao ⭐⭐⭐⭐⭐</option>
-                        </select>
-                    </div>
 
                     <div>
                         <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
@@ -164,10 +166,14 @@ const Hotels: React.FC = () => {
                         <select
                             value={filters.sortBy ?? 'price'}
                             onChange={e => setFilter({ sortBy: e.target.value })}
-                            style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 12px', fontSize: 14 }}
+                            style={{
+                                width: '100%', border: '1px solid #d1d5db',
+                                borderRadius: 8, padding: '8px 12px', fontSize: 14,
+                            }}
                         >
                             <option value="price">Giá thấp nhất</option>
-                            <option value="rating">Đánh giá cao nhất</option>
+                            <option value="duration">Thời gian bay</option>
+                            <option value="departure">Giờ khởi hành</option>
                         </select>
                     </div>
                 </div>
@@ -181,7 +187,7 @@ const Hotels: React.FC = () => {
                             fontSize: 15, cursor: 'pointer',
                         }}
                     >
-                        🔍 Tìm khách sạn
+                        🔍 Tìm chuyến bay
                     </button>
                     {searched && (
                         <button
@@ -198,7 +204,7 @@ const Hotels: React.FC = () => {
                 </div>
             </div>
 
-            {/* ── States ── */}
+            {/* ── Results ── */}
             {loading && (
                 <div style={{ textAlign: 'center', padding: 60, color: '#6b7280' }}>
                     <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
@@ -221,22 +227,23 @@ const Hotels: React.FC = () => {
 
             {!loading && !error && searched && results.length === 0 && (
                 <div style={{ textAlign: 'center', padding: 60, color: '#6b7280' }}>
-                    <div style={{ fontSize: 48, marginBottom: 12 }}>🏨</div>
-                    <p style={{ fontWeight: 700, fontSize: 17 }}>Không tìm thấy khách sạn</p>
-                    <p style={{ fontSize: 13 }}>Thử thay đổi địa điểm hoặc tiêu chí lọc</p>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
+                    <p style={{ fontWeight: 700, fontSize: 17 }}>Không tìm thấy chuyến bay</p>
+                    <p style={{ fontSize: 13 }}>Thử thay đổi điểm đi/đến hoặc ngày khởi hành</p>
                 </div>
             )}
 
             {!loading && !error && results.length > 0 && (
                 <div>
                     <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 16 }}>
-                        Tìm thấy <strong>{results.length}</strong> khách sạn
+                        Tìm thấy <strong>{results.length}</strong> chuyến bay
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        {results.map(h => <HotelCard key={h.MaKS} hotel={h} />)}
+                        {results.map(f => <FlightCard key={f.MaChuyenBay} flight={f} />)}
                     </div>
 
+                    {/* Pagination */}
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
                         <button
                             disabled={currentPage <= 1}
@@ -265,4 +272,4 @@ const Hotels: React.FC = () => {
     );
 };
 
-export default Hotels;
+export default Flights;
