@@ -22,7 +22,7 @@ app.use("/api/users", userRoutes);
 // Test API
 app.get('/', (req, res) => {
   res.json({
-    message: 'Travel Booking Backend API is running 🚀'
+    message: 'Travel Booking Backend API is running'
   });
 });
 

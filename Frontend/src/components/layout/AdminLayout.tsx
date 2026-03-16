@@ -1,12 +1,10 @@
 import { Outlet } from "react-router-dom";
 
-const AdminLayout = () => {
+export default function AdminLayout() {
   return (
     <div style={{ display: "flex" }}>
       <aside>Admin Sidebar</aside>
       <Outlet />
     </div>
   );
-};
-
-export default AdminLayout;
+}

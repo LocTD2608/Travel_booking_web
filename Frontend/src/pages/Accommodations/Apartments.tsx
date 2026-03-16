@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useUrlFilters } from '../hooks/useUrlFilters';
-import { fetchHotels } from '../services/searchApi';
-import type { HotelResult } from '../types/search';
+import { useUrlFilters } from '../../hooks/useUrlFilters';
+import { fetchHotels } from '../../services/searchApi';
+import type { HotelResult } from '../../types/search';
 
 const fmt = (price: number) =>
     price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price) : 'Liên hệ';
