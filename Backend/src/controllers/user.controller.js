@@ -6,7 +6,17 @@ const User = require("../models/User");
  */
 exports.register = async (req, res) => {
   try {
-    const { Ho, Ten, Email, SDT, CCCD, Password } = req.body;
+
+    const {
+      Ho,
+      Ten,
+      Email,
+      SDT,
+      CCCD,
+      Password,
+      TrangThai,
+      TinhTrangXacMinh
+    } = req.body;
 
     if (!Ho || !Ten || !Email || !Password) {
       return res.status(400).json({
@@ -23,7 +33,9 @@ exports.register = async (req, res) => {
       SDT,
       CCCD,
       Password: hashedPassword,
-      Role: "USER"
+      Role: "USER",
+      TrangThai: TrangThai || "ACTIVE",
+      TinhTrangXacMinh: TinhTrangXacMinh || "UNVERIFIED"
     });
 
     res.status(201).json({
@@ -35,7 +47,6 @@ exports.register = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 
 /**
@@ -62,7 +73,6 @@ exports.getAllUsers = async (req, res) => {
 };
 
 
-
 /**
  * USER xem chính mình / ADMIN xem bất kỳ
  */
@@ -77,7 +87,6 @@ exports.getUserById = async (req, res) => {
       });
     }
 
-    // USER chỉ xem chính mình
     if (req.user.Role !== "ADMIN" && req.user.UserID != id) {
       return res.status(403).json({
         message: "Bạn chỉ được xem thông tin của chính mình"
@@ -102,23 +111,25 @@ exports.getUserById = async (req, res) => {
 };
 
 
-
 /**
- * UPDATE user
- * USER: chỉ sửa thông tin cá nhân
- * ADMIN: sửa được cả Role
+ * UPDATE USER
  */
 exports.updateUser = async (req, res) => {
   try {
 
     const { id } = req.params;
-    const { Ho, Ten, Email, SDT, CCCD, Password, Role } = req.body;
 
-    if (!id) {
-      return res.status(400).json({
-        message: "Param id là bắt buộc"
-      });
-    }
+    const {
+      Ho,
+      Ten,
+      Email,
+      SDT,
+      CCCD,
+      Password,
+      Role,
+      TrangThai,
+      TinhTrangXacMinh
+    } = req.body;
 
     const user = await User.findByPk(id);
 
@@ -128,14 +139,12 @@ exports.updateUser = async (req, res) => {
       });
     }
 
-    // USER chỉ sửa chính mình
     if (req.user.Role !== "ADMIN" && req.user.UserID != id) {
       return res.status(403).json({
         message: "Bạn chỉ được sửa thông tin của chính mình"
       });
     }
 
-    // USER không được sửa Role
     if (req.user.Role !== "ADMIN" && Role) {
       return res.status(403).json({
         message: "User không được phép thay đổi Role"
@@ -152,9 +161,11 @@ exports.updateUser = async (req, res) => {
     user.SDT = SDT ?? user.SDT;
     user.CCCD = CCCD ?? user.CCCD;
 
-    // ADMIN mới sửa Role
+    // ADMIN mới sửa các field này
     if (req.user.Role === "ADMIN") {
       user.Role = Role ?? user.Role;
+      user.TrangThai = TrangThai ?? user.TrangThai;
+      user.TinhTrangXacMinh = TinhTrangXacMinh ?? user.TinhTrangXacMinh;
     }
 
     await user.save();
@@ -169,10 +180,8 @@ exports.updateUser = async (req, res) => {
 };
 
 
-
 /**
  * DELETE USER
- * chỉ ADMIN
  */
 exports.deleteUser = async (req, res) => {
   try {

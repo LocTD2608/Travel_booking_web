@@ -34,6 +34,20 @@ const User = sequelize.define(
       type: DataTypes.STRING(30),
       defaultValue: "USER",
     },
+    TrangThai: {
+      type: DataTypes.STRING(50),
+      defaultValue: "ACTIVE"
+    },
+
+    TinhTrangXacMinh: {
+      type: DataTypes.STRING(50),
+      defaultValue: "UNVERIFIED"
+    },
+
+    NgayTaoTK: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    }
   },
   {
     tableName: "USERS",
