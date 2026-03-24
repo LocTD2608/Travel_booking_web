@@ -2,7 +2,7 @@ const { Sequelize } = require("sequelize");
 const db = require("../configs/database");
 
 // ─── FLIGHTS ─────────────────────────────────────────────────────────────────
-const searchFlights = async ({ from, to, date, passengers, priceMax, sortBy }) => {
+const searchFlights = async ({ from, to, date, passengers, airline, seatClass, minPrice, maxPrice, sortBy }) => {
   let query = `
     SELECT
       cb.MaChuyenBay,
@@ -25,24 +25,26 @@ const searchFlights = async ({ from, to, date, passengers, priceMax, sortBy }) =
 
   if (from) { query += ` AND sb1.Code = :from`; replacements.from = from; }
   if (to) { query += ` AND sb2.Code = :to`; replacements.to = to; }
-  if (date) {
-    query += ` AND DATE(cb.GioKhoiHanh) = :date`;
-    replacements.date = date;
-  }
-  if (priceMax) {
-    query += ` AND cb.GiaCoBan <= :priceMax`;
-    replacements.priceMax = priceMax;
-  }
+  if (date) { query += ` AND DATE(cb.GioKhoiHanh) = :date`; replacements.date = date; }
+  if (airline) { query += ` AND cb.HangBay = :airline`; replacements.airline = airline; }
+  if (seatClass) { query += ` AND cb.HangGhe = :seatClass`; replacements.seatClass = seatClass; }
+  if (minPrice) { query += ` AND cb.GiaCoBan >= :minPrice`; replacements.minPrice = minPrice; }
+  if (maxPrice) { query += ` AND cb.GiaCoBan <= :maxPrice`; replacements.maxPrice = maxPrice; }
 
   const orderMap = { price: 'cb.GiaCoBan', duration: 'cb.GioHaCanh', departure: 'cb.GioKhoiHanh' };
-  query += ` ORDER BY ${orderMap[sortBy] || 'cb.GiaCoBan'} ASC`;
+
+  if (sortBy === 'asc' || sortBy === 'desc') {
+    query += ` ORDER BY cb.GiaCoBan ${sortBy.toUpperCase()}`;
+  } else {
+    query += ` ORDER BY ${orderMap[sortBy] || 'cb.GiaCoBan'} ASC`;
+  }
 
   const [rows] = await db.query(query, { replacements });
   return rows;
 };
 
 // ─── HOTELS ──────────────────────────────────────────────────────────────────
-const searchHotels = async ({ city, checkIn, checkOut, rating, sortBy }) => {
+const searchHotels = async ({ city, checkIn, checkOut, rating, minPrice, maxPrice, sortBy }) => {
   let query = `
     SELECT
       ks.MaKS,
@@ -58,11 +60,18 @@ const searchHotels = async ({ city, checkIn, checkOut, rating, sortBy }) => {
 
   if (city) { query += ` AND ks.DiaChi LIKE :city`; replacements.city = `%${city}%`; }
   if (rating) { query += ` AND ks.HangSao >= :rating`; replacements.rating = rating; }
+  if (minPrice) { query += ` AND lp.GiaPhong >= :minPrice`; replacements.minPrice = minPrice; }
+  if (maxPrice) { query += ` AND lp.GiaPhong <= :maxPrice`; replacements.maxPrice = maxPrice; }
 
   query += ` GROUP BY ks.MaKS, ks.TenKS, ks.DiaChi, ks.HangSao`;
 
   const orderMap = { price: 'min_price', rating: 'ks.HangSao DESC, min_price' };
-  query += ` ORDER BY ${orderMap[sortBy] || 'min_price'} ASC`;
+
+  if (sortBy === 'asc' || sortBy === 'desc') {
+    query += ` ORDER BY min_price ${sortBy.toUpperCase()}`;
+  } else {
+    query += ` ORDER BY ${orderMap[sortBy] || 'min_price'} ASC`;
+  }
 
   const [rows] = await db.query(query, { replacements });
   return rows;
