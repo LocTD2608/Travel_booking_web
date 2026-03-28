@@ -5,6 +5,7 @@ const searchRoutes = require("./routes/search.routes");
 const userRoutes = require("./routes/user.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const flightRoutes = require("./routes/flight.routes");
+const roomRoutes = require("./routes/room.routes");
 
 const app = express();
 
@@ -21,6 +22,9 @@ app.use("/api/users", userRoutes);
 
 //Flight API
 app.use("/api/flights", flightRoutes);
+
+// Room API
+app.use("/api", roomRoutes);
 
 // Test API
 app.get('/', (req, res) => {
