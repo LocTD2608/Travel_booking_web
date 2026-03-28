@@ -5,7 +5,7 @@ const Header: React.FC = () => {
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const location = useLocation();
 
-    const isAccomActive = activeMenu === 'accommodations' || (!activeMenu && (location.pathname === '/' || location.pathname === '/hotels' || location.pathname === '/apartments'));
+    const isAccomActive = activeMenu === 'accommodations' || (!activeMenu && (location.pathname === '/hotels' || location.pathname === '/apartments'));
     const isTransportActive = activeMenu === 'transport' || (!activeMenu && (location.pathname === '/flights' || location.pathname === '/trains'));
     const isXperienceActive = activeMenu === 'xperience' || (!activeMenu && location.pathname === '/experience');
     const isBillsActive = activeMenu === 'bills';

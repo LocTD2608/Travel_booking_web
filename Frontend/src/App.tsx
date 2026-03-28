@@ -13,7 +13,7 @@ import HelpCenter from './pages/HelpCenter/HelpCenter'
 import Careers from './pages/Careers/Careers'
 import ScrollToTop from './components/common/ScrollToTop'
 import Login from "./pages/Login"
-
+import SearchResults from './pages/SearchResults/SearchResults'
 function App() {
   return (
     <>
@@ -37,6 +37,7 @@ function App() {
           <Route path="/how-to-book" element={<HowToBook />} />
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/careers" element={<Careers />} />
+          <Route path="/search" element={<SearchResults />} />
         </Route>
 
       </Routes>
