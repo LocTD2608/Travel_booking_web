@@ -1,8 +1,20 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 import styles from './HomePage.module.css';
 
 export const HomePage: React.FC = () => {
+    const navigate = useNavigate();
+
+    const handleSearchClick = (searchData: any) => {
+        const params = new URLSearchParams();
+        if (searchData.destination) params.append('destination', searchData.destination);
+        if (searchData.checkIn) params.append('checkIn', searchData.checkIn);
+        if (searchData.guests) params.append('guests', searchData.guests);
+        
+        navigate(`/search?${params.toString()}`);
+    };
+
     const quickLinks = [
         { icon: 'airplane_ticket', title: 'Best Price', subtitle: 'Flights', color: 'blue' },
         { icon: 'hotel_class', title: 'Luxury', subtitle: 'Hotels', color: 'orange' },
@@ -108,7 +120,7 @@ export const HomePage: React.FC = () => {
     return (
         <div className={styles.homePage}>
             {/* Hero Section với Search */}
-            <HeroSearch />
+            <HeroSearch onSearch={handleSearchClick} />
 
             {/* Main Content */}
             <main className={styles.mainContent}>

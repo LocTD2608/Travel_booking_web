@@ -1,3 +1,4 @@
+const { Sequelize } = require("sequelize");
 const db = require("../configs/database");
 
 // ─── FLIGHTS ─────────────────────────────────────────────────────────────────
