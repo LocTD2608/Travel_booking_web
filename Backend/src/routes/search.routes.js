@@ -4,5 +4,6 @@ const searchController = require("../controllers/search.controller");
 
 router.get("/flights", searchController.searchFlights);
 router.get("/hotels", searchController.searchHotels);
+router.get("/availability", searchController.checkAvailability);
 
 module.exports = router;

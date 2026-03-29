@@ -1,124 +1,278 @@
 const db = require("../configs/database");
 
-// Tìm kiếm chuyến bay
-const searchFlights = async (from, to, airline, seatClass, minPrice, maxPrice, sort) => {
+// ─── FLIGHTS ─────────────────────────────────────────────────────────────────
+const searchFlights = async (params) => {
+  const {
+    from,
+    to,
+    date,
+    passengers,
+    airline,
+    seatClass,
+    minPrice,
+    maxPrice,
+    sortBy,
+    keyword,
+    limit = 10,
+    offset = 0
+  } = params;
 
-  let query = `
-    SELECT
-      cb.MaChuyenBay,
-      sb1.Code AS from_airport,
-      sb2.Code AS to_airport,
-      cb.HangBay,
-      cb.HangGhe,
-      cb.GiaCoBan,
-      cb.GioKhoiHanh,
-      cb.GioHaCanh
+  let baseQuery = `
     FROM CHUYEN_BAY cb
     JOIN TUYEN_DUONG td ON cb.MaTuyenDuong = td.MaTuyenDuong
     JOIN SAN_BAY sb1 ON td.MaSanBayXuatPhat = sb1.MaSanBay
-    JOIN SAN_BAY sb2 ON td.MaSanBayDich = sb2.MaSanBay
-    WHERE sb1.Code = :from
-    AND sb2.Code = :to
+    JOIN SAN_BAY sb2 ON td.MaSanBayDich     = sb2.MaSanBay
+    WHERE 1=1
   `;
 
-  const replacements = { from, to };
+  const replacements = {};
 
-  // Lọc theo hãng bay
-  if (airline) {
-    query += ` AND cb.HangBay = :airline`;
-    replacements.airline = airline;
+  if (from) { baseQuery += ` AND sb1.Code = :from`; replacements.from = from; }
+  if (to) { baseQuery += ` AND sb2.Code = :to`; replacements.to = to; }
+  if (date) { baseQuery += ` AND DATE(cb.GioKhoiHanh) = :date`; replacements.date = date; }
+  if (airline) { baseQuery += ` AND cb.HangBay LIKE :airline`; replacements.airline = `%${airline}%`; }
+  if (seatClass) { baseQuery += ` AND cb.HangGhe = :seatClass`; replacements.seatClass = seatClass; }
+  if (minPrice) { baseQuery += ` AND cb.GiaCoBan >= :minPrice`; replacements.minPrice = minPrice; }
+  if (maxPrice) { baseQuery += ` AND cb.GiaCoBan <= :maxPrice`; replacements.maxPrice = maxPrice; }
+
+  if (passengers) {
+    baseQuery += ` AND cb.SoGheCon >= :passengers`;
+    replacements.passengers = passengers;
   }
 
-  // Lọc theo hạng ghế
-  if (seatClass) {
-    query += ` AND cb.HangGhe = :seatClass`;
-    replacements.seatClass = seatClass;
+  if (keyword) {
+    baseQuery += `
+      AND (
+        sb1.Ten LIKE :keyword OR
+        sb2.Ten LIKE :keyword OR
+        cb.HangBay LIKE :keyword
+      )
+    `;
+    replacements.keyword = `%${keyword}%`;
   }
 
-  // Lọc theo giá tối thiểu
-  if (minPrice) {
-    query += ` AND cb.GiaCoBan >= :minPrice`;
-    replacements.minPrice = minPrice;
+  const countQuery = `SELECT COUNT(*) as total ${baseQuery}`;
+  const [[countResult]] = await db.query(countQuery, { replacements });
+
+  const orderMap = {
+    price: 'cb.GiaCoBan',
+    departure: 'cb.GioKhoiHanh'
+  };
+
+  const dataQuery = `
+    SELECT
+      cb.MaChuyenBay,
+      sb1.Code AS from_code,
+      sb1.Ten  AS from_name,
+      sb2.Code AS to_code,
+      sb2.Ten  AS to_name,
+      cb.HangBay,
+      cb.HangGhe,
+      cb.GiaCoBan AS price,
+      cb.GioKhoiHanh AS departure_time,
+      cb.GioHaCanh AS arrival_time
+    ${baseQuery}
+    ORDER BY ${orderMap[sortBy] || 'cb.GiaCoBan'} ASC
+    LIMIT :limit OFFSET :offset
+  `;
+
+  replacements.limit = parseInt(limit);
+  replacements.offset = parseInt(offset);
+
+  const [rows] = await db.query(dataQuery, { replacements });
+
+  return {
+    data: rows,
+    total: countResult.total
+  };
+};
+
+// ─── HOTELS ──────────────────────────────────────────────────────────────────
+const searchHotels = async (params) => {
+  const {
+    city,
+    checkIn,
+    checkOut,
+    rating,
+    minPrice,
+    maxPrice,
+    sortBy,
+    keyword,
+    limit = 10,
+    offset = 0
+  } = params;
+
+  let baseQuery = `
+    FROM KHACH_SAN ks
+    LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
+    WHERE 1=1
+  `;
+
+  const replacements = {};
+
+  if (city) { baseQuery += ` AND ks.DiaChi LIKE :city`; replacements.city = `%${city}%`; }
+  if (rating) { baseQuery += ` AND ks.HangSao >= :rating`; replacements.rating = rating; }
+  if (minPrice) { baseQuery += ` AND lp.GiaPhong >= :minPrice`; replacements.minPrice = minPrice; }
+  if (maxPrice) { baseQuery += ` AND lp.GiaPhong <= :maxPrice`; replacements.maxPrice = maxPrice; }
+
+  if (keyword) {
+    baseQuery += `
+      AND (
+        ks.TenKS LIKE :keyword OR
+        ks.DiaChi LIKE :keyword
+      )
+    `;
+    replacements.keyword = `%${keyword}%`;
   }
 
-  // Lọc theo giá tối đa
-  if (maxPrice) {
-    query += ` AND cb.GiaCoBan <= :maxPrice`;
-    replacements.maxPrice = maxPrice;
+  if (checkIn && checkOut) {
+    baseQuery += `
+      AND EXISTS (
+        SELECT 1
+        FROM LOAI_PHONG lp2
+        WHERE lp2.MaKS = ks.MaKS
+        AND (
+          lp2.SoLuongPhong - (
+            SELECT COUNT(*)
+            FROM DAT_PHONG dp
+            WHERE dp.MaLoaiPhong = lp2.MaLoaiPhong
+            AND NOT (
+              dp.NgayTra <= :checkIn OR dp.NgayNhan >= :checkOut
+            )
+          )
+        ) > 0
+      )
+    `;
+    replacements.checkIn = checkIn;
+    replacements.checkOut = checkOut;
   }
 
-  // Sắp xếp kết quả theo giá
-  if (sort === "asc") {
-    query += ` ORDER BY cb.GiaCoBan ASC`;
-  }
+  const countQuery = `SELECT COUNT(DISTINCT ks.MaKS) as total ${baseQuery}`;
+  const [[countResult]] = await db.query(countQuery, { replacements });
 
-  if (sort === "desc") {
-    query += ` ORDER BY cb.GiaCoBan DESC`;
-  }
+  const dataQuery = `
+    SELECT
+      ks.MaKS,
+      ks.TenKS   AS name,
+      ks.DiaChi  AS address,
+      ks.HangSao AS stars,
+      MIN(lp.GiaPhong) AS min_price
+    ${baseQuery}
+    GROUP BY ks.MaKS, ks.TenKS, ks.DiaChi, ks.HangSao
+    ORDER BY ${sortBy === 'rating' ? 'ks.HangSao DESC' : 'min_price ASC'}
+    LIMIT :limit OFFSET :offset
+  `;
 
-  const [rows] = await db.query(query, {
-    replacements
-  });
+  replacements.limit = parseInt(limit);
+  replacements.offset = parseInt(offset);
 
+  const [rows] = await db.query(dataQuery, { replacements });
+
+  return {
+    data: rows,
+    total: countResult.total
+  };
+};
+
+// ─── TRAINS (dùng bảng DICH_VU + DV_TRUNG_CHUYEN) ───────────────────────────
+const searchTrains = async ({ from, to, date, priceMax, sortBy }) => {
+  let query = `
+    SELECT
+      dv.MaDV,
+      dv.MoTa        AS description,
+      dv.Gia         AS price,
+      dv.DonViTinh   AS unit,
+      tc.DiemDi      AS \`from\`,
+      tc.DiemDen     AS \`to\`,
+      tc.LoaiVe      AS seat_type
+    FROM DICH_VU dv
+    JOIN DV_TRUNG_CHUYEN tc ON dv.MaDV = tc.MaDV_TC
+    WHERE 1=1
+  `;
+  const replacements = {};
+
+  if (from) { query += ` AND tc.DiemDi LIKE :from`; replacements.from = `%${from}%`; }
+  if (to) { query += ` AND tc.DiemDen LIKE :to`; replacements.to = `%${to}%`; }
+  if (priceMax) { query += ` AND dv.Gia <= :priceMax`; replacements.priceMax = priceMax; }
+
+  query += ` ORDER BY dv.Gia ASC`;
+
+  const [rows] = await db.query(query, { replacements });
   return rows;
 };
 
+// ─── EXPERIENCES (dùng bảng DICH_VU + DV_DU_LICH) ───────────────────────────
+const searchExperiences = async ({ destination, priceMax, sortBy }) => {
+  let query = `
+    SELECT
+      dv.MaDV,
+      dv.MoTa      AS description,
+      dv.Gia        AS price,
+      dv.DonViTinh  AS unit,
+      dl.DiemDon             AS pickup,
+      dl.DiaDiemThamQuan     AS attraction
+    FROM DICH_VU dv
+    JOIN DV_DU_LICH dl ON dv.MaDV = dl.MaDV_DL
+    WHERE 1=1
+  `;
+  const replacements = {};
 
-// Tìm kiếm khách sạn
+  if (destination) {
+    query += ` AND (dl.DiaDiemThamQuan LIKE :dest OR dl.DiemDon LIKE :dest)`;
+    replacements.dest = `%${destination}%`;
+  }
+  if (priceMax) { query += ` AND dv.Gia <= :priceMax`; replacements.priceMax = priceMax; }
 
-const searchHotels = async (city, star, minPrice, maxPrice, sort) => {
+  query += ` ORDER BY dv.Gia ASC`;
+
+  const [rows] = await db.query(query, { replacements });
+  return rows;
+};
+
+// Check phòng trống
+const checkHotelAvailability = async ({ hotelId, roomId, checkIn, checkOut, guests }) => {
+  const replacements = { hotelId, roomId, checkIn, checkOut };
 
   let query = `
     SELECT 
-      ks.MaKS,
-      ks.TenKS,
-      ks.DiaChi,
-      ks.HangSao,
-      MIN(lp.GiaPhong) AS GiaThapNhat
-    FROM KHACH_SAN ks
-    JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
-    WHERE ks.DiaChi LIKE :city
+      lp.MaLoaiPhong,
+      lp.MaKS,
+      lp.SoLuongPhong,
+      (
+        lp.SoLuongPhong - (
+          SELECT COUNT(*)
+          FROM DAT_PHONG dp
+          WHERE dp.MaLoaiPhong = lp.MaLoaiPhong
+          AND NOT (
+            dp.NgayTra <= :checkIn OR dp.NgayNhan >= :checkOut
+          )
+        )
+      ) AS rooms_left
+    FROM LOAI_PHONG lp
+    WHERE 1=1
   `;
 
-  const replacements = { city: `%${city}%` };
-
-  // Lọc theo số sao khách sạn
-  if (star) {
-    query += ` AND ks.HangSao >= :star`;
-    replacements.star = star;
+  if (hotelId) {
+    query += ` AND lp.MaKS = :hotelId`;
   }
 
-  // Lọc theo giá phòng tối thiểu
-  if (minPrice) {
-    query += ` AND lp.GiaPhong >= :minPrice`;
-    replacements.minPrice = minPrice;
+  if (roomId) {
+    query += ` AND lp.MaLoaiPhong = :roomId`;
   }
 
-  // Lọc theo giá phòng tối đa
-  if (maxPrice) {
-    query += ` AND lp.GiaPhong <= :maxPrice`;
-    replacements.maxPrice = maxPrice;
+  if (guests) {
+    query += ` AND lp.SoNguoiToiDa >= :guests`;
+    replacements.guests = guests;
   }
 
-  query += ` GROUP BY ks.MaKS`;
+  const [rows] = await db.query(query, { replacements });
 
-  // Sắp xếp theo giá phòng
-  if (sort === "asc") {
-    query += ` ORDER BY GiaThapNhat ASC`;
-  }
+  const availableRooms = rows.filter(r => r.rooms_left > 0);
 
-  if (sort === "desc") {
-    query += ` ORDER BY GiaThapNhat DESC`;
-  }
-
-  const [rows] = await db.query(query, {
-    replacements
-  });
-
-  return rows;
+  return {
+    available: availableRooms.length > 0,
+    rooms: availableRooms
+  };
 };
 
-module.exports = {
-  searchFlights,
-  searchHotels
-};
+module.exports = { searchFlights, searchHotels, searchTrains, searchExperiences, checkHotelAvailability };
