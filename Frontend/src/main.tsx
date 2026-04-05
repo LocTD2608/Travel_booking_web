@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { ConfigProvider } from 'antd'
 import './index.css'
 import App from './App.tsx'
+import { AuthProvider } from './context/AuthContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -16,7 +17,10 @@ createRoot(document.getElementById('root')!).render(
           },
         }}
       >
-        <App />
+        {/* 2. Bọc AuthProvider ra ngoài cùng của App */}
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </ConfigProvider>
     </BrowserRouter>
   </StrictMode>,
