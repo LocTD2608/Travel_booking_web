@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 import styles from './HomePage.module.css';
 
+
 export const HomePage: React.FC = () => {
     const navigate = useNavigate();
 
