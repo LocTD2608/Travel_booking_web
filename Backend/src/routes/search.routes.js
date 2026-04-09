@@ -7,5 +7,6 @@ router.get("/flights", searchController.searchFlights);
 router.get("/hotels", searchController.searchHotels);
 router.get("/trains", searchController.searchTrains);
 router.get("/experiences", searchController.searchExperiences);
+router.get("/availability", searchController.checkAvailability);
 
 module.exports = router;

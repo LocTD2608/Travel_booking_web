@@ -2,79 +2,177 @@ const { Sequelize } = require("sequelize");
 const db = require("../configs/database");
 
 // ─── FLIGHTS ─────────────────────────────────────────────────────────────────
-const searchFlights = async ({ from, to, date, passengers, airline, seatClass, minPrice, maxPrice, sortBy }) => {
-  let query = `
-    SELECT
-      cb.MaChuyenBay,
-      sb1.Code       AS from_code,
-      sb1.Ten        AS from_name,
-      sb2.Code       AS to_code,
-      sb2.Ten        AS to_name,
-      cb.HangBay,
-      cb.HangGhe,
-      cb.GiaCoBan    AS price,
-      cb.GioKhoiHanh AS departure_time,
-      cb.GioHaCanh   AS arrival_time
+const searchFlights = async (params) => {
+  const {
+    from,
+    to,
+    date,
+    passengers,
+    airline,
+    seatClass,
+    minPrice,
+    maxPrice,
+    sortBy,
+    keyword,
+    limit = 10,
+    offset = 0
+  } = params;
+
+  let baseQuery = `
     FROM CHUYEN_BAY cb
     JOIN TUYEN_DUONG td ON cb.MaTuyenDuong = td.MaTuyenDuong
-    JOIN SAN_BAY sb1    ON td.MaSanBayXuatPhat = sb1.MaSanBay
-    JOIN SAN_BAY sb2    ON td.MaSanBayDich     = sb2.MaSanBay
+    JOIN SAN_BAY sb1 ON td.MaSanBayXuatPhat = sb1.MaSanBay
+    JOIN SAN_BAY sb2 ON td.MaSanBayDich     = sb2.MaSanBay
     WHERE 1=1
   `;
+
   const replacements = {};
 
-  if (from) { query += ` AND sb1.Code = :from`; replacements.from = from; }
-  if (to) { query += ` AND sb2.Code = :to`; replacements.to = to; }
-  if (date) { query += ` AND DATE(cb.GioKhoiHanh) = :date`; replacements.date = date; }
-  if (airline) { query += ` AND cb.HangBay = :airline`; replacements.airline = airline; }
-  if (seatClass) { query += ` AND cb.HangGhe = :seatClass`; replacements.seatClass = seatClass; }
-  if (minPrice) { query += ` AND cb.GiaCoBan >= :minPrice`; replacements.minPrice = minPrice; }
-  if (maxPrice) { query += ` AND cb.GiaCoBan <= :maxPrice`; replacements.maxPrice = maxPrice; }
+  if (from) { baseQuery += ` AND sb1.Code = :from`; replacements.from = from; }
+  if (to) { baseQuery += ` AND sb2.Code = :to`; replacements.to = to; }
+  if (date) { baseQuery += ` AND DATE(cb.GioKhoiHanh) = :date`; replacements.date = date; }
+  if (airline) { baseQuery += ` AND cb.HangBay LIKE :airline`; replacements.airline = `%${airline}%`; }
+  if (seatClass) { baseQuery += ` AND cb.HangGhe = :seatClass`; replacements.seatClass = seatClass; }
+  if (minPrice) { baseQuery += ` AND cb.GiaCoBan >= :minPrice`; replacements.minPrice = minPrice; }
+  if (maxPrice) { baseQuery += ` AND cb.GiaCoBan <= :maxPrice`; replacements.maxPrice = maxPrice; }
 
-  const orderMap = { price: 'cb.GiaCoBan', duration: 'cb.GioHaCanh', departure: 'cb.GioKhoiHanh' };
-
-  if (sortBy === 'asc' || sortBy === 'desc') {
-    query += ` ORDER BY cb.GiaCoBan ${sortBy.toUpperCase()}`;
-  } else {
-    query += ` ORDER BY ${orderMap[sortBy] || 'cb.GiaCoBan'} ASC`;
+  if (passengers) {
+    baseQuery += ` AND cb.SoGheCon >= :passengers`;
+    replacements.passengers = passengers;
   }
 
-  const [rows] = await db.query(query, { replacements });
-  return rows;
+  if (keyword) {
+    baseQuery += `
+      AND (
+        sb1.Ten LIKE :keyword OR
+        sb2.Ten LIKE :keyword OR
+        cb.HangBay LIKE :keyword
+      )
+    `;
+    replacements.keyword = `%${keyword}%`;
+  }
+
+  const countQuery = `SELECT COUNT(*) as total ${baseQuery}`;
+  const [[countResult]] = await db.query(countQuery, { replacements });
+
+  const orderMap = {
+    price: 'cb.GiaCoBan',
+    departure: 'cb.GioKhoiHanh'
+  };
+
+  const dataQuery = `
+    SELECT
+      cb.MaChuyenBay,
+      sb1.Code AS from_code,
+      sb1.Ten  AS from_name,
+      sb2.Code AS to_code,
+      sb2.Ten  AS to_name,
+      cb.HangBay,
+      cb.HangGhe,
+      cb.GiaCoBan AS price,
+      cb.GioKhoiHanh AS departure_time,
+      cb.GioHaCanh AS arrival_time
+    ${baseQuery}
+    ORDER BY ${orderMap[sortBy] || 'cb.GiaCoBan'} ASC
+    LIMIT :limit OFFSET :offset
+  `;
+
+  replacements.limit = parseInt(limit);
+  replacements.offset = parseInt(offset);
+
+  const [rows] = await db.query(dataQuery, { replacements });
+
+  return {
+    data: rows,
+    total: countResult.total
+  };
 };
 
 // ─── HOTELS ──────────────────────────────────────────────────────────────────
-const searchHotels = async ({ city, checkIn, checkOut, rating, minPrice, maxPrice, sortBy }) => {
-  let query = `
+const searchHotels = async (params) => {
+  const {
+    city,
+    checkIn,
+    checkOut,
+    rating,
+    minPrice,
+    maxPrice,
+    sortBy,
+    keyword,
+    limit = 10,
+    offset = 0
+  } = params;
+
+  let baseQuery = `
+    FROM KHACH_SAN ks
+    LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
+    WHERE 1=1
+  `;
+
+  const replacements = {};
+
+  if (city) { baseQuery += ` AND ks.DiaChi LIKE :city`; replacements.city = `%${city}%`; }
+  if (rating) { baseQuery += ` AND ks.HangSao >= :rating`; replacements.rating = rating; }
+  if (minPrice) { baseQuery += ` AND lp.GiaPhong >= :minPrice`; replacements.minPrice = minPrice; }
+  if (maxPrice) { baseQuery += ` AND lp.GiaPhong <= :maxPrice`; replacements.maxPrice = maxPrice; }
+
+  if (keyword) {
+    baseQuery += `
+      AND (
+        ks.TenKS LIKE :keyword OR
+        ks.DiaChi LIKE :keyword
+      )
+    `;
+    replacements.keyword = `%${keyword}%`;
+  }
+
+  if (checkIn && checkOut) {
+    baseQuery += `
+      AND EXISTS (
+        SELECT 1
+        FROM LOAI_PHONG lp2
+        WHERE lp2.MaKS = ks.MaKS
+        AND (
+          lp2.SoLuongPhong - (
+            SELECT COUNT(*)
+            FROM DAT_PHONG dp
+            WHERE dp.MaLoaiPhong = lp2.MaLoaiPhong
+            AND NOT (
+              dp.NgayTra <= :checkIn OR dp.NgayNhan >= :checkOut
+            )
+          )
+        ) > 0
+      )
+    `;
+    replacements.checkIn = checkIn;
+    replacements.checkOut = checkOut;
+  }
+
+  const countQuery = `SELECT COUNT(DISTINCT ks.MaKS) as total ${baseQuery}`;
+  const [[countResult]] = await db.query(countQuery, { replacements });
+
+  const dataQuery = `
     SELECT
       ks.MaKS,
       ks.TenKS   AS name,
       ks.DiaChi  AS address,
       ks.HangSao AS stars,
       MIN(lp.GiaPhong) AS min_price
-    FROM KHACH_SAN ks
-    LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
-    WHERE 1=1
+    ${baseQuery}
+    GROUP BY ks.MaKS, ks.TenKS, ks.DiaChi, ks.HangSao
+    ORDER BY ${sortBy === 'rating' ? 'ks.HangSao DESC' : 'min_price ASC'}
+    LIMIT :limit OFFSET :offset
   `;
-  const replacements = {};
 
-  if (city) { query += ` AND ks.DiaChi LIKE :city`; replacements.city = `%${city}%`; }
-  if (rating) { query += ` AND ks.HangSao >= :rating`; replacements.rating = rating; }
-  if (minPrice) { query += ` AND lp.GiaPhong >= :minPrice`; replacements.minPrice = minPrice; }
-  if (maxPrice) { query += ` AND lp.GiaPhong <= :maxPrice`; replacements.maxPrice = maxPrice; }
+  replacements.limit = parseInt(limit);
+  replacements.offset = parseInt(offset);
 
-  query += ` GROUP BY ks.MaKS, ks.TenKS, ks.DiaChi, ks.HangSao`;
+  const [rows] = await db.query(dataQuery, { replacements });
 
-  const orderMap = { price: 'min_price', rating: 'ks.HangSao DESC, min_price' };
-
-  if (sortBy === 'asc' || sortBy === 'desc') {
-    query += ` ORDER BY min_price ${sortBy.toUpperCase()}`;
-  } else {
-    query += ` ORDER BY ${orderMap[sortBy] || 'min_price'} ASC`;
-  }
-
-  const [rows] = await db.query(query, { replacements });
-  return rows;
+  return {
+    data: rows,
+    total: countResult.total
+  };
 };
 
 // ─── TRAINS (dùng bảng DICH_VU + DV_TRUNG_CHUYEN) ───────────────────────────
@@ -132,4 +230,50 @@ const searchExperiences = async ({ destination, priceMax, sortBy }) => {
   return rows;
 };
 
-module.exports = { searchFlights, searchHotels, searchTrains, searchExperiences };
+// Check phòng trống
+const checkHotelAvailability = async ({ hotelId, roomId, checkIn, checkOut, guests }) => {
+  const replacements = { hotelId, roomId, checkIn, checkOut };
+
+  let query = `
+    SELECT 
+      lp.MaLoaiPhong,
+      lp.MaKS,
+      lp.SoLuongPhong,
+      (
+        lp.SoLuongPhong - (
+          SELECT COUNT(*)
+          FROM DAT_PHONG dp
+          WHERE dp.MaLoaiPhong = lp.MaLoaiPhong
+          AND NOT (
+            dp.NgayTra <= :checkIn OR dp.NgayNhan >= :checkOut
+          )
+        )
+      ) AS rooms_left
+    FROM LOAI_PHONG lp
+    WHERE 1=1
+  `;
+
+  if (hotelId) {
+    query += ` AND lp.MaKS = :hotelId`;
+  }
+
+  if (roomId) {
+    query += ` AND lp.MaLoaiPhong = :roomId`;
+  }
+
+  if (guests) {
+    query += ` AND lp.SoNguoiToiDa >= :guests`;
+    replacements.guests = guests;
+  }
+
+  const [rows] = await db.query(query, { replacements });
+
+  const availableRooms = rows.filter(r => r.rooms_left > 0);
+
+  return {
+    available: availableRooms.length > 0,
+    rooms: availableRooms
+  };
+};
+
+module.exports = { searchFlights, searchHotels, searchTrains, searchExperiences, checkHotelAvailability };
