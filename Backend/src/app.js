@@ -3,6 +3,7 @@ const cors = require('cors');
 const testRoutes = require("./routes/testRoutes");
 const searchRoutes = require("./routes/search.routes");
 const userRoutes = require("./routes/user.routes");
+const authRoutes = require("./routes/auth.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const flightRoutes = require("./routes/flight.routes");
 const roomRoutes = require("./routes/room.routes");
@@ -19,6 +20,7 @@ app.use("/api/search", searchRoutes);
 
 // User API
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 
 //Flight API
 app.use("/api/flights", flightRoutes);

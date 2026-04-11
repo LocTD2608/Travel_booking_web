@@ -1,0 +1,13 @@
+const express = require("express");
+const router = express.Router();
+const authController = require("../controllers/auth.controller");
+
+// Base: /api/auth
+router.post("/register", authController.register);
+router.post("/login", authController.login);
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/forgot_password", authController.forgotPassword);
+router.post("/verify-otp", authController.verifyOtp);
+router.post("/reset-password", authController.resetPassword);
+
+module.exports = router;
