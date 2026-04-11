@@ -104,9 +104,9 @@ const AuthModal: React.FC<AuthModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 text-left">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 transition-colors z-10">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 text-left animate-fade-in">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 transition-colors z-10 hover:rotate-90 transition-transform">
                     <span className="material-symbols-outlined text-2xl">close</span>
                 </button>
                 <div className="overflow-y-auto p-6 sm:p-8">
@@ -149,7 +149,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                             <div className="flex items-center justify-between">
                                 <button type="button" onClick={() => setView('forgot')} className="text-sm font-semibold text-travel-blue hover:text-blue-600">Quên mật khẩu?</button>
                             </div>
-                            <button type="submit" disabled={isLoading} className="w-full bg-travel-blue text-white py-2.5 rounded-lg font-bold hover:bg-blue-600 disabled:bg-blue-300 transition-colors">
+                            <button type="submit" disabled={isLoading} className="w-full bg-travel-blue text-white py-2.5 rounded-lg font-bold hover:bg-blue-600 disabled:bg-blue-300 transition-all hover-lift active:scale-[0.98]">
                                 {isLoading ? "Đang xử lý..." : "Đăng nhập"}
                             </button>
                             <div className="text-center mt-4 text-sm text-gray-600">
@@ -180,7 +180,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu</label>
                                 <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-travel-blue focus:border-travel-blue sm:text-sm py-2.5 px-3 border outline-none" placeholder="Nhập lại mật khẩu" />
                             </div>
-                            <button type="submit" disabled={isLoading} className="w-full bg-travel-blue text-white py-2.5 rounded-lg font-bold hover:bg-blue-600 disabled:bg-blue-300 transition-colors">
+                            <button type="submit" disabled={isLoading} className="w-full bg-travel-blue text-white py-2.5 rounded-lg font-bold hover:bg-blue-600 disabled:bg-blue-300 transition-all hover-lift active:scale-[0.98]">
                                 {isLoading ? "Đang xử lý..." : "Đăng ký"}
                             </button>
                             <div className="text-center mt-4 text-sm text-gray-600">

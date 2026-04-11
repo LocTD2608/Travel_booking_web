@@ -61,13 +61,13 @@ const Header: React.FC = () => {
                             <>
                                 <button
                                     onClick={handleOpenLogin}
-                                    className="hidden sm:flex items-center justify-center rounded-lg h-9 px-4 border border-gray-200 text-sm font-bold hover:bg-gray-50 transition-colors"
+                                    className="hidden sm:flex items-center justify-center rounded-lg h-9 px-4 border border-gray-200 text-sm font-bold hover:bg-gray-50 transition-all hover-lift active:scale-95"
                                 >
                                     Log In
                                 </button>
                                 <button
                                     onClick={handleOpenRegister}
-                                    className="flex items-center justify-center rounded-lg h-9 px-4 bg-primary text-white text-sm font-bold hover:bg-gray-800 transition-colors"
+                                    className="flex items-center justify-center rounded-lg h-9 px-4 bg-primary text-white text-sm font-bold hover:bg-gray-800 transition-all hover-lift active:scale-95"
                                 >
                                     Register
                                 </button>
@@ -102,14 +102,14 @@ const Header: React.FC = () => {
 
             {/* Logout Confirmation Modal */}
             {isLogoutConfirmOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl animate-scale-in">
                         <h3 className="text-lg font-bold text-gray-900 mb-2 font-['Plus_Jakarta_Sans']">Xác nhận đăng xuất?</h3>
                         <p className="text-gray-600 mb-6 text-sm">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không?</p>
                         <div className="flex gap-3 justify-end">
                             <button
                                 onClick={() => setIsLogoutConfirmOpen(false)}
-                                className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors hover-scale"
                             >
                                 Hủy
                             </button>
@@ -118,7 +118,7 @@ const Header: React.FC = () => {
                                     logout();
                                     setIsLogoutConfirmOpen(false);
                                 }}
-                                className="px-4 py-2 text-sm font-bold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                className="px-4 py-2 text-sm font-bold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all hover-lift shadow-sm hover:shadow-red-200"
                             >
                                 Đăng xuất
                             </button>

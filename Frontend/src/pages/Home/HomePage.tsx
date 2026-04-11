@@ -12,7 +12,7 @@ export const HomePage: React.FC = () => {
         if (searchData.destination) params.append('destination', searchData.destination);
         if (searchData.checkIn) params.append('checkIn', searchData.checkIn);
         if (searchData.guests) params.append('guests', searchData.guests);
-        
+
         navigate(`/search?${params.toString()}`);
     };
 
@@ -128,7 +128,7 @@ export const HomePage: React.FC = () => {
                 {/* Quick Links */}
                 <div className={styles.quickLinks}>
                     {quickLinks.map((link, index) => (
-                        <a key={index} href="#" className={styles.quickLink}>
+                        <a key={index} href="#" className={`${styles.quickLink} hover-lift`}>
                             <div className={`${styles.iconCircle} ${styles[link.color]}`}>
                                 <span className="material-symbols-outlined">{link.icon}</span>
                             </div>
@@ -152,7 +152,7 @@ export const HomePage: React.FC = () => {
                     </div>
                     <div className={styles.promosGrid}>
                         {promos.map((promo, index) => (
-                            <div key={index} className={styles.promoCard}>
+                            <div key={index} className={`${styles.promoCard} hover-lift`}>
                                 <div
                                     className={styles.promoImage}
                                     style={{ backgroundImage: `url(${promo.image})` }}
@@ -185,7 +185,7 @@ export const HomePage: React.FC = () => {
                     </div>
                     <div className={styles.couponsGrid}>
                         {coupons.map((coupon, index) => (
-                            <div key={index} className={styles.couponCard}>
+                            <div key={index} className={`${styles.couponCard} hover-lift`}>
                                 <div className={styles.couponLeft}>
                                     <div className={`${styles.couponIcon} ${styles[coupon.color]}`}>
                                         <span className="material-symbols-outlined">{coupon.icon}</span>
@@ -224,7 +224,7 @@ export const HomePage: React.FC = () => {
                     </div>
                     <div className={styles.destinationsGrid}>
                         {destinations.map((dest, index) => (
-                            <div key={index} className={styles.destinationCard}>
+                            <div key={index} className={`${styles.destinationCard} hover-lift`}>
                                 <div className={styles.destinationImage}>
                                     <div
                                         className={styles.destImageBg}
@@ -250,7 +250,7 @@ export const HomePage: React.FC = () => {
                     <h3>Why Book With Traveloka?</h3>
                     <div className={styles.featuresGrid}>
                         {features.map((feature, index) => (
-                            <div key={index} className={styles.featureCard}>
+                            <div key={index} className={`${styles.featureCard} hover-lift`}>
                                 <div className={styles.featureIcon}>
                                     <span className="material-symbols-outlined">{feature.icon}</span>
                                 </div>
