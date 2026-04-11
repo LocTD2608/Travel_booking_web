@@ -43,7 +43,7 @@ const Header: React.FC = () => {
                     </div>
                     <div className="flex gap-3">
                         {isAuthenticated ? (
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-4 animate-fade-in">
                                 <div className="flex flex-col items-end">
                                     <span className="text-sm font-bold text-gray-900">Hi, {user?.Ten}</span>
                                     <button
@@ -53,7 +53,7 @@ const Header: React.FC = () => {
                                         Đăng xuất
                                     </button>
                                 </div>
-                                <div className="w-8 h-8 rounded-full bg-travel-blue flex items-center justify-center text-white font-bold">
+                                <div className="w-8 h-8 rounded-full bg-travel-blue flex items-center justify-center text-white font-bold hover-scale cursor-pointer">
                                     {user?.Ten?.[0]}
                                 </div>
                             </div>
@@ -77,22 +77,64 @@ const Header: React.FC = () => {
                 </div>
             </div>
 
-            <nav className="hidden md:flex justify-center bg-white border-b border-gray-100">
-                <div className="flex gap-8 px-4">
-                    <Link to="/" className={getNavClass(isAccomActive)} onMouseEnter={() => setActiveMenu('accommodations')}>
-                        <span className="material-symbols-outlined mb-1">hotel</span>
-                        <span className="text-sm font-bold">Accommodations</span>
-                    </Link>
-                    <Link to="/flights" className={getNavClass(isTransportActive)} onMouseEnter={() => setActiveMenu('transport')}>
-                        <span className="material-symbols-outlined mb-1">flight</span>
-                        <span className="text-sm font-bold">Transport</span>
-                    </Link>
-                    <Link to="/experience" className={getNavClass(isXperienceActive)} onMouseEnter={() => setActiveMenu('xperience')}>
-                        <span className="material-symbols-outlined mb-1">local_activity</span>
-                        <span className="text-sm font-bold">Experience</span>
-                    </Link>
+            <div className="relative" onMouseLeave={() => setActiveMenu(null)}>
+                <div className="hidden md:flex justify-center border-b border-gray-100 bg-white">
+                    <nav className="flex gap-8 px-4">
+                        <Link to="/" className={getNavClass(isAccomActive)} onMouseEnter={() => setActiveMenu('accommodations')}>
+                            <span className="material-symbols-outlined mb-1">hotel</span>
+                            <span className="text-sm font-bold">Accommodations</span>
+                        </Link>
+                        <Link to="/flights" className={getNavClass(isTransportActive)} onMouseEnter={() => setActiveMenu('transport')}>
+                            <span className="material-symbols-outlined mb-1">flight</span>
+                            <span className="text-sm font-bold">Transport</span>
+                        </Link>
+                        <Link to="/experience" className={getNavClass(isXperienceActive)} onMouseEnter={() => setActiveMenu('xperience')}>
+                            <span className="material-symbols-outlined mb-1">local_activity</span>
+                            <span className="text-sm font-bold">Experience</span>
+                        </Link>
+                        <a className={getNavClass(activeMenu === 'bills')} href="#" onMouseEnter={() => setActiveMenu('bills')}>
+                            <span className="material-symbols-outlined mb-1">credit_card</span>
+                            <span className="text-sm font-bold">Bills & Top-up</span>
+                        </a>
+                    </nav>
                 </div>
-            </nav>
+
+                {/* Secondary Navigation Menu (Sub-links) */}
+                <div
+                    className={`absolute w-full left-0 z-40 bg-gray-50 hidden lg:flex justify-center transition-all duration-300 overflow-hidden shadow-md ${activeMenu ? 'py-2 border-b border-gray-200 opacity-100 h-9' : 'opacity-0 h-0 py-0 border-transparent'}`}
+                    onMouseEnter={() => { }}
+                    onMouseLeave={() => setActiveMenu(null)}
+                >
+                    <div className="flex gap-6 text-sm font-medium text-gray-600">
+                        {activeMenu === 'accommodations' && (
+                            <>
+                                <Link className="hover:text-travel-blue" to="/hotels">Hotels</Link>
+                                <a className="hover:text-travel-blue" href="#">Villas</a>
+                                <Link className="hover:text-travel-blue" to="/apartments">Apartments</Link>
+                            </>
+                        )}
+                        {activeMenu === 'transport' && (
+                            <>
+                                <Link className="hover:text-travel-blue" to="/flights">Flights</Link>
+                                <Link className="hover:text-travel-blue" to="/trains">Trains</Link>
+                                <a className="hover:text-travel-blue" href="#">Bus &amp; Shuttle</a>
+                                <a className="hover:text-travel-blue" href="#">Airport Transfer</a>
+                                <a className="hover:text-travel-blue" href="#">Car Rental</a>
+                            </>
+                        )}
+                        {activeMenu === 'xperience' && (
+                            <Link className="hover:text-travel-blue" to="/experience">Activities & Attractions</Link>
+                        )}
+                        {activeMenu === 'bills' && (
+                            <>
+                                <a className="hover:text-travel-blue" href="#">Mobile Credit</a>
+                                <a className="hover:text-travel-blue" href="#">Data Plans</a>
+                                <a className="hover:text-travel-blue" href="#">Electricity</a>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
 
             <AuthModal
                 isOpen={isAuthModalOpen}
