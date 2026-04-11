@@ -1,82 +1,88 @@
 import React, { useState } from 'react';
 import { Slider } from 'antd';
 
-const MOCK_APARTMENTS = [
+const MOCK_VILLAS = [
     {
-        id: 'a1',
-        name: 'Luxury City Center Studio',
-        location: 'District 1, Ho Chi Minh City',
-        rating: 9.1,
-        ratingText: 'Superb',
-        reviews: 420,
-        price: 1200000,
-        originalPrice: 1500000,
-        badge: 'POPULAR',
-        image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facilities: ['Kitchen', 'Washing Machine', 'City View', 'Gym'],
-        stars: 4,
+        id: 'v1',
+        name: 'Ocean View Pool Villa',
+        location: 'Cam Hai Dong, Khanh Hoa',
+        rating: 9.6,
+        ratingText: 'Exceptional',
+        reviews: 214,
+        price: 8500000,
+        originalPrice: 10000000,
+        badge: 'TOP CHOICE',
+        image: 'https://images.unsplash.com/photo-1542314831-c6a4d14ce8a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        facilities: ['Private Pool', '4 Bedrooms', 'Ocean View', 'BBQ Grill'],
+        stars: 5,
     },
     {
-        id: 'a2',
-        name: 'Cozy Vintage Homestay',
-        location: 'Hoan Kiem, Hanoi',
-        rating: 8.5,
-        ratingText: 'Very Good',
-        reviews: 310,
-        price: 850000,
+        id: 'v2',
+        name: 'Hilltop Retreat Villa',
+        location: 'Tam Dao, Vinh Phuc',
+        rating: 9.2,
+        ratingText: 'Superb',
+        reviews: 180,
+        price: 4200000,
         originalPrice: null,
         badge: '',
-        image: 'https://images.unsplash.com/photo-1502672260266-1c1c24240f57?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facilities: ['1 Bedroom', 'Balcony', 'Kitchen'],
-        stars: 3,
+        image: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        facilities: ['3 Bedrooms', 'Mountain View', 'Fireplace'],
+        stars: 4,
     }
 ];
 
-const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0] }> = ({ apartment }) => (
+const VillaCard: React.FC<{ villa: typeof MOCK_VILLAS[0] }> = ({ villa }) => (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
         <div className="relative w-1/3 min-w-[280px] h-60">
-            <img src={apartment.image} alt={apartment.name} className="w-full h-full object-cover" />
-            {apartment.badge && (
-                <div className="absolute top-3 left-3 bg-white text-xs font-bold px-2 py-1 rounded shadow-sm text-purple-600">
-                    {apartment.badge}
+            <img src={villa.image} alt={villa.name} className="w-full h-full object-cover" />
+            {villa.badge && (
+                <div className="absolute top-3 left-3 bg-white text-xs font-bold px-2 py-1 rounded shadow-sm text-green-600">
+                    {villa.badge}
                 </div>
             )}
         </div>
         <div className="flex-1 p-5 flex flex-col justify-between">
             <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{apartment.name}</h3>
+                <div className="flex gap-1 mb-1">
+                    {Array.from({ length: villa.stars }).map((_, i) => (
+                        <span key={i} className="material-symbols-outlined text-yellow-500 text-[18px]">star</span>
+                    ))}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{villa.name}</h3>
                 <div className="text-sm text-gray-500 flex items-center gap-1 mb-3">
                     <span className="material-symbols-outlined text-[16px]">location_on</span>
-                    {apartment.location}
+                    {villa.location}
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded text-sm">
-                        {apartment.rating.toFixed(1)}
+                    <span className="bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded text-sm">
+                        {villa.rating.toFixed(1)}
                     </span>
-                    <span className="text-purple-700 font-semibold text-sm">{apartment.ratingText}</span>
-                    <span className="text-gray-400 text-sm">({apartment.reviews} reviews)</span>
+                    <span className="text-green-700 font-semibold text-sm">{villa.ratingText}</span>
+                    <span className="text-gray-400 text-sm">({villa.reviews} reviews)</span>
                 </div>
             </div>
             <div className="flex justify-between items-end mt-4">
-                <div className="flex flex-wrap gap-2">
-                    {apartment.facilities.map(fac => (
-                        <div key={fac} className="text-xs text-gray-500 bg-gray-50 border border-gray-200 px-2 py-1 rounded-full">
+                <div className="flex flex-wrap gap-3">
+                    {villa.facilities.map(fac => (
+                        <div key={fac} className="flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
+                            <span className="material-symbols-outlined text-[14px]">check_circle</span>
                             {fac}
                         </div>
                     ))}
                 </div>
                 <div className="text-right">
-                    {apartment.originalPrice && (
+                    {villa.originalPrice && (
                         <div className="text-xs text-gray-400 line-through mb-0.5 mt-2">
-                            {apartment.originalPrice.toLocaleString()} VNĐ
+                            {villa.originalPrice.toLocaleString()} VNĐ
                         </div>
                     )}
                     <div className="text-2xl font-black text-gray-900 mb-0">
-                        {apartment.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
+                        {villa.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                     </div>
-                    <div className="text-xs text-gray-400 mb-3">/ night</div>
+                    <div className="text-xs text-gray-400 mb-3">/ night / entire villa</div>
                     <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale">
-                        Select Room
+                        Book Villa
                     </button>
                 </div>
             </div>
@@ -84,8 +90,8 @@ const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0] }> = ({ apa
     </div>
 );
 
-const Apartments: React.FC = () => {
-    const [priceRange, setPriceRange] = useState<[number, number]>([300000, 5000000]);
+const Villas: React.FC = () => {
+    const [priceRange, setPriceRange] = useState<[number, number]>([2000000, 20000000]);
     const [sortBy, setSortBy] = useState('popularity');
 
     return (
@@ -95,12 +101,17 @@ const Apartments: React.FC = () => {
                     <div className="flex gap-10">
                         <div>
                             <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DESTINATION</div>
-                            <div className="text-[15px] font-bold text-gray-900">Ho Chi Minh City</div>
+                            <div className="text-[15px] font-bold text-gray-900">Nha Trang, Vietnam</div>
                         </div>
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div>
                             <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DATES</div>
-                            <div className="text-[15px] font-bold text-gray-900">Dec 01 - Dec 05, 2024</div>
+                            <div className="text-[15px] font-bold text-gray-900">Nov 20 - Nov 22, 2024</div>
+                        </div>
+                        <div className="w-px h-10 bg-gray-200"></div>
+                        <div>
+                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">GUESTS</div>
+                            <div className="text-[15px] font-bold text-gray-900">6 Adults, 1 Entire Villa</div>
                         </div>
                     </div>
                     <button className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
@@ -118,11 +129,11 @@ const Apartments: React.FC = () => {
                         </div>
                         <div className="mb-6">
                             <h4 className="font-semibold text-[15px] mb-4">Price per night</h4>
-                            <Slider range min={0} max={5000000} step={100000} value={priceRange} onChange={(val: number[]) => setPriceRange(val as [number, number])} trackStyle={[{ backgroundColor: '#005CE6', height: 4 }]} handleStyle={[{ borderColor: '#005CE6' }, { borderColor: '#005CE6' }]} />
+                            <Slider range min={0} max={20000000} step={500000} value={priceRange} onChange={(val: number[]) => setPriceRange(val as [number, number])} trackStyle={[{ backgroundColor: '#005CE6', height: 4 }]} handleStyle={[{ borderColor: '#005CE6' }, { borderColor: '#005CE6' }]} />
                         </div>
                         <div className="mb-6">
-                            <h4 className="font-semibold text-[15px] mb-3">Room Type</h4>
-                            {['Studio', '1 Bedroom', '2 Bedrooms', 'Entire House'].map(type => (
+                            <h4 className="font-semibold text-[15px] mb-3">Villa Type</h4>
+                            {['Pool Villa', 'Beachfront', 'Mountain View', 'Family Friendly'].map(type => (
                                 <label key={type} className="flex items-center gap-3 mb-2 cursor-pointer">
                                     <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue" />
                                     <span className="text-sm font-medium text-gray-700">{type}</span>
@@ -141,11 +152,11 @@ const Apartments: React.FC = () => {
                         </select>
                     </div>
                     <div className="flex flex-col gap-4">
-                        {MOCK_APARTMENTS.map((apt) => <ApartmentCard key={apt.id} apartment={apt} />)}
+                        {MOCK_VILLAS.map((villa) => <VillaCard key={villa.id} villa={villa} />)}
                     </div>
                 </div>
             </div>
         </div>
     );
 };
-export default Apartments;
+export default Villas;

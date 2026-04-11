@@ -14,6 +14,14 @@ import Careers from './pages/Careers/Careers'
 import ScrollToTop from './components/common/ScrollToTop'
 import Login from "./pages/Login"
 import SearchResults from './pages/SearchResults/SearchResults'
+
+import Villas from './pages/Accommodations/Villas'
+import BusShuttle from './pages/Transport/BusShuttle'
+import AirportTransfer from './pages/Transport/AirportTransfer'
+import CarRental from './pages/Transport/CarRental'
+import MobileCredit from './pages/Bills/MobileCredit'
+import DataPlans from './pages/Bills/DataPlans'
+import Electricity from './pages/Bills/Electricity'
 function App() {
   return (
     <>
@@ -34,10 +42,18 @@ function App() {
           <Route path="/trains" element={<Trains />} />
           <Route path="/hotels" element={<Hotels />} />
           <Route path="/apartments" element={<Apartments />} />
+          <Route path="/villas" element={<Villas />} />
           <Route path="/how-to-book" element={<HowToBook />} />
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/search" element={<SearchResults />} />
+
+          <Route path="/bus" element={<BusShuttle />} />
+          <Route path="/airport-transfer" element={<AirportTransfer />} />
+          <Route path="/car-rental" element={<CarRental />} />
+          <Route path="/mobile-credit" element={<MobileCredit />} />
+          <Route path="/data-plans" element={<DataPlans />} />
+          <Route path="/electricity" element={<Electricity />} />
         </Route>
 
       </Routes>
