@@ -6,6 +6,7 @@ const userRoutes = require("./routes/user.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const flightRoutes = require("./routes/flight.routes");
 const roomRoutes = require("./routes/room.routes");
+const bookingRoutes = require("./routes/bookingRoutes");
 
 const app = express();
 
@@ -37,3 +38,6 @@ app.get('/', (req, res) => {
 app.use(errorHandler);
 
 module.exports = app;
+
+// Booking
+app.use("/booking", bookingRoutes);
