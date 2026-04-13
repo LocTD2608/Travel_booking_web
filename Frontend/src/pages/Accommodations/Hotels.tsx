@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
+import { Slider, DatePicker } from 'antd';
+import { HotelCard } from '../../components/ui/cards/accommodations/HotelCard';
+const { RangePicker } = DatePicker;
 
 // Mock Data for Hotels
 const MOCK_HOTELS = [
@@ -132,6 +135,7 @@ const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0]; onClick: () => void }>
     </div>
 );
 
+
 const Hotels: React.FC = () => {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
@@ -159,7 +163,7 @@ const Hotels: React.FC = () => {
     const filteredHotels = MOCK_HOTELS.filter((hotel) => {
         const matchesPrice = hotel.price >= priceRange[0] && hotel.price <= priceRange[1];
         const matchesStars = selectedStars.length === 0 || selectedStars.includes(hotel.stars);
-        const matchesFacilities = selectedFacilities.length === 0 || selectedFacilities.every(fac => 
+        const matchesFacilities = selectedFacilities.length === 0 || selectedFacilities.every(fac =>
             hotel.facilities.some(hFac => hFac.toLowerCase().includes(fac.toLowerCase()))
         );
         return matchesPrice && matchesStars && matchesFacilities;
@@ -235,9 +239,9 @@ const Hotels: React.FC = () => {
                             <h4 className="font-semibold text-[15px] mb-3">Star Rating</h4>
                             {[5, 4, 3, 2, 1].map(star => (
                                 <label key={star} className="flex items-center gap-3 mb-2 cursor-pointer group">
-                                    <input 
-                                        type="checkbox" 
-                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer"
                                         checked={selectedStars.includes(star)}
                                         onChange={() => handleStarToggle(star)}
                                     />
@@ -259,9 +263,9 @@ const Hotels: React.FC = () => {
                                 { name: 'Gym', icon: 'fitness_center' }
                             ].map(amenity => (
                                 <label key={amenity.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
-                                    <input 
-                                        type="checkbox" 
-                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer"
                                         checked={selectedFacilities.includes(amenity.name)}
                                         onChange={() => handleFacilityToggle(amenity.name)}
                                     />
