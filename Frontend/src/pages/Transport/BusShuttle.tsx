@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../components/auth/AuthModal';
 import { Slider } from 'antd';
+import { BusCard } from '../../components/ui/cards/transport/BusCard';
 
 const MOCK_BUSES = [
     {

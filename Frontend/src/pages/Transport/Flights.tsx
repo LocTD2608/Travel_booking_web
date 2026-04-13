@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../components/auth/AuthModal';
 import { Slider } from 'antd';
+import { Slider, DatePicker } from 'antd';
+import { FlightCard } from '../../components/ui/cards/transport/FlightCard';
+const { RangePicker } = DatePicker;
 
 // Mock Data for Flights
 const MOCK_FLIGHTS = [

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
+import { VillaCard } from '../../components/ui/cards/accommodations/VillaCard';
 
 const MOCK_VILLAS = [
     {
@@ -160,9 +161,9 @@ const Villas: React.FC = () => {
                             <h4 className="font-semibold text-[15px] mb-3">Villa Type</h4>
                             {['Pool Villa', 'Beachfront', 'Mountain View', 'Family Friendly'].map(type => (
                                 <label key={type} className="flex items-center gap-3 mb-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue" 
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue"
                                         checked={selectedTypes.includes(type)}
                                         onChange={() => toggleType(type)}
                                     />
