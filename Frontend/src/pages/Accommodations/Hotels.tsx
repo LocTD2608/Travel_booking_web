@@ -144,10 +144,25 @@ const Hotels: React.FC = () => {
 
     const [priceRange, setPriceRange] = useState<[number, number]>([500000, 5000000]);
     const [sortBy, setSortBy] = useState('popularity');
+    const [selectedStars, setSelectedStars] = useState<number[]>([]);
+    const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
+
+    const handleStarToggle = (star: number) => {
+        setSelectedStars(prev => prev.includes(star) ? prev.filter(s => s !== star) : [...prev, star]);
+    };
+
+    const handleFacilityToggle = (facility: string) => {
+        setSelectedFacilities(prev => prev.includes(facility) ? prev.filter(f => f !== facility) : [...prev, facility]);
+    };
 
     // Filtering & Sorting Logic
     const filteredHotels = MOCK_HOTELS.filter((hotel) => {
-        return hotel.price >= priceRange[0] && hotel.price <= priceRange[1];
+        const matchesPrice = hotel.price >= priceRange[0] && hotel.price <= priceRange[1];
+        const matchesStars = selectedStars.length === 0 || selectedStars.includes(hotel.stars);
+        const matchesFacilities = selectedFacilities.length === 0 || selectedFacilities.every(fac => 
+            hotel.facilities.some(hFac => hFac.toLowerCase().includes(fac.toLowerCase()))
+        );
+        return matchesPrice && matchesStars && matchesFacilities;
     }).sort((a, b) => {
         if (sortBy === 'price_asc') return a.price - b.price;
         if (sortBy === 'price_desc') return b.price - a.price;
@@ -192,7 +207,7 @@ const Hotels: React.FC = () => {
                     <div className="bg-white border text-gray-800 border-gray-200 rounded-xl p-5 mb-4 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-lg">Filters</h3>
-                            <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => { setPriceRange([500000, 5000000]); setSortBy('popularity'); }}>Reset</button>
+                            <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => { setPriceRange([500000, 5000000]); setSortBy('popularity'); setSelectedStars([]); setSelectedFacilities([]); }}>Reset</button>
                         </div>
 
                         {/* Price Filter */}
@@ -220,7 +235,12 @@ const Hotels: React.FC = () => {
                             <h4 className="font-semibold text-[15px] mb-3">Star Rating</h4>
                             {[5, 4, 3, 2, 1].map(star => (
                                 <label key={star} className="flex items-center gap-3 mb-2 cursor-pointer group">
-                                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" />
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                        checked={selectedStars.includes(star)}
+                                        onChange={() => handleStarToggle(star)}
+                                    />
                                     <span className="flex text-yellow-500">
                                         {Array.from({ length: star }).map((_, i) => <span key={i} className="material-symbols-outlined text-[20px] leading-none">star</span>)}
                                         {Array.from({ length: 5 - star }).map((_, i) => <span key={i} className="material-symbols-outlined text-[20px] text-gray-200 leading-none">star</span>)}
@@ -239,7 +259,12 @@ const Hotels: React.FC = () => {
                                 { name: 'Gym', icon: 'fitness_center' }
                             ].map(amenity => (
                                 <label key={amenity.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
-                                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" />
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                        checked={selectedFacilities.includes(amenity.name)}
+                                        onChange={() => handleFacilityToggle(amenity.name)}
+                                    />
                                     <span className="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-gray-600 transition-colors">{amenity.icon}</span>
                                     <span className="text-sm font-medium text-gray-600">{amenity.name}</span>
                                 </label>
