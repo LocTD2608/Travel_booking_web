@@ -7,12 +7,12 @@ import styles from './HomePage.module.css';
 export const HomePage: React.FC = () => {
     const navigate = useNavigate();
 
-    const handleSearchClick = (searchData: any) => {
+    const handleSearchClick = (searchData: Record<string, string>) => {
         const params = new URLSearchParams();
         if (searchData.destination) params.append('destination', searchData.destination);
         if (searchData.checkIn) params.append('checkIn', searchData.checkIn);
         if (searchData.guests) params.append('guests', searchData.guests);
-        
+
         navigate(`/search?${params.toString()}`);
     };
 

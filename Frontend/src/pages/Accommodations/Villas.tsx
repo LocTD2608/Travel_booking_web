@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
 
 const MOCK_VILLAS = [
@@ -32,8 +34,8 @@ const MOCK_VILLAS = [
     }
 ];
 
-const VillaCard: React.FC<{ villa: typeof MOCK_VILLAS[0] }> = ({ villa }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
+const VillaCard: React.FC<{ villa: typeof MOCK_VILLAS[0]; onClick: () => void }> = ({ villa, onClick }) => (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-lg transition-shadow cursor-pointer" onClick={onClick}>
         <div className="relative w-1/3 min-w-[280px] h-60">
             <img src={villa.image} alt={villa.name} className="w-full h-full object-cover" />
             {villa.badge && (
@@ -81,7 +83,10 @@ const VillaCard: React.FC<{ villa: typeof MOCK_VILLAS[0] }> = ({ villa }) => (
                         {villa.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                     </div>
                     <div className="text-xs text-gray-400 mb-3">/ night / entire villa</div>
-                    <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale">
+                    <button
+                        className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale"
+                        onClick={(e) => { e.stopPropagation(); onClick(); }}
+                    >
                         Book Villa
                     </button>
                 </div>
@@ -91,6 +96,8 @@ const VillaCard: React.FC<{ villa: typeof MOCK_VILLAS[0] }> = ({ villa }) => (
 );
 
 const Villas: React.FC = () => {
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     const [priceRange, setPriceRange] = useState<[number, number]>([2000000, 20000000]);
     const [sortBy, setSortBy] = useState('popularity');
 
@@ -141,6 +148,18 @@ const Villas: React.FC = () => {
                             ))}
                         </div>
                     </div>
+
+                    {/* Promo Box — hidden when authenticated */}
+                    {!isAuthenticated && (
+                        <div className="bg-green-700 text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
+                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_offer</span>
+                            <h4 className="font-bold text-lg mb-2 relative z-10">Exclusive Villa Rates</h4>
+                            <p className="text-sm text-green-100 mb-4 relative z-10">Sign in to see prices up to 30% lower on selected villas.</p>
+                            <button className="bg-white text-green-700 px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 transition-all">
+                                Sign In Now
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex-1 flex flex-col gap-4">
@@ -152,7 +171,7 @@ const Villas: React.FC = () => {
                         </select>
                     </div>
                     <div className="flex flex-col gap-4">
-                        {MOCK_VILLAS.map((villa) => <VillaCard key={villa.id} villa={villa} />)}
+                        {MOCK_VILLAS.map((villa) => <VillaCard key={villa.id} villa={villa} onClick={() => navigate(`/villas/${villa.id}`)} />)}
                     </div>
                 </div>
             </div>

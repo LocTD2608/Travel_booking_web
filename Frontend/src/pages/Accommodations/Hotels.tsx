@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Slider, DatePicker } from 'antd';
-const { RangePicker } = DatePicker;
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Slider } from 'antd';
 
 // Mock Data for Hotels
 const MOCK_HOTELS = [
@@ -48,8 +49,11 @@ const MOCK_HOTELS = [
     }
 ];
 
-const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0] }> = ({ hotel }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
+const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0]; onClick: () => void }> = ({ hotel, onClick }) => (
+    <div
+        className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
+        onClick={onClick}
+    >
         {/* Left Image */}
         <div className="relative w-1/3 min-w-[280px] h-60">
             <img src={hotel.image} alt={hotel.name} className="w-full h-full object-cover" />
@@ -116,7 +120,10 @@ const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0] }> = ({ hotel }) => (
                         {hotel.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                     </div>
                     <div className="text-xs text-gray-400 mb-3">incl. taxes & fees</div>
-                    <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale">
+                    <button
+                        className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale"
+                        onClick={(e) => { e.stopPropagation(); onClick(); }}
+                    >
                         Select Room
                     </button>
                 </div>
@@ -126,8 +133,10 @@ const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0] }> = ({ hotel }) => (
 );
 
 const Hotels: React.FC = () => {
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     // Top Search State
-    const [searchState, setSearchState] = useState({
+    const [searchState] = useState({
         destination: 'Da Nang, Vietnam',
         dates: '',
         guests: '2 Adults, 1 Room'
@@ -238,15 +247,17 @@ const Hotels: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Promotion Box */}
-                    <div className="bg-[#0064D2] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
-                        <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_offer</span>
-                        <h4 className="font-bold text-lg mb-2 relative z-10">Unlock Private Deals</h4>
-                        <p className="text-sm text-blue-100 mb-4 relative z-10">Sign in to see prices up to 30% lower on selected hotels.</p>
-                        <button className="bg-white text-[#0064D2] px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 hover-scale transition-all">
-                            Sign In Now
-                        </button>
-                    </div>
+                    {/* Promotion Box — only show when not authenticated */}
+                    {!isAuthenticated && (
+                        <div className="bg-[#0064D2] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
+                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_offer</span>
+                            <h4 className="font-bold text-lg mb-2 relative z-10">Unlock Private Deals</h4>
+                            <p className="text-sm text-blue-100 mb-4 relative z-10">Sign in to see prices up to 30% lower on selected hotels.</p>
+                            <button className="bg-white text-[#0064D2] px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 hover-scale transition-all">
+                                Sign In Now
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Column (Results) */}
@@ -289,7 +300,7 @@ const Hotels: React.FC = () => {
                     ) : (
                         <div className="flex flex-col gap-4">
                             {filteredHotels.map((hotel) => (
-                                <HotelCard key={hotel.id} hotel={hotel} />
+                                <HotelCard key={hotel.id} hotel={hotel} onClick={() => navigate(`/hotels/${hotel.id}`)} />
                             ))}
                         </div>
                     )}

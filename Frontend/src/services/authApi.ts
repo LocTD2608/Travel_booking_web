@@ -1,7 +1,7 @@
-const API_URL = "http://localhost:3000/api/auth";
+const API_URL = "http://127.0.0.1:3000/api/auth";
 
 export const authApi = {
-    login: async (credentials: any) => {
+    login: async (credentials: Record<string, unknown>) => {
         const response = await fetch(`${API_URL}/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -14,10 +14,10 @@ export const authApi = {
         return response.json();
     },
 
-    register: async (data: any) => {
+    register: async (data: Record<string, unknown>) => {
         const payload = {
-            Ho: data.fullName?.split(" ").slice(0, -1).join(" ") || "Khách",
-            Ten: data.fullName?.split(" ").slice(-1).join("") || "Hàng",
+            Ho: (typeof data.fullName === 'string' ? data.fullName.split(" ").slice(0, -1).join(" ") : "Khách") || "Khách",
+            Ten: (typeof data.fullName === 'string' ? data.fullName.split(" ").slice(-1).join("") : "Hàng") || "Hàng",
             Email: data.email,
             SDT: data.phone,
             Password: data.password,

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
 
 const MOCK_APARTMENTS = [
@@ -32,8 +34,8 @@ const MOCK_APARTMENTS = [
     }
 ];
 
-const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0] }> = ({ apartment }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
+const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0]; onClick: () => void }> = ({ apartment, onClick }) => (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-lg transition-shadow cursor-pointer" onClick={onClick}>
         <div className="relative w-1/3 min-w-[280px] h-60">
             <img src={apartment.image} alt={apartment.name} className="w-full h-full object-cover" />
             {apartment.badge && (
@@ -75,7 +77,10 @@ const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0] }> = ({ apa
                         {apartment.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                     </div>
                     <div className="text-xs text-gray-400 mb-3">/ night</div>
-                    <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale">
+                    <button
+                        className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale"
+                        onClick={(e) => { e.stopPropagation(); onClick(); }}
+                    >
                         Select Room
                     </button>
                 </div>
@@ -85,6 +90,8 @@ const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0] }> = ({ apa
 );
 
 const Apartments: React.FC = () => {
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     const [priceRange, setPriceRange] = useState<[number, number]>([300000, 5000000]);
     const [sortBy, setSortBy] = useState('popularity');
 
@@ -130,6 +137,18 @@ const Apartments: React.FC = () => {
                             ))}
                         </div>
                     </div>
+
+                    {/* Promo Box — hidden when authenticated */}
+                    {!isAuthenticated && (
+                        <div className="bg-purple-700 text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
+                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">apartment</span>
+                            <h4 className="font-bold text-lg mb-2 relative z-10">Member Rates</h4>
+                            <p className="text-sm text-purple-100 mb-4 relative z-10">Sign in to unlock exclusive rates on apartments.</p>
+                            <button className="bg-white text-purple-700 px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 transition-all">
+                                Sign In Now
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex-1 flex flex-col gap-4">
@@ -141,7 +160,8 @@ const Apartments: React.FC = () => {
                         </select>
                     </div>
                     <div className="flex flex-col gap-4">
-                        {MOCK_APARTMENTS.map((apt) => <ApartmentCard key={apt.id} apartment={apt} />)}
+                        {MOCK_APARTMENTS.filter(a => a.price >= priceRange[0] && a.price <= priceRange[1])
+                            .map((apt) => <ApartmentCard key={apt.id} apartment={apt} onClick={() => navigate(`/apartments/${apt.id}`)} />)}
                     </div>
                 </div>
             </div>

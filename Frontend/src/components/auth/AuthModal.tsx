@@ -49,8 +49,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
         try {
             await loginApi({ email, password });
             onClose();
-        } catch (err: any) {
-            setError(err.message || "Đăng nhập thất bại");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
         }
     };
 
@@ -64,8 +64,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
         try {
             await registerApi({ fullName, phone, email, password });
             onClose();
-        } catch (err: any) {
-            setError(err.message || "Đăng ký thất bại");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Đăng ký thất bại");
         }
     };
 
@@ -81,8 +81,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
                 setView("verify");
                 setMessage("");
             }, 2000);
-        } catch (err: any) {
-            setError(err.message || "Đã có lỗi xảy ra");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
         } finally {
             setIsProcessing(false);
         }
@@ -96,8 +96,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
             const response = await authApi.verifyOtp(email, otp);
             onClose();
             window.location.href = `/reset-password?email=${email}&token=${response.resetToken}`;
-        } catch (err: any) {
-            setError(err.message || "Mã OTP không hợp lệ");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Mã OTP không hợp lệ");
         } finally {
             setIsProcessing(false);
         }
