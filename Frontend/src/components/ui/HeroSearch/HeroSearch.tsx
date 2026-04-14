@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styles from './HeroSearch.module.css';
 
 interface HeroSearchProps {
-    onSearch?: (searchData: any) => void;
+    onSearch?: (searchData: Record<string, string>) => void;
 }
 
 export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch }) => {

@@ -6,7 +6,7 @@ export { BookingProvider, useBooking } from './BookingContext';
 export type { Flight, Hotel, Bus, BookingStep } from './BookingContext';
 
 export { AuthProvider, useAuth } from './AuthContext';
-export type { User, LoginCredentials, RegisterData } from './AuthContext';
+export type { User } from './AuthContext';
 
 export { NotificationProvider, useNotification } from './NotificationContext';
 export type { Notification, NotificationType } from './NotificationContext';

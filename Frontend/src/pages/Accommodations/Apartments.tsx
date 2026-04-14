@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
 
 const MOCK_APARTMENTS = [
@@ -32,8 +34,8 @@ const MOCK_APARTMENTS = [
     }
 ];
 
-const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0] }> = ({ apartment }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
+const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0]; onClick: () => void }> = ({ apartment, onClick }) => (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-lg transition-shadow cursor-pointer" onClick={onClick}>
         <div className="relative w-1/3 min-w-[280px] h-60">
             <img src={apartment.image} alt={apartment.name} className="w-full h-full object-cover" />
             {apartment.badge && (
@@ -75,7 +77,10 @@ const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0] }> = ({ apa
                         {apartment.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                     </div>
                     <div className="text-xs text-gray-400 mb-3">/ night</div>
-                    <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale">
+                    <button
+                        className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale"
+                        onClick={(e) => { e.stopPropagation(); onClick(); }}
+                    >
                         Select Room
                     </button>
                 </div>
@@ -85,8 +90,28 @@ const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0] }> = ({ apa
 );
 
 const Apartments: React.FC = () => {
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     const [priceRange, setPriceRange] = useState<[number, number]>([300000, 5000000]);
     const [sortBy, setSortBy] = useState('popularity');
+    const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+
+    const toggleType = (type: string) => {
+        setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+    };
+
+    const filteredApartments = MOCK_APARTMENTS.filter(a => {
+        const matchesPrice = a.price >= priceRange[0] && a.price <= priceRange[1];
+        const matchesTypes = selectedTypes.length === 0 || selectedTypes.some(type => {
+            const tl = type.toLowerCase();
+            const keyword = tl.includes('studio') ? 'studio' : tl.includes('1 bedroom') ? '1 bedroom' : tl.includes('house') ? 'house' : tl;
+            return a.name.toLowerCase().includes(keyword) || a.facilities.some(f => f.toLowerCase().includes(keyword));
+        });
+        return matchesPrice && matchesTypes;
+    }).sort((a, b) => {
+        if (sortBy === 'price_asc') return a.price - b.price;
+        return b.reviews - a.reviews;
+    });
 
     return (
         <div className="bg-[#f5f7fa] min-h-screen pb-10 font-['Plus_Jakarta_Sans']">
@@ -114,7 +139,7 @@ const Apartments: React.FC = () => {
                     <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-lg">Filters</h3>
-                            <button className="text-travel-blue font-semibold text-sm hover:underline">Reset</button>
+                            <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => { setPriceRange([300000, 5000000]); setSortBy('popularity'); setSelectedTypes([]); }}>Reset</button>
                         </div>
                         <div className="mb-6">
                             <h4 className="font-semibold text-[15px] mb-4">Price per night</h4>
@@ -124,12 +149,29 @@ const Apartments: React.FC = () => {
                             <h4 className="font-semibold text-[15px] mb-3">Room Type</h4>
                             {['Studio', '1 Bedroom', '2 Bedrooms', 'Entire House'].map(type => (
                                 <label key={type} className="flex items-center gap-3 mb-2 cursor-pointer">
-                                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue" />
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue" 
+                                        checked={selectedTypes.includes(type)}
+                                        onChange={() => toggleType(type)}
+                                    />
                                     <span className="text-sm font-medium text-gray-700">{type}</span>
                                 </label>
                             ))}
                         </div>
                     </div>
+
+                    {/* Promo Box — hidden when authenticated */}
+                    {!isAuthenticated && (
+                        <div className="bg-purple-700 text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
+                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">apartment</span>
+                            <h4 className="font-bold text-lg mb-2 relative z-10">Member Rates</h4>
+                            <p className="text-sm text-purple-100 mb-4 relative z-10">Sign in to unlock exclusive rates on apartments.</p>
+                            <button className="bg-white text-purple-700 px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 transition-all">
+                                Sign In Now
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex-1 flex flex-col gap-4">
@@ -141,7 +183,15 @@ const Apartments: React.FC = () => {
                         </select>
                     </div>
                     <div className="flex flex-col gap-4">
-                        {MOCK_APARTMENTS.map((apt) => <ApartmentCard key={apt.id} apartment={apt} />)}
+                        {filteredApartments.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 border-dashed rounded-xl text-gray-400 mt-4 h-64">
+                                <span className="material-symbols-outlined text-5xl mb-3 text-gray-300">apartment</span>
+                                <p className="font-bold text-gray-500">No results to display</p>
+                                <p className="text-sm">Try adjusting your filters.</p>
+                            </div>
+                        ) : (
+                            filteredApartments.map((apt) => <ApartmentCard key={apt.id} apartment={apt} onClick={() => navigate(`/apartments/${apt.id}`)} />)
+                        )}
                     </div>
                 </div>
             </div>

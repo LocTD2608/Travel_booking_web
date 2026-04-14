@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Slider, DatePicker } from 'antd';
-const { RangePicker } = DatePicker;
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Slider } from 'antd';
 
 // Mock Data for Hotels
 const MOCK_HOTELS = [
@@ -48,8 +49,11 @@ const MOCK_HOTELS = [
     }
 ];
 
-const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0] }> = ({ hotel }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
+const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0]; onClick: () => void }> = ({ hotel, onClick }) => (
+    <div
+        className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
+        onClick={onClick}
+    >
         {/* Left Image */}
         <div className="relative w-1/3 min-w-[280px] h-60">
             <img src={hotel.image} alt={hotel.name} className="w-full h-full object-cover" />
@@ -116,7 +120,10 @@ const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0] }> = ({ hotel }) => (
                         {hotel.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                     </div>
                     <div className="text-xs text-gray-400 mb-3">incl. taxes & fees</div>
-                    <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale">
+                    <button
+                        className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale"
+                        onClick={(e) => { e.stopPropagation(); onClick(); }}
+                    >
                         Select Room
                     </button>
                 </div>
@@ -126,8 +133,10 @@ const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0] }> = ({ hotel }) => (
 );
 
 const Hotels: React.FC = () => {
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     // Top Search State
-    const [searchState, setSearchState] = useState({
+    const [searchState] = useState({
         destination: 'Da Nang, Vietnam',
         dates: '',
         guests: '2 Adults, 1 Room'
@@ -135,10 +144,25 @@ const Hotels: React.FC = () => {
 
     const [priceRange, setPriceRange] = useState<[number, number]>([500000, 5000000]);
     const [sortBy, setSortBy] = useState('popularity');
+    const [selectedStars, setSelectedStars] = useState<number[]>([]);
+    const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
+
+    const handleStarToggle = (star: number) => {
+        setSelectedStars(prev => prev.includes(star) ? prev.filter(s => s !== star) : [...prev, star]);
+    };
+
+    const handleFacilityToggle = (facility: string) => {
+        setSelectedFacilities(prev => prev.includes(facility) ? prev.filter(f => f !== facility) : [...prev, facility]);
+    };
 
     // Filtering & Sorting Logic
     const filteredHotels = MOCK_HOTELS.filter((hotel) => {
-        return hotel.price >= priceRange[0] && hotel.price <= priceRange[1];
+        const matchesPrice = hotel.price >= priceRange[0] && hotel.price <= priceRange[1];
+        const matchesStars = selectedStars.length === 0 || selectedStars.includes(hotel.stars);
+        const matchesFacilities = selectedFacilities.length === 0 || selectedFacilities.every(fac => 
+            hotel.facilities.some(hFac => hFac.toLowerCase().includes(fac.toLowerCase()))
+        );
+        return matchesPrice && matchesStars && matchesFacilities;
     }).sort((a, b) => {
         if (sortBy === 'price_asc') return a.price - b.price;
         if (sortBy === 'price_desc') return b.price - a.price;
@@ -183,7 +207,7 @@ const Hotels: React.FC = () => {
                     <div className="bg-white border text-gray-800 border-gray-200 rounded-xl p-5 mb-4 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-lg">Filters</h3>
-                            <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => { setPriceRange([500000, 5000000]); setSortBy('popularity'); }}>Reset</button>
+                            <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => { setPriceRange([500000, 5000000]); setSortBy('popularity'); setSelectedStars([]); setSelectedFacilities([]); }}>Reset</button>
                         </div>
 
                         {/* Price Filter */}
@@ -211,7 +235,12 @@ const Hotels: React.FC = () => {
                             <h4 className="font-semibold text-[15px] mb-3">Star Rating</h4>
                             {[5, 4, 3, 2, 1].map(star => (
                                 <label key={star} className="flex items-center gap-3 mb-2 cursor-pointer group">
-                                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" />
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                        checked={selectedStars.includes(star)}
+                                        onChange={() => handleStarToggle(star)}
+                                    />
                                     <span className="flex text-yellow-500">
                                         {Array.from({ length: star }).map((_, i) => <span key={i} className="material-symbols-outlined text-[20px] leading-none">star</span>)}
                                         {Array.from({ length: 5 - star }).map((_, i) => <span key={i} className="material-symbols-outlined text-[20px] text-gray-200 leading-none">star</span>)}
@@ -230,7 +259,12 @@ const Hotels: React.FC = () => {
                                 { name: 'Gym', icon: 'fitness_center' }
                             ].map(amenity => (
                                 <label key={amenity.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
-                                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" />
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                        checked={selectedFacilities.includes(amenity.name)}
+                                        onChange={() => handleFacilityToggle(amenity.name)}
+                                    />
                                     <span className="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-gray-600 transition-colors">{amenity.icon}</span>
                                     <span className="text-sm font-medium text-gray-600">{amenity.name}</span>
                                 </label>
@@ -238,15 +272,17 @@ const Hotels: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Promotion Box */}
-                    <div className="bg-[#0064D2] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
-                        <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_offer</span>
-                        <h4 className="font-bold text-lg mb-2 relative z-10">Unlock Private Deals</h4>
-                        <p className="text-sm text-blue-100 mb-4 relative z-10">Sign in to see prices up to 30% lower on selected hotels.</p>
-                        <button className="bg-white text-[#0064D2] px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 hover-scale transition-all">
-                            Sign In Now
-                        </button>
-                    </div>
+                    {/* Promotion Box — only show when not authenticated */}
+                    {!isAuthenticated && (
+                        <div className="bg-[#0064D2] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
+                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_offer</span>
+                            <h4 className="font-bold text-lg mb-2 relative z-10">Unlock Private Deals</h4>
+                            <p className="text-sm text-blue-100 mb-4 relative z-10">Sign in to see prices up to 30% lower on selected hotels.</p>
+                            <button className="bg-white text-[#0064D2] px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 hover-scale transition-all">
+                                Sign In Now
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Column (Results) */}
@@ -289,7 +325,7 @@ const Hotels: React.FC = () => {
                     ) : (
                         <div className="flex flex-col gap-4">
                             {filteredHotels.map((hotel) => (
-                                <HotelCard key={hotel.id} hotel={hotel} />
+                                <HotelCard key={hotel.id} hotel={hotel} onClick={() => navigate(`/hotels/${hotel.id}`)} />
                             ))}
                         </div>
                     )}

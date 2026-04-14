@@ -1,0 +1,8 @@
+src/components/common/index.ts(5,10): error TS2305: Module '"./Modal/Modal"' has no exported member 'default'.
+src/components/common/index.ts(6,10): error TS2305: Module '"./Loading/Loading"' has no exported member 'default'.
+src/components/common/index.ts(7,10): error TS2305: Module '"../ui/Rating/Rating"' has no exported member 'default'.
+src/components/common/index.ts(8,10): error TS2305: Module '"../ui/HeroSearch/HeroSearch"' has no exported member 'default'.
+src/components/common/NotificationToast.tsx(2,33): error TS2307: Cannot find module '../context' or its corresponding type declarations.
+src/components/common/NotificationToast.tsx(12,33): error TS7006: Parameter 'notification' implicitly has an 'any' type.
+src/context/index.ts(9,21): error TS2305: Module '"./AuthContext"' has no exported member 'LoginCredentials'.
+src/context/index.ts(9,39): error TS2305: Module '"./AuthContext"' has no exported member 'RegisterData'.

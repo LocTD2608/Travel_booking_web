@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNotification } from '../context';
+import { useNotification, type Notification } from '../../context';
 import styles from './NotificationToast.module.css';
 
 export const NotificationToast: React.FC = () => {
@@ -9,7 +9,7 @@ export const NotificationToast: React.FC = () => {
 
     return (
         <div className={styles.container}>
-            {notifications.map((notification) => (
+            {notifications.map((notification: Notification) => (
                 <div
                     key={notification.id}
                     className={`${styles.toast} ${styles[notification.type]}`}
