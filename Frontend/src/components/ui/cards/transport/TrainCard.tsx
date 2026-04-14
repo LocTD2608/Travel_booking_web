@@ -15,8 +15,8 @@ export interface TrainCardProps {
     class: string;
 }
 
-export const TrainCard: React.FC<{ train: TrainCardProps }> = ({ train }) => (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+export const TrainCard: React.FC<{ train: TrainCardProps; onSelect?: () => void }> = ({ train, onSelect }) => (
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden cursor-pointer" onClick={onSelect}>
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1e40af]"></div>
         <div className="flex justify-between items-center mb-4 pl-2">
             <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export const TrainCard: React.FC<{ train: TrainCardProps }> = ({ train }) => (
                 <div className="text-2xl font-black text-[#FF5E1F] mb-3 leading-none">
                     {train.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                 </div>
-                <button className="bg-[#FF5E1F] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#E64B0E] transition-colors hover-scale w-full shadow-sm">
+                <button className="bg-[#FF5E1F] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#E64B0E] transition-colors hover-scale w-full shadow-sm" onClick={onSelect ? (e) => { e.stopPropagation(); onSelect(); } : undefined}>
                     Select Waitlist
                 </button>
             </div>

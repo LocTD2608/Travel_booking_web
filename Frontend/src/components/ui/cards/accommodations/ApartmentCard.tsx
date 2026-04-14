@@ -15,8 +15,8 @@ export interface ApartmentCardProps {
     stars: number;
 }
 
-export const ApartmentCard: React.FC<{ apartment: ApartmentCardProps }> = ({ apartment }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
+export const ApartmentCard: React.FC<{ apartment: ApartmentCardProps; onClick?: () => void }> = ({ apartment, onClick }) => (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
         <div className="relative w-1/3 min-w-[280px] h-60">
             <img src={apartment.image} alt={apartment.name} className="w-full h-full object-cover" />
             {apartment.badge && (
@@ -58,7 +58,7 @@ export const ApartmentCard: React.FC<{ apartment: ApartmentCardProps }> = ({ apa
                         {apartment.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                     </div>
                     <div className="text-xs text-gray-400 mb-3">/ night</div>
-                    <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale">
+                    <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale" onClick={onClick ? (e) => { e.stopPropagation(); onClick(); } : undefined}>
                         Select Room
                     </button>
                 </div>

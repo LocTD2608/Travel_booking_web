@@ -12,8 +12,8 @@ export interface BusCardProps {
     type: string;
 }
 
-export const BusCard: React.FC<{ bus: BusCardProps }> = ({ bus }) => (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+export const BusCard: React.FC<{ bus: BusCardProps; onSelect?: () => void }> = ({ bus, onSelect }) => (
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden cursor-pointer" onClick={onSelect}>
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#d97706]"></div>
         <div className="flex justify-between items-center mb-4 pl-2">
             <div className="flex items-center gap-3">
@@ -51,7 +51,7 @@ export const BusCard: React.FC<{ bus: BusCardProps }> = ({ bus }) => (
                 <div className="text-2xl font-black text-[#FF5E1F] mb-3 leading-none">
                     {bus.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                 </div>
-                <button className="bg-[#FF5E1F] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#E64B0E] transition-colors hover-scale w-full shadow-sm">
+                <button className="bg-[#FF5E1F] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#E64B0E] transition-colors hover-scale w-full shadow-sm" onClick={onSelect ? (e) => { e.stopPropagation(); onSelect(); } : undefined}>
                     Select
                 </button>
             </div>

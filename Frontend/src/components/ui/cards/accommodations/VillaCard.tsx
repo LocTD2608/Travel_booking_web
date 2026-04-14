@@ -15,8 +15,8 @@ export interface VillaCardProps {
     stars: number;
 }
 
-export const VillaCard: React.FC<{ villa: VillaCardProps }> = ({ villa }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
+export const VillaCard: React.FC<{ villa: VillaCardProps; onClick?: () => void }> = ({ villa, onClick }) => (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
         <div className="relative w-1/3 min-w-[280px] h-60">
             <img src={villa.image} alt={villa.name} className="w-full h-full object-cover" />
             {villa.badge && (
@@ -64,7 +64,7 @@ export const VillaCard: React.FC<{ villa: VillaCardProps }> = ({ villa }) => (
                         {villa.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                     </div>
                     <div className="text-xs text-gray-400 mb-3">/ night / entire villa</div>
-                    <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale">
+                    <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale" onClick={onClick ? (e) => { e.stopPropagation(); onClick(); } : undefined}>
                         Book Villa
                     </button>
                 </div>

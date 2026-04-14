@@ -17,8 +17,8 @@ export interface FlightCardProps {
     baggage: string;
 }
 
-export const FlightCard: React.FC<{ flight: FlightCardProps }> = ({ flight }) => (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+export const FlightCard: React.FC<{ flight: FlightCardProps; onSelect?: () => void }> = ({ flight, onSelect }) => (
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden cursor-pointer" onClick={onSelect}>
         {/* Left Color Strip for Airline */}
         <div className={`absolute left-0 top-0 bottom-0 w-1 ${flight.airline === 'Vietnam Airlines' ? 'bg-[#005F6E]' : flight.airline === 'Bamboo Airways' ? 'bg-[#00A14B]' : 'bg-[#ED1B24]'}`}></div>
 
@@ -83,7 +83,7 @@ export const FlightCard: React.FC<{ flight: FlightCardProps }> = ({ flight }) =>
                     <span className="material-symbols-outlined text-[14px]">work</span>
                     {flight.baggage}
                 </div>
-                <button className="bg-[#FF5E1F] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#E64B0E] transition-colors hover-scale w-full shadow-sm">
+                <button className="bg-[#FF5E1F] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#E64B0E] transition-colors hover-scale w-full shadow-sm" onClick={onSelect ? (e) => { e.stopPropagation(); onSelect(); } : undefined}>
                     Select
                 </button>
             </div>
