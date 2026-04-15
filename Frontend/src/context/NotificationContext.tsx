@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 
@@ -28,6 +29,10 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
 
+    const removeNotification = useCallback((id: string) => {
+        setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+    }, []);
+
     const addNotification = useCallback(
         (type: NotificationType, message: string, duration: number = 5000) => {
             const id = `notification-${Date.now()}-${Math.random()}`;
@@ -41,7 +46,6 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
             setNotifications((prev) => [...prev, notification]);
 
-            // Auto remove after duration
             if (duration > 0) {
                 setTimeout(() => {
                     removeNotification(id);
@@ -50,12 +54,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
             return id;
         },
-        []
+        [removeNotification]
     );
-
-    const removeNotification = useCallback((id: string) => {
-        setNotifications((prev) => prev.filter((notif) => notif.id !== id));
-    }, []);
 
     const clearAll = useCallback(() => {
         setNotifications([]);
