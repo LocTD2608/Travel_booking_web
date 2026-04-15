@@ -7,6 +7,7 @@ const authRoutes = require("./routes/auth.routes");
 const errorHandler = require("./middlewares/errorHandler");
 const flightRoutes = require("./routes/flight.routes");
 const roomRoutes = require("./routes/room.routes");
+const bookingRoutes = require("./routes/bookingRoutes");
 
 const app = express();
 
@@ -54,3 +55,6 @@ sequelize.sync({ alter: true })
   .catch(err => console.error("Database sync error:", err));
 
 module.exports = app;
+
+// Booking
+app.use("/booking", bookingRoutes);
