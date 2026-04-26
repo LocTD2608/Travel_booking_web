@@ -29,6 +29,7 @@ apiRouter.use("/users", userRoutes);
 apiRouter.use("/flights", flightRoutes);
 apiRouter.use("/rooms", roomRoutes);
 apiRouter.use("/", testRoutes);
+apiRouter.use("/booking", bookingRoutes);
 
 app.use("/api", apiRouter);
 
@@ -48,13 +49,4 @@ app.use((req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
-// Database Sync
-const sequelize = require("./configs/database");
-sequelize.sync({ alter: true })
-  .then(() => console.log("Database synced successfully"))
-  .catch(err => console.error("Database sync error:", err));
-
 module.exports = app;
-
-// Booking
-app.use("/booking", bookingRoutes);

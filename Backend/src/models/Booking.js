@@ -11,8 +11,10 @@ const Booking = sequelize.define("BOOKING", {
     type: DataTypes.INTEGER,
   },
   ThoiDiemDat: {
-    type: DataTypes.DATE,
-  },
+  type: DataTypes.DATE,
+  allowNull: true,
+  defaultValue: DataTypes.NOW
+},
   ThoiDiemThanhToan: {
     type: DataTypes.DATE,
     allowNull: true,
