@@ -1,0 +1,156 @@
+.detailPage {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+}
+
+.breadcrumb {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 20px;
+}
+
+.breadcrumb a {
+    color: #1BA0E2;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* ─── Info Card ─── */
+.infoCard {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    margin-bottom: 28px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 12px;
+    color: #111827;
+}
+
+.meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.metaItem .icon {
+    font-size: 18px;
+    color: #1BA0E2;
+}
+
+.description {
+    margin-top: 16px;
+    font-size: 15px;
+    color: #374151;
+    line-height: 1.6;
+}
+
+/* ─── Booking Section ─── */
+.bookingSection {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.bookingSection h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 20px;
+}
+
+.bookingGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.fieldLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.priceSection {
+    border-top: 1px solid #f3f4f6;
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.totalPrice {
+    font-size: 28px;
+    font-weight: 900;
+    color: #dc2626;
+}
+
+.totalLabel {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.bookBtn {
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bookBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+}
+
+/* ─── States ─── */
+.loadingState,
+.errorState {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.spinner {
+    font-size: 48px;
+    animation: spin 1s linear infinite;
+    color: #7c3aed;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -176,6 +176,28 @@ const Profile: React.FC = () => {
                         </div>
                     </div>
                 )}
+
+                <div className="mt-8">
+                    <Link
+                        to="/profile/booking-history"
+                        className="flex items-center justify-between w-full rounded-3xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-blue-300 transition-all group"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-travel-blue group-hover:bg-blue-100 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p className="text-lg font-semibold text-gray-900">Lịch sử đặt vé</p>
+                                <p className="text-sm text-gray-500">Xem lại các chuyến đi và dịch vụ bạn đã đặt</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 group-hover:text-travel-blue transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </Link>
+                </div>
             </div>
         </div>
     );
