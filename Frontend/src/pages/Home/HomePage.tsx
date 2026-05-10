@@ -2,8 +2,8 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
+import { Recommended } from '../../components/ui/Recommended/Recommended';
 import styles from './HomePage.module.css';
-
 
 export const HomePage: React.FC = () => {
     const { isAuthenticated } = useAuth();
@@ -247,6 +247,9 @@ export const HomePage: React.FC = () => {
                         ))}
                     </div>
                 </section>
+
+                {/* Gợi ý cho bạn */}
+                <Recommended />
 
                 {/* Why Book With Traveloka */}
                 <section className={styles.featuresSection}>

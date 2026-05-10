@@ -9,7 +9,7 @@
     height: 560px;
     width: 100%;
     background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)),
-        url('https://lh3.googleusercontent.com/aida-public/AB6AXuD3eDFSd54niXoHOZ6IJRQYyWr0baIEhyfWLVXwL6-cY_ubBethJ29dvZyLP3uTDMc-ePXds-7sxeHBjotSwoSYmeXbIgc4AlD8bbF0IyfWueEVFB25nPtztWCNQY_CNqNHHI44v5oP4skY4oGd-yvtXyHzNgRUT6829-qBc-FV1Hrhm5kQa3bdvRzzwVKtdpW574XZif9XqID28IXdUSsGq4xI0fVllJJWBZC2Yuq_fCYUxc4TCqq2Ufj5gP68ipPsunz-pGtTZHQ');
+        url('/images/hero-bg.jpg');
     background-size: cover;
     background-position: center;
     z-index: 0;

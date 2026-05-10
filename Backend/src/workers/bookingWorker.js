@@ -1,6 +1,6 @@
 const { Worker } = require("bullmq");
 const connection = require("../configs/redis");
-const Booking = require("../models/Booking");
+const { Booking } = require("../models");
 
 const worker = new Worker(
   "bookingQueue",
