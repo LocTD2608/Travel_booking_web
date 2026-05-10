@@ -20,6 +20,15 @@ module.exports = (sequelize, DataTypes) => {
         },
         MaKM: {
             type: DataTypes.INTEGER
+        },
+        TenDichVu: {
+            type: DataTypes.STRING(255)
+        },
+        HinhAnh: {
+            type: DataTypes.STRING(255)
+        },
+        ThongTinThem: {
+            type: DataTypes.TEXT
         }
     }, {
         tableName: 'chi_tiet_booking',
