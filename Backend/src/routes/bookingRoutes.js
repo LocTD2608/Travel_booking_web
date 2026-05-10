@@ -4,5 +4,6 @@ const bookingController = require("../controllers/bookingController");
 
 router.post("/create", bookingController.createBooking);
 router.post("/pay/:id", bookingController.payBooking);
+router.post("/cancel/:id", bookingController.cancelBooking);
 
 module.exports = router;

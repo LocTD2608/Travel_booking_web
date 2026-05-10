@@ -49,4 +49,6 @@ app.use((req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
+require("./workers/bookingWorker");
+
 module.exports = app;
