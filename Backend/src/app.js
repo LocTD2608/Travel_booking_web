@@ -30,12 +30,12 @@ apiRouter.use("/users", userRoutes);
 apiRouter.use("/flights", flightRoutes);
 apiRouter.use("/rooms", roomRoutes);
 apiRouter.use("/payment", paymentRoutes);
+apiRouter.use("/booking", bookingRoutes);
 apiRouter.use("/", testRoutes);
 
 app.use("/api", apiRouter);
 
-// Booking
-app.use("/booking", bookingRoutes);
+
 
 // Test API
 app.get('/', (req, res) => {

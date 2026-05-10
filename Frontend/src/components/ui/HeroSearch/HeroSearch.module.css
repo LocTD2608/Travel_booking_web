@@ -135,8 +135,14 @@
 }
 
 @media (min-width: 768px) {
-    .searchForm {
-        grid-template-columns: 2fr 1.5fr 1fr 1.5fr;
+    .searchForm.hotels {
+        grid-template-columns: 2fr 2.5fr 1.5fr;
+    }
+    .searchForm.flights, .searchForm.package {
+        grid-template-columns: 1.5fr 1.5fr 2.5fr 1.5fr;
+    }
+    .searchForm.experience {
+        grid-template-columns: 2fr 1.5fr;
     }
 }
 
@@ -190,6 +196,52 @@
 
 .inputWithIcon input::placeholder {
     color: #9ca3af;
+}
+
+.datePickerWrapper {
+    position: relative;
+    width: 100%;
+}
+
+.datePickerWrapper span.material-symbols-outlined {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #1BA0E2;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.rangePicker,
+.singleDatePicker {
+    width: 100%;
+    height: 48px;
+    padding-left: 48px !important;
+    padding-right: 16px !important;
+    background-color: #f9fafb !important;
+    border: 2px solid transparent !important;
+    border-radius: 8px !important;
+    transition: all 0.2s !important;
+}
+
+.rangePicker:hover, .singleDatePicker:hover,
+.rangePicker:focus, .singleDatePicker:focus,
+.rangePicker-focused, .singleDatePicker-focused {
+    border-color: #1BA0E2 !important;
+    background-color: white !important;
+}
+
+.rangePicker input,
+.singleDatePicker input {
+    font-weight: 500 !important;
+    font-size: 16px !important;
+    color: #141414 !important;
+}
+
+.rangePicker input::placeholder,
+.singleDatePicker input::placeholder {
+    color: #9ca3af !important;
 }
 
 .inputGroupWithButton {

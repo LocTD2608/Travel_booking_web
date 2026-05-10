@@ -5,7 +5,10 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        HoVaTen: DataTypes.STRING(100),
+        Ho: DataTypes.STRING(50),
+        Ten: DataTypes.STRING(50),
+        SDT: DataTypes.STRING(20),
+        CCCD: DataTypes.STRING(20),
         Email: DataTypes.STRING(100),
         Password: {
             type: DataTypes.STRING(255),

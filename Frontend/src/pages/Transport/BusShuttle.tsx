@@ -62,7 +62,10 @@ const BusShuttle: React.FC = () => {
                                 <div className="text-[15px] font-bold text-gray-900">Ho Chi Minh ➔ Da Lat</div>
                             </div>
                         </div>
-                        <button className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                        <button 
+                            className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                            onClick={() => navigate('/')}
+                        >
                             <span className="material-symbols-outlined text-[18px]">edit</span> Change Search
                         </button>
                     </div>
