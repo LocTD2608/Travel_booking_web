@@ -175,6 +175,143 @@ const searchHotels = async (params) => {
   };
 };
 
+const recommendHotels = async (params) => {
+  const {
+    city,
+    rating,
+    minPrice,
+    maxPrice,
+    keyword,
+    limit = 5
+  } = params;
+
+  let query = `
+    SELECT
+      ks.MaKS,
+      ks.TenKS AS name,
+      ks.DiaChi AS address,
+      ks.HangSao AS stars,
+      AVG(lp.GiaPhong) AS min_price,
+      COUNT(DISTINCT lp.MaLoaiPhong) AS room_count
+    FROM KHACH_SAN ks
+    LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
+    WHERE 1=1
+  `;
+
+  const replacements = {};
+
+  if (city) {
+    query += ` AND ks.DiaChi LIKE :city`;
+    replacements.city = `%${city}%`;
+  }
+
+  if (rating) {
+    query += ` AND ks.HangSao >= :rating`;
+    replacements.rating = rating;
+  }
+
+  if (minPrice) {
+    query += ` AND lp.GiaPhong >= :minPrice`;
+    replacements.minPrice = minPrice;
+  }
+
+  if (maxPrice) {
+    query += ` AND lp.GiaPhong <= :maxPrice`;
+    replacements.maxPrice = maxPrice;
+  }
+
+  if (keyword) {
+    query += ` AND (ks.TenKS LIKE :keyword OR ks.DiaChi LIKE :keyword)`;
+    replacements.keyword = `%${keyword}%`;
+  }
+
+  query += ` GROUP BY ks.MaKS, ks.TenKS, ks.DiaChi, ks.HangSao`;
+
+  const [hotels] = await db.query(query, { replacements });
+
+  const parsedMinPrice = minPrice ? Number(minPrice) : null;
+  const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
+  const avgPrice = parsedMinPrice !== null && parsedMaxPrice !== null
+    ? (parsedMinPrice + parsedMaxPrice) / 2
+    : null;
+
+  const recommended = hotels
+    .map((hotel) => {
+      let score = 0;
+      if (city && hotel.address.toLowerCase().includes(city.toLowerCase())) score += 30;
+      if (keyword) {
+        const keywordLower = keyword.toLowerCase();
+        if (hotel.name.toLowerCase().includes(keywordLower)) score += 20;
+        if (hotel.address.toLowerCase().includes(keywordLower)) score += 10;
+      }
+      score += hotel.stars * 12;
+      if (hotel.min_price && parsedMaxPrice !== null && hotel.min_price <= parsedMaxPrice) score += 15;
+      if (avgPrice !== null && hotel.min_price && hotel.min_price <= avgPrice) score += 10;
+      if (hotel.room_count >= 5) score += 8;
+      return { ...hotel, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, Number(limit));
+
+  return recommended;
+};
+
+const recommendFlights = async (params) => {
+  const {
+    from,
+    to,
+    date,
+    passengers,
+    airline,
+    seatClass,
+    minPrice,
+    maxPrice,
+    keyword,
+    limit = 5
+  } = params;
+
+  const searchResult = await searchFlights({
+    from,
+    to,
+    date,
+    passengers,
+    airline,
+    seatClass,
+    minPrice,
+    maxPrice,
+    keyword,
+    sortBy: 'price',
+    limit: 100,
+    offset: 0
+  });
+
+  const parsedMinPrice = minPrice ? Number(minPrice) : null;
+  const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
+
+  const recommended = searchResult.data
+    .map((flight) => {
+      let score = 0;
+      if (from && flight.from_code === from) score += 25;
+      if (to && flight.to_code === to) score += 25;
+      if (airline && flight.HangBay && flight.HangBay.toLowerCase().includes(airline.toLowerCase())) score += 20;
+      if (seatClass && flight.HangGhe === seatClass) score += 15;
+      if (keyword) {
+        const keywordLower = keyword.toLowerCase();
+        if (flight.from_name && flight.from_name.toLowerCase().includes(keywordLower)) score += 10;
+        if (flight.to_name && flight.to_name.toLowerCase().includes(keywordLower)) score += 10;
+        if (flight.HangBay && flight.HangBay.toLowerCase().includes(keywordLower)) score += 10;
+      }
+      if (parsedMaxPrice !== null && flight.price <= parsedMaxPrice) score += 10;
+      if (parsedMinPrice !== null && flight.price >= parsedMinPrice) score += 5;
+      score += Math.max(0, 10 - Math.floor(flight.price / 1000000));
+      return { ...flight, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, Number(limit));
+
+  return recommended;
+};
+
 // ─── TRAINS (dùng bảng DICH_VU + DV_TRUNG_CHUYEN) ───────────────────────────
 const searchTrains = async ({ from, to, date, priceMax, sortBy }) => {
   let query = `
@@ -276,4 +413,4 @@ const checkHotelAvailability = async ({ hotelId, roomId, checkIn, checkOut, gues
   };
 };
 
-module.exports = { searchFlights, searchHotels, searchTrains, searchExperiences, checkHotelAvailability };
+module.exports = { searchFlights, searchHotels, recommendHotels, recommendFlights, searchTrains, searchExperiences, checkHotelAvailability };

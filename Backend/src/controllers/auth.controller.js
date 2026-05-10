@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const { User } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const emailService = require("../services/emailService");
@@ -15,8 +15,8 @@ exports.register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(Password, 10);
         const newUser = await User.create({ Ho, Ten, Email, SDT, Password: hashedPassword });
 
-        const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-        res.status(201).json({ message: "Đăng ký thành công", token, user: { id: newUser.id, Ho, Ten, Email } });
+        const token = jwt.sign({ id: newUser.UserID }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        res.status(201).json({ message: "Đăng ký thành công", token, user: { id: newUser.UserID, Ho, Ten, Email } });
     } catch (error) {
         res.status(500).json({ message: "Lỗi Server", error: error.message });
     }
@@ -31,8 +31,8 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.Password);
         if (!isMatch) return res.status(400).json({ message: "Mật khẩu không chính xác" });
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-        res.json({ message: "Đăng nhập thành công", token, user: { id: user.id, Ho: user.Ho, Ten: user.Ten, Email: user.Email } });
+        const token = jwt.sign({ id: user.UserID }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        res.json({ message: "Đăng nhập thành công", token, user: { id: user.UserID, Ho: user.Ho, Ten: user.Ten, Email: user.Email } });
     } catch (error) {
         res.status(500).json({ message: "Lỗi Server", error: error.message });
     }

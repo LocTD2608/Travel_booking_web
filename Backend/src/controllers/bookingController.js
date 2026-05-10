@@ -5,7 +5,7 @@ const sequelize = require("../configs/database");
 // Đặt vé
 exports.createBooking = async (req, res) => {
   try {
-    const { UserID, TongTien } = req.body;
+    const { UserID, TongTien, details } = req.body;
 
     const booking = await db.Booking.create({
       UserID: UserID || 1,
@@ -13,6 +13,34 @@ exports.createBooking = async (req, res) => {
       TongTien: parseFloat(TongTien) || 100000,
       TrangThaiBooking: "Chưa thanh toán",
     });
+
+    if (details && Array.isArray(details) && details.length > 0) {
+      const lastCT = await db.ChiTietBooking.findOne({
+        order: [['MaCTBooking', 'DESC']]
+      });
+      let nextId = lastCT ? lastCT.MaCTBooking + 1 : 1;
+
+      const chiTietPromises = details.map(d => {
+        const ctBooking = db.ChiTietBooking.create({
+          MaCTBooking: nextId,
+          MaBooking: booking.MaBooking,
+          SoLuongNguoi: d.nights || 1, // Using SoLuongNguoi for nights/quantity
+          DonGia: d.price || 0,
+          LoaiDoiTuong: d.type || 'unknown',
+          TenDichVu: d.name || '',
+          HinhAnh: d.image || '',
+          ThongTinThem: JSON.stringify({
+            detail1: d.detail1,
+            detail2: d.detail2,
+            detail3: d.detail3,
+            detail4: d.detail4
+          })
+        });
+        nextId++;
+        return ctBooking;
+      });
+      await Promise.all(chiTietPromises);
+    }
 
     console.log("Created booking:", booking.MaBooking);
 

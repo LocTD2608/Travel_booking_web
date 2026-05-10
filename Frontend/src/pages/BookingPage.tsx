@@ -77,11 +77,43 @@ const BookingPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!form.fullName || !form.email) { alert('Please fill in all required fields.'); return; }
+        if (!form.fullName || !form.email) { alert('Vui lòng điền đầy đủ thông tin bắt buộc.'); return; }
+        if (!user) { alert('Bạn cần đăng nhập để đặt vé.'); return; }
         setIsSubmitting(true);
-        await new Promise(r => setTimeout(r, 1800));
-        setIsSubmitting(false);
-        setBookingSuccess(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://127.0.0.1:3000/api/booking/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: token ? `Bearer ${token}` : '',
+                },
+                body: JSON.stringify({
+                    UserID: user.id,
+                    TongTien: total,
+                    details: [{
+                        type,
+                        name,
+                        price,
+                        nights,
+                        image,
+                        detail1,
+                        detail2,
+                        detail3,
+                        detail4
+                    }]
+                }),
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || err.message || 'Không thể tạo đơn đặt vé');
+            }
+            setBookingSuccess(true);
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Đặt vé thất bại. Vui lòng thử lại.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // ── Success Screen ────────────────────────────────────────────────────────

@@ -1,28 +1,41 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 import styles from './HomePage.module.css';
 
 
 export const HomePage: React.FC = () => {
+    const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
     const handleSearchClick = (searchData: Record<string, string>) => {
         const params = new URLSearchParams();
-        if (searchData.destination) params.append('destination', searchData.destination);
-        if (searchData.checkIn) params.append('checkIn', searchData.checkIn);
-        if (searchData.guests) params.append('guests', searchData.guests);
+        Object.entries(searchData).forEach(([key, value]) => {
+            if (value && key !== 'type') {
+                params.append(key, value);
+            }
+        });
 
-        navigate(`/search?${params.toString()}`);
+        const typeToPath: Record<string, string> = {
+            hotels: '/hotels',
+            flights: '/flights',
+            package: '/search', // Use /search since /flight-hotel is not yet implemented
+            experience: '/experience',
+        };
+
+        const path = typeToPath[searchData.type] || '/search';
+        navigate(`${path}?${params.toString()}`);
     };
 
     const quickLinks = [
-        { icon: 'airplane_ticket', title: 'Best Price', subtitle: 'Flights', color: 'blue' },
-        { icon: 'hotel_class', title: 'Luxury', subtitle: 'Hotels', color: 'orange' },
-        { icon: 'train', title: 'JR Pass', subtitle: '& Trains', color: 'green' },
-        { icon: 'local_activity', title: 'Xperience', subtitle: 'Activities', color: 'purple' },
-        { icon: 'directions_bus', title: 'Bus &', subtitle: 'Shuttle', color: 'pink' },
-        { icon: 'airport_shuttle', title: 'Airport', subtitle: 'Transfer', color: 'teal' },
+        { icon: 'airplane_ticket', title: 'Best Price', subtitle: 'Flights', color: 'blue', to: '/flights' },
+        { icon: 'hotel_class', title: 'Luxury', subtitle: 'Hotels', color: 'orange', to: '/hotels' },
+        { icon: 'train', title: 'JR Pass', subtitle: '& Trains', color: 'green', to: '/trains' },
+        { icon: 'local_activity', title: 'Xperience', subtitle: 'Activities', color: 'purple', to: '/experience' },
+        { icon: 'directions_bus', title: 'Bus &', subtitle: 'Shuttle', color: 'pink', to: '/bus' },
+        { icon: 'airport_shuttle', title: 'Airport', subtitle: 'Transfer', color: 'teal', to: '/airport-transfer' },
+        ...(isAuthenticated ? [{ icon: 'person', title: 'My', subtitle: 'Profile', color: 'cyan', to: '/profile' }] : []),
     ];
 
     const promos = [
@@ -128,14 +141,14 @@ export const HomePage: React.FC = () => {
                 {/* Quick Links */}
                 <div className={styles.quickLinks}>
                     {quickLinks.map((link, index) => (
-                        <a key={index} href="#" className={styles.quickLink}>
+                        <Link key={index} to={link.to ?? '/'} className={styles.quickLink}>
                             <div className={`${styles.iconCircle} ${styles[link.color]}`}>
                                 <span className="material-symbols-outlined">{link.icon}</span>
                             </div>
                             <span className={styles.linkText}>
                                 {link.title}<br />{link.subtitle}
                             </span>
-                        </a>
+                        </Link>
                     ))}
                 </div>
 

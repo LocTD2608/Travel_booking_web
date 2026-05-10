@@ -168,6 +168,32 @@ const searchExperiences = async (req, res) => {
   }
 };
 
+const getRecommendations = async (req, res) => {
+  try {
+    const { type = 'hotels', limit = 5, ...filters } = req.query;
+    let data = [];
+
+    if (type === 'hotels') {
+      data = await searchService.recommendHotels({ ...filters, limit });
+    } else if (type === 'flights') {
+      data = await searchService.recommendFlights({ ...filters, limit });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Chỉ hỗ trợ recommendation cho type=hotels hoặc type=flights ở phiên bản này'
+      });
+    }
+
+    res.json({
+      success: true,
+      data,
+      total: data.length
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // Check phòng trống
 const checkAvailability = async (req, res) => {
   try {
@@ -199,4 +225,4 @@ const checkAvailability = async (req, res) => {
   }
 };
 
-module.exports = { searchFlights, searchHotels, searchTrains, searchExperiences, checkAvailability };
+module.exports = { searchFlights, searchHotels, getRecommendations, searchTrains, searchExperiences, checkAvailability };

@@ -1,6 +1,6 @@
 const cron = require("node-cron");
 const { Op } = require("sequelize");
-const Booking = require("../models/Booking");
+const { Booking } = require("../models");
 
 cron.schedule("*/2 * * * *", async () => {
   console.log("Running cron...");

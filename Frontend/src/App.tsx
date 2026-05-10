@@ -27,6 +27,9 @@ import CarRental from './pages/Transport/CarRental'
 import MobileCredit from './pages/Bills/MobileCredit'
 import DataPlans from './pages/Bills/DataPlans'
 import Electricity from './pages/Bills/Electricity'
+import Profile from './pages/Profile/Profile'
+import BookingHistory from './pages/Profile/BookingHistory'
+
 function App() {
   return (
     <>
@@ -57,6 +60,8 @@ function App() {
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/search" element={<SearchResults />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/booking-history" element={<BookingHistory />} />
 
           <Route path="/bus" element={<BusShuttle />} />
           <Route path="/airport-transfer" element={<AirportTransfer />} />

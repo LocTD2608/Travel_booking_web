@@ -1,0 +1,114 @@
+
+> my-react-app@0.0.0 lint
+> eslint .
+
+
+C:\Booking Travel Web\Frontend\src\components\common\CountdownHold\index.tsx
+  20:17  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking Travel Web\Frontend\src\components\common\CountdownHold\index.tsx:20:17
+  18 |         if (timeLeft <= 0) {
+  19 |             if (!expired) {
+> 20 |                 setExpired(true);
+     |                 ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |                 if (onExpire) onExpire();
+  22 |                 Modal.warning({
+  23 |                     title: 'Quá thời gian giữ chỗ',  react-hooks/set-state-in-effect
+
+C:\Booking Travel Web\Frontend\src\components\ui\HeroSearch\HeroSearch.tsx
+  5:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Booking Travel Web\Frontend\src\components\ui\SidebarFilter.tsx
+  24:33  error  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  24:44  error  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  24:60  error  The `Function` type accepts any function-like value.
+Prefer explicitly defining any function parameters and return type  @typescript-eslint/no-unsafe-function-type
+
+C:\Booking Travel Web\Frontend\src\context\AuthContext.tsx
+  155:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Booking Travel Web\Frontend\src\context\BookingContext.tsx
+  176:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Booking Travel Web\Frontend\src\context\NotificationContext.tsx
+   47:21  error    Error: Cannot access variable before it is declared
+
+`removeNotification` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Booking Travel Web\Frontend\src\context\NotificationContext.tsx:47:21
+  45 |             if (duration > 0) {
+  46 |                 setTimeout(() => {
+> 47 |                     removeNotification(id);
+     |                     ^^^^^^^^^^^^^^^^^^ `removeNotification` accessed before it is declared
+  48 |                 }, duration);
+  49 |             }
+  50 |
+
+C:\Booking Travel Web\Frontend\src\context\NotificationContext.tsx:56:5
+  54 |     );
+  55 |
+> 56 |     const removeNotification = useCallback((id: string) => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 57 |         setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 58 |     }, []);
+     | ^^^^^^^^^^^^ `removeNotification` is declared here
+  59 |
+  60 |     const clearAll = useCallback(() => {
+  61 |         setNotifications([]);  react-hooks/immutability
+   53:9   warning  React Hook useCallback has a missing dependency: 'removeNotification'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+  106:14  error    Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-refresh/only-export-components
+
+C:\Booking Travel Web\Frontend\src\context\SearchContext.tsx
+  91:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Booking Travel Web\Frontend\src\hooks\useUrlFilters.ts
+  1:10  error  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Booking Travel Web\Frontend\src\pages\FlightDetail\FlightDetail.tsx
+  29:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking Travel Web\Frontend\src\pages\FlightDetail\FlightDetail.tsx:29:9
+  27 |     useEffect(() => {
+  28 |         if (!id) return;
+> 29 |         setLoading(true);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  30 |         fetchFlightDetail(id)
+  31 |             .then((data) => {
+  32 |                 setFlight(data);  react-hooks/set-state-in-effect
+
+C:\Booking Travel Web\Frontend\src\pages\Home\HomePage.tsx
+  10:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Booking Travel Web\Frontend\src\pages\HotelDetail\HotelDetail.tsx
+  31:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Booking Travel Web\Frontend\src\pages\HotelDetail\HotelDetail.tsx:31:9
+  29 |     useEffect(() => {
+  30 |         if (!id) return;
+> 31 |         setLoading(true);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  32 |         fetchHotelDetail(id)
+  33 |             .then((res) => {
+  34 |                 setDetail(res.data);  react-hooks/set-state-in-effect
+
+✖ 15 problems (14 errors, 1 warning)
+

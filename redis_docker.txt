@@ -1,0 +1,5 @@
+
+cff9b1486e7d   redis:7                                  "docker-entrypoint.sΓÇª"   13 days ago    Exited (255) 10 days ago    0.0.0.0:6379->6379/tcp                           booking-redis
+cc159be8b02b   redis                                    "docker-entrypoint.sΓÇª"   2 weeks ago    Exited (255) 13 days ago    0.0.0.0:6379->6379/tcp                           happy_elbakyan
+3d9799e52aeb   redis:latest                             "docker-entrypoint.sΓÇª"   7 months ago   Exited (0) 5 months ago                                                      mixpost-redis-1
+
