@@ -10,7 +10,7 @@ const worker = new Worker(
     const booking = await Booking.findByPk(bookingId);
 
     if (booking && booking.TrangThaiBooking === "Chưa thanh toán") {
-      booking.TrangThaiBooking = "DA_HUY";
+      booking.TrangThaiBooking = "Đã hủy";
       await booking.save();
 
       console.log("Auto cancelled:", bookingId);

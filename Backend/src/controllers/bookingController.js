@@ -1,5 +1,6 @@
-const db = require("../models");
+const Booking = require("../models/Booking");
 const bookingQueue = require("../queues/bookingQueue");
+const sequelize = require("../configs/database");
 
 // Đặt vé
 exports.createBooking = async (req, res) => {
@@ -43,15 +44,19 @@ exports.createBooking = async (req, res) => {
 
     console.log("Created booking:", booking.MaBooking);
 
-    try {
-      await bookingQueue.add(
-        "autoCancel",
-        { bookingId: booking.MaBooking },
-        { delay: 10 * 60 * 1000 } // 10 phút
-      );
-    } catch (queueErr) {
-      console.warn("[Queue] Redis không khả dụng, bỏ qua autoCancel:", queueErr.message);
-    }
+    await t.commit();
+
+    // auto cancel
+    await bookingQueue.add(
+      "autoCancel",
+      { bookingId: booking.MaBooking },
+      { delay: 10000 }
+    );
+
+    res.json({
+      success: true,
+      data: booking,
+    });
 
     res.json(booking);
   } catch (err) {
@@ -70,92 +75,117 @@ exports.payBooking = async (req, res) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    booking.TrangThaiBooking = "DA_THANH_TOAN";
-    booking.ThoiDiemThanhToan = new Date();
+    if (booking.TrangThaiBooking === "Đã thanh toán") {
+      await t.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "Booking này đã được thanh toán trước đó"
+      });
+    }
 
-    await booking.save();
+    if (booking.TrangThaiBooking === "Đã hủy") {
+      await t.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "Booking đã bị hủy, không thể thanh toán"
+      });
+    }
 
-    await db.ThanhToan.create({
-      MaBooking: booking.MaBooking,
-      PhuongThucThanhToan: method || "manual",
-      SoTien: parseFloat(amount) || booking.TongTien,
-      TrangThaiTT: "success",
-      ThoiDiemThanhToan: new Date(),
+    await booking.update(
+      {
+        TrangThaiBooking: "Đã thanh toán",
+        ThoiDiemThanhToan: new Date(),
+      },
+      { transaction: t }
+    );
+
+    console.log("Paid booking:", booking.MaBooking);
+
+    await t.commit();
+
+    res.json({
+      success: true,
+      message: "Đã thanh toán",
+      data: booking
     });
 
     res.json({ message: "Đã thanh toán", booking });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    if (t) await t.rollback();
+
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 };
 
-exports.getBooking = async (req, res) => {
+// Hủy booking hoàn tiền
+exports.cancelBooking = async (req, res) => {
+  let t;
   try {
-    const booking = await db.Booking.findByPk(req.params.id);
+    t = await sequelize.transaction();
+
+    const booking = await Booking.findByPk(req.params.id, {
+      transaction: t,
+      lock: true
+    });
 
     if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+      await t.rollback();
+      return res.status(404).json({
+        success: false,
+        message: "Booking không tồn tại"
+      });
     }
 
-    const details = await db.ChiTietBooking.findAll({ where: { MaBooking: booking.MaBooking } });
-    const payments = await db.ThanhToan.findAll({ where: { MaBooking: booking.MaBooking } });
-
-    res.json({ booking, details, payments });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.getUserBookings = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
-    const offset = (page - 1) * limit;
-
-    if (!userId) {
-      return res.status(400).json({ message: "Missing userId" });
+    if (booking.TrangThaiBooking === "Đã hủy") {
+      await t.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "Booking đã bị hủy trước đó"
+      });
     }
 
-    const { count, rows: bookings } = await db.Booking.findAndCountAll({
-      where: { UserID: userId },
-      order: [['ThoiDiemDat', 'DESC']],
-      limit: limit,
-      offset: offset
-    });
+    let hoanTien = 0;
 
-    if (bookings.length === 0) {
-      return res.json({ message: "No bookings found", data: [], totalItems: count, totalPages: 0, currentPage: page });
+    // Hoàn tiền nếu đã thanh toán
+    if (booking.TrangThaiBooking === "Đã thanh toán") {
+      console.log("Hoàn tiền booking:", booking.MaBooking);
+
+      hoanTien = booking.TongTien;
+
+      // test rollback
+      // throw new Error("Lỗi khi hoàn tiền");
     }
 
-    const bookingsWithDetails = await Promise.all(
-      bookings.map(async (booking) => {
-        const details = await db.ChiTietBooking.findAll({
-          where: { MaBooking: booking.MaBooking }
-        });
-        const payments = await db.ThanhToan.findAll({
-          where: { MaBooking: booking.MaBooking }
-        });
-
-        return {
-          booking,
-          details,
-          payments
-        };
-      })
+    await booking.update(
+      {
+        TrangThaiBooking: "Đã hủy"
+      },
+      { transaction: t }
     );
 
+    console.log("Cancelled booking:", booking.MaBooking);
+
+    await t.commit();
+
     res.json({
-      message: `Found ${bookings.length} booking(s)`,
-      data: bookingsWithDetails,
-      totalItems: count,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page
+      success: true,
+      message: "Đã hủy booking",
+      data: {
+        MaBooking: booking.MaBooking,
+        TrangThaiBooking: "Đã hủy",
+        HoanTien: hoanTien
+      }
     });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    if (t) await t.rollback();
+
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 };
