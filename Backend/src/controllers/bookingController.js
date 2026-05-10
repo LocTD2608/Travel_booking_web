@@ -4,18 +4,15 @@ const sequelize = require("../configs/database");
 
 // Đặt vé
 exports.createBooking = async (req, res) => {
-  const t = await sequelize.transaction();
-
   try {
-    const booking = await Booking.create(
-      {
-        UserID: 1,
-        ThoiDiemDat: new Date(),
-        TongTien: 100000,
-        TrangThaiBooking: "Chưa thanh toán",
-      },
-      { transaction: t }
-    );
+    const { UserID, TongTien } = req.body;
+
+    const booking = await db.Booking.create({
+      UserID: UserID || 1,
+      ThoiDiemDat: new Date(),
+      TongTien: parseFloat(TongTien) || 100000,
+      TrangThaiBooking: "Chưa thanh toán",
+    });
 
     console.log("Created booking:", booking.MaBooking);
 
@@ -33,30 +30,21 @@ exports.createBooking = async (req, res) => {
       data: booking,
     });
 
+    res.json(booking);
   } catch (err) {
-    await t.rollback();
-
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
 
 // Thanh toán
 exports.payBooking = async (req, res) => {
-  let t;
   try {
-    t = await sequelize.transaction();
-
-    const booking = await Booking.findByPk(req.params.id, {
-      transaction: t,
-      lock: true
-    });
+    const { amount, method } = req.body;
+    const booking = await db.Booking.findByPk(req.params.id);
 
     if (!booking) {
-      await t.rollback();
-      return res.status(404).json({ success: false, message: "Not found" });
+      return res.status(404).json({ message: "Booking not found" });
     }
 
     if (booking.TrangThaiBooking === "Đã thanh toán") {
@@ -93,6 +81,7 @@ exports.payBooking = async (req, res) => {
       data: booking
     });
 
+    res.json({ message: "Đã thanh toán", booking });
   } catch (err) {
     if (t) await t.rollback();
 

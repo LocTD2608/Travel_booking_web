@@ -8,6 +8,7 @@ const errorHandler = require("./middlewares/errorHandler");
 const flightRoutes = require("./routes/flight.routes");
 const roomRoutes = require("./routes/room.routes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
@@ -28,10 +29,12 @@ apiRouter.use("/search", searchRoutes);
 apiRouter.use("/users", userRoutes);
 apiRouter.use("/flights", flightRoutes);
 apiRouter.use("/rooms", roomRoutes);
+apiRouter.use("/payment", paymentRoutes);
 apiRouter.use("/", testRoutes);
 apiRouter.use("/booking", bookingRoutes);
 
 app.use("/api", apiRouter);
+
 
 // Test API
 app.get('/', (req, res) => {
@@ -49,6 +52,17 @@ app.use((req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
+<<<<<<< HEAD
 require("./workers/bookingWorker");
 
 module.exports = app;
+=======
+// Database Sync
+const sequelize = require("./configs/database");
+sequelize.authenticate()
+  .then(() => console.log("Database synced successfully"))
+  .catch(err => console.error("Database sync error:", err));
+module.exports = app;
+
+
+>>>>>>> b2c5f3b3aa8c93823bcf2690f5b24302728edd84

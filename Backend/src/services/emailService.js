@@ -31,3 +31,32 @@ exports.sendOtpEmail = async (email, otp) => {
 
     return transporter.sendMail(mailOptions);
 };
+
+exports.sendBookingSuccess = async (booking) => {
+    const mailOptions = {
+        from: process.env.SMTP_USER,
+        to: booking.Email || "user@example.com", // ⚠️ nhớ lấy email thật từ user
+        subject: "Xác nhận đặt phòng thành công",
+        html: `
+        <div style="font-family: Arial; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee;">
+            <h2 style="color: #0194f3; text-align: center;">Đặt phòng thành công 🎉</h2>
+            
+            <p>Chào bạn,</p>
+            <p>Bạn đã đặt phòng thành công với mã booking:</p>
+
+            <div style="background: #f0f9ff; padding: 15px; text-align: center; font-size: 20px; font-weight: bold;">
+                ${booking.MaBooking}
+            </div>
+
+            <p>Thời gian đặt: ${new Date().toLocaleString()}</p>
+
+            <hr/>
+            <p style="font-size: 12px; color: #888;">
+                Đây là email tự động, vui lòng không trả lời.
+            </p>
+        </div>
+        `
+    };
+
+    return transporter.sendMail(mailOptions);
+};
