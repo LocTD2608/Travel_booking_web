@@ -43,7 +43,18 @@ exports.login = async (req, res) => {
         const user = await User.findOne({ where: { Email: email } });
         if (!user) return res.status(400).json({ message: "Tài khoản không tồn tại" });
 
-        const isMatch = await bcrypt.compare(password, user.Password);
+        let isMatch = false;
+        try {
+            isMatch = await bcrypt.compare(password, user.Password);
+        } catch (err) {
+            isMatch = false;
+        }
+        
+        // Hỗ trợ đăng nhập cho các tài khoản dùng mật khẩu chưa mã hóa (mock data)
+        if (!isMatch && password === user.Password) {
+            isMatch = true;
+        }
+
         if (!isMatch) return res.status(400).json({ message: "Mật khẩu không chính xác" });
 
         const token = jwt.sign({ id: user.UserID }, process.env.JWT_SECRET, { expiresIn: "7d" });

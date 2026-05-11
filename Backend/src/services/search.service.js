@@ -1,6 +1,24 @@
 const { Sequelize } = require("sequelize");
 const db = require("../configs/database");
 
+const getAirportCode = (term) => {
+  if (!term) return null;
+  const codeMatch = term.match(/\(([A-Z]{3})\)/);
+  if (codeMatch) return codeMatch[1];
+  const normalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (normalized.includes('ha noi') || normalized.includes('hanoi') || normalized.includes('han')) return 'HAN';
+  if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('sgn')) return 'SGN';
+  if (normalized.includes('da nang') || normalized.includes('danang') || normalized.includes('dad')) return 'DAD';
+  if (normalized.includes('nha trang') || normalized.includes('cam ranh') || normalized.includes('cxr')) return 'CXR';
+  if (normalized.includes('phu quoc') || normalized.includes('pqc')) return 'PQC';
+  if (normalized.includes('hue') || normalized.includes('phu bai') || normalized.includes('hui')) return 'HUI';
+  if (normalized.includes('can tho') || normalized.includes('vca')) return 'VCA';
+  if (normalized.includes('dong hoi') || normalized.includes('vdh')) return 'VDH';
+  if (normalized.includes('chu lai') || normalized.includes('quang nam') || normalized.includes('vcl')) return 'VCL';
+  if (normalized.includes('quy nhon') || normalized.includes('phu cat') || normalized.includes('binh dinh') || normalized.includes('uih')) return 'UIH';
+  return null;
+};
+
 // ─── FLIGHTS ─────────────────────────────────────────────────────────────────
 const searchFlights = async (params) => {
   const {
@@ -28,8 +46,26 @@ const searchFlights = async (params) => {
 
   const replacements = {};
 
-  if (from) { baseQuery += ` AND sb1.Code = :from`; replacements.from = from; }
-  if (to) { baseQuery += ` AND sb2.Code = :to`; replacements.to = to; }
+  if (from) { 
+    const fromCode = getAirportCode(from);
+    if (fromCode) {
+      baseQuery += ` AND (sb1.Code = :fromCode OR sb1.Ten LIKE :from)`; 
+      replacements.fromCode = fromCode;
+    } else {
+      baseQuery += ` AND (sb1.Code LIKE :from OR sb1.Ten LIKE :from)`; 
+    }
+    replacements.from = `%${from}%`; 
+  }
+  if (to) { 
+    const toCode = getAirportCode(to);
+    if (toCode) {
+      baseQuery += ` AND (sb2.Code = :toCode OR sb2.Ten LIKE :to)`; 
+      replacements.toCode = toCode;
+    } else {
+      baseQuery += ` AND (sb2.Code LIKE :to OR sb2.Ten LIKE :to)`; 
+    }
+    replacements.to = `%${to}%`; 
+  }
   if (date) { baseQuery += ` AND DATE(cb.GioKhoiHanh) = :date`; replacements.date = date; }
   if (airline) { baseQuery += ` AND cb.HangBay LIKE :airline`; replacements.airline = `%${airline}%`; }
   if (seatClass) { baseQuery += ` AND cb.HangGhe = :seatClass`; replacements.seatClass = seatClass; }
@@ -103,6 +139,17 @@ const searchHotels = async (params) => {
     offset = 0
   } = params;
 
+  const normalizeCityForHotel = (term) => {
+    if (!term) return null;
+    const normalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (normalized.includes('ha noi') || normalized.includes('hanoi')) return 'Ha Noi';
+    if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('hcm')) return 'HCM';
+    if (normalized.includes('da nang') || normalized.includes('danang')) return 'Da Nang';
+    if (normalized.includes('nha trang') || normalized.includes('cam ranh')) return 'Nha Trang';
+    if (normalized.includes('phu quoc') || normalized.includes('phuquoc')) return 'Phu Quoc';
+    return term; // Fallback
+  };
+
   let baseQuery = `
     FROM KHACH_SAN ks
     LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
@@ -111,7 +158,11 @@ const searchHotels = async (params) => {
 
   const replacements = {};
 
-  if (city) { baseQuery += ` AND ks.DiaChi LIKE :city`; replacements.city = `%${city}%`; }
+  if (city) { 
+    const normalizedCity = normalizeCityForHotel(city);
+    baseQuery += ` AND ks.DiaChi LIKE :city`; 
+    replacements.city = `%${normalizedCity}%`; 
+  }
   if (rating) { baseQuery += ` AND ks.HangSao >= :rating`; replacements.rating = rating; }
   if (minPrice) { baseQuery += ` AND lp.GiaPhong >= :minPrice`; replacements.minPrice = minPrice; }
   if (maxPrice) { baseQuery += ` AND lp.GiaPhong <= :maxPrice`; replacements.maxPrice = maxPrice; }
