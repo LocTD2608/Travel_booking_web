@@ -1,63 +1,56 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
-import { HotelCard } from '../../components/ui/cards/accommodations/HotelCard';
-// Mock Data for Hotels
-const MOCK_HOTELS = [
-    {
-        id: 'h1',
-        name: 'InterContinental Danang Resort',
-        location: 'Son Tra Peninsula, Da Nang',
-        rating: 9.4,
-        ratingText: 'Exceptional',
-        reviews: 1248,
-        price: 3850000,
-        originalPrice: 4200000,
-        badge: 'LIMITED DEAL',
-        image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facilities: ['Pool', 'Beach', 'Spa'],
-        stars: 5,
-    },
-    {
-        id: 'h2',
-        name: 'Novotel Danang Premier Han River',
-        location: 'Hai Chau District, Da Nang',
-        rating: 8.8,
-        ratingText: 'Excellent',
-        reviews: 3520,
-        price: 2450000,
-        originalPrice: null,
-        badge: '',
-        image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facilities: ['Gym', 'Bar', 'Free WiFi'],
-        stars: 4,
-    },
-    {
-        id: 'h3',
-        name: 'Sheraton Grand Danang Resort',
-        location: 'Non Nuoc Beach, Da Nang',
-        rating: 8.9,
-        ratingText: 'Excellent',
-        reviews: 890,
-        price: 3200000,
-        originalPrice: null,
-        badge: '',
-        image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facilities: ['Pool', 'Free WiFi', 'Restaurant'],
-        stars: 5,
-    }
-];
+import { HotelCard, type HotelCardProps } from '../../components/ui/cards/accommodations/HotelCard';
+import { fetchHotels } from '../../services/searchApi';
 
 const Hotels: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
+    
     // Top Search State
-    const [searchState] = useState({
-        destination: 'Da Nang, Vietnam',
-        dates: '',
-        guests: '2 Adults, 1 Room'
-    });
+    const searchState = {
+        destination: searchParams.get('destination') || 'Da Nang, Vietnam',
+        dates: searchParams.get('checkIn') ? `${searchParams.get('checkIn')} - ${searchParams.get('checkOut') || 'Unknown'}` : 'Oct 12 - Oct 15, 2024',
+        guests: searchParams.get('guests') || '2 Adults, 1 Room'
+    };
+
+    const [hotels, setHotels] = useState<HotelCardProps[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadHotels = async () => {
+            try {
+                setLoading(true);
+                const city = searchState.destination.split(',')[0].trim();
+                const res = await fetchHotels({ city });
+                if (res.success) {
+                    const mapped = res.data.map(h => ({
+                        id: h.MaKS.toString(),
+                        name: h.name,
+                        location: h.address,
+                        rating: 8.5,
+                        ratingText: 'Excellent',
+                        reviews: Math.floor(Math.random() * 1000) + 100,
+                        price: h.min_price,
+                        originalPrice: null,
+                        badge: '',
+                        image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        facilities: ['Free WiFi', 'Pool'],
+                        stars: h.stars,
+                    }));
+                    setHotels(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to fetch hotels:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadHotels();
+    }, [searchState.destination]);
 
     const [priceRange, setPriceRange] = useState<[number, number]>([500000, 5000000]);
     const [sortBy, setSortBy] = useState('popularity');
@@ -73,13 +66,15 @@ const Hotels: React.FC = () => {
     };
 
     // Filtering & Sorting Logic
-    const filteredHotels = MOCK_HOTELS.filter((hotel) => {
+    const filteredHotels = hotels.filter((hotel) => {
         const matchesPrice = hotel.price >= priceRange[0] && hotel.price <= priceRange[1];
         const matchesStars = selectedStars.length === 0 || selectedStars.includes(hotel.stars);
         const matchesFacilities = selectedFacilities.length === 0 || selectedFacilities.every(fac =>
             hotel.facilities.some(hFac => hFac.toLowerCase().includes(fac.toLowerCase()))
         );
-        return matchesPrice && matchesStars && matchesFacilities;
+        const matchesDestination = hotel.location.toLowerCase().includes(searchState.destination.split(',')[0].toLowerCase()) || hotel.name.toLowerCase().includes(searchState.destination.toLowerCase());
+        
+        return matchesPrice && matchesStars && matchesFacilities && matchesDestination;
     }).sort((a, b) => {
         if (sortBy === 'price_asc') return a.price - b.price;
         if (sortBy === 'price_desc') return b.price - a.price;
@@ -101,7 +96,7 @@ const Hotels: React.FC = () => {
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div>
                             <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DATES</div>
-                            <div className="text-[15px] font-bold text-gray-900">Oct 12 - Oct 15, 2024</div>
+                            <div className="text-[15px] font-bold text-gray-900">{searchState.dates}</div>
                         </div>
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div>
@@ -109,7 +104,10 @@ const Hotels: React.FC = () => {
                             <div className="text-[15px] font-bold text-gray-900">{searchState.guests}</div>
                         </div>
                     </div>
-                    <button className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                    <button 
+                        className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                        onClick={() => navigate('/')}
+                    >
                         <span className="material-symbols-outlined text-[18px]">edit</span>
                         Change Search
                     </button>
@@ -233,7 +231,12 @@ const Hotels: React.FC = () => {
                     </div>
 
                     {/* Check if no results */}
-                    {filteredHotels.length === 0 ? (
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 rounded-xl text-gray-400 mt-4 h-64 shadow-sm">
+                            <div className="w-8 h-8 border-4 border-travel-blue border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <p className="font-bold text-gray-500">Searching hotels...</p>
+                        </div>
+                    ) : filteredHotels.length === 0 ? (
                         <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 border-dashed rounded-xl text-gray-400 mt-4 h-64">
                             <span className="material-symbols-outlined text-5xl mb-3 text-gray-300">travel_explore</span>
                             <p className="font-bold text-gray-500">No results to display</p>

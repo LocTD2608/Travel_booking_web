@@ -1,17 +1,20 @@
 const { Worker } = require("bullmq");
 const connection = require("../configs/redis");
-const { Booking } = require("../models");
+const db = require("../models");
 
 const worker = new Worker(
   "bookingQueue",
   async (job) => {
     const { bookingId } = job.data;
 
-    const booking = await Booking.findByPk(bookingId);
+    const booking = await db.Booking.findByPk(bookingId);
 
-    if (booking && booking.TrangThaiBooking === "Chưa thanh toán") {
-      booking.TrangThaiBooking = "DA_HUY";
-      await booking.save();
+    if (!booking) return;
+
+    if (booking.TrangThaiBooking === "Chưa thanh toán") {
+      await booking.update({
+        TrangThaiBooking: "Đã hủy",
+      });
 
       console.log("Auto cancelled:", bookingId);
     }

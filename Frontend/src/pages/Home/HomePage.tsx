@@ -11,11 +11,21 @@ export const HomePage: React.FC = () => {
 
     const handleSearchClick = (searchData: Record<string, string>) => {
         const params = new URLSearchParams();
-        if (searchData.destination) params.append('destination', searchData.destination);
-        if (searchData.checkIn) params.append('checkIn', searchData.checkIn);
-        if (searchData.guests) params.append('guests', searchData.guests);
+        Object.entries(searchData).forEach(([key, value]) => {
+            if (value && key !== 'type') {
+                params.append(key, value);
+            }
+        });
 
-        navigate(`/search?${params.toString()}`);
+        const typeToPath: Record<string, string> = {
+            hotels: '/hotels',
+            flights: '/flights',
+            package: '/search', // Use /search since /flight-hotel is not yet implemented
+            experience: '/experience',
+        };
+
+        const path = typeToPath[searchData.type] || '/search';
+        navigate(`${path}?${params.toString()}`);
     };
 
     const quickLinks = [

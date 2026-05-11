@@ -30,12 +30,13 @@ apiRouter.use("/users", userRoutes);
 apiRouter.use("/flights", flightRoutes);
 apiRouter.use("/rooms", roomRoutes);
 apiRouter.use("/payment", paymentRoutes);
+apiRouter.use("/booking", bookingRoutes);
 apiRouter.use("/", testRoutes);
+apiRouter.use("/booking", bookingRoutes);
 
 app.use("/api", apiRouter);
 
-// Booking
-app.use("/booking", bookingRoutes);
+
 
 // Test API
 app.get('/', (req, res) => {
@@ -53,6 +54,9 @@ app.use((req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
+require("./workers/bookingWorker");
+
+module.exports = app;
 // Database Sync
 const sequelize = require("./configs/database");
 sequelize.authenticate()

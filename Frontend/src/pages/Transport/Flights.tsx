@@ -1,67 +1,26 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../components/auth/AuthModal';
 import { Slider } from 'antd';
-import { FlightCard } from '../../components/ui/cards/transport/FlightCard';
-// Mock Data for Flights
-const MOCK_FLIGHTS = [
-    {
-        id: 'f1',
-        airline: 'Vietnam Airlines',
-        airlineLogo: 'Lotus', // Placeholder for text logo
-        flightNumber: 'VN-128',
-        departureTime: '06:00',
-        arrivalTime: '08:15',
-        duration: '2h 15m',
-        from: 'Hanoi (HAN)',
-        to: 'Da Nang (DAD)',
-        price: 1850000,
-        originalPrice: 2200000,
-        type: 'Direct',
-        class: 'Economy',
-        baggage: '23kg Checked',
-    },
-    {
-        id: 'f2',
-        airline: 'Bamboo Airways',
-        airlineLogo: 'Bamboo',
-        flightNumber: 'QH-102',
-        departureTime: '09:30',
-        arrivalTime: '11:50',
-        duration: '2h 20m',
-        from: 'Hanoi (HAN)',
-        to: 'Da Nang (DAD)',
-        price: 1450000,
-        originalPrice: null,
-        type: 'Direct',
-        class: 'Economy',
-        baggage: '20kg Checked',
-    },
-    {
-        id: 'f3',
-        airline: 'Vietjet Air',
-        airlineLogo: 'VJ',
-        flightNumber: 'VJ-509',
-        departureTime: '14:00',
-        arrivalTime: '16:10',
-        duration: '2h 10m',
-        from: 'Hanoi (HAN)',
-        to: 'Da Nang (DAD)',
-        price: 950000,
-        originalPrice: null,
-        type: 'Direct',
-        class: 'Promo',
-        baggage: '7kg Cabin',
-    }
-];
+import { FlightCard, type FlightCardProps } from '../../components/ui/cards/transport/FlightCard';
+import { fetchFlights } from '../../services/searchApi';
 
 const Flights: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-    const handleSelectFlight = (flight: typeof MOCK_FLIGHTS[0]) => {
+    // Top Search State
+    const searchState = {
+        from: searchParams.get('origin') || searchParams.get('from') || 'Hanoi (HAN)',
+        to: searchParams.get('destination') || searchParams.get('to') || 'Da Nang (DAD)',
+        date: searchParams.get('departureDate') || searchParams.get('date') || 'Oct 12, 2024',
+        passengers: searchParams.get('passengers') || '1 Adult, Economy'
+    };
+
+    const handleSelectFlight = (flight: FlightCardProps) => {
         if (!isAuthenticated) { setIsAuthModalOpen(true); return; }
         const params = new URLSearchParams({
             type: 'flight',
@@ -74,19 +33,59 @@ const Flights: React.FC = () => {
         navigate(`/booking?${params.toString()}`);
     };
 
-    // Top Search State
-    const [searchState] = useState({
-        from: 'Hanoi (HAN)',
-        to: 'Da Nang (DAD)',
-        date: 'Oct 12, 2024',
-        passengers: '1 Adult, Economy'
-    });
+    const [flights, setFlights] = useState<FlightCardProps[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadFlights = async () => {
+            try {
+                setLoading(true);
+                const fromCity = searchState.from.split('(')[0].trim();
+                const toCity = searchState.to.split('(')[0].trim();
+                const res = await fetchFlights({ from: fromCity, to: toCity });
+                if (res.success) {
+                    const mapped = res.data.map(f => {
+                        const dep = new Date(`1970-01-01T${f.departure_time}`);
+                        const arr = new Date(`1970-01-01T${f.arrival_time}`);
+                        let diffMins = Math.round((arr.getTime() - dep.getTime()) / 60000);
+                        if (diffMins < 0) diffMins += 24 * 60;
+                        const h = Math.floor(diffMins / 60);
+                        const m = diffMins % 60;
+                        const duration = `${h}h ${m}m`;
+
+                        return {
+                            id: f.MaChuyenBay.toString(),
+                            airline: f.HangBay,
+                            airlineLogo: f.HangBay,
+                            flightNumber: `${f.HangBay.substring(0, 2).toUpperCase()}-${f.MaChuyenBay}`,
+                            departureTime: f.departure_time.substring(0, 5),
+                            arrivalTime: f.arrival_time.substring(0, 5),
+                            duration,
+                            from: f.from_name,
+                            to: f.to_name,
+                            price: f.price,
+                            originalPrice: null,
+                            type: 'Direct',
+                            class: f.HangGhe,
+                            baggage: '20kg Checked',
+                        };
+                    });
+                    setFlights(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to fetch flights:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadFlights();
+    }, [searchState.from, searchState.to]);
 
     const [priceRange, setPriceRange] = useState<[number, number]>([500000, 5000000]);
     const [sortBy, setSortBy] = useState('price_asc');
 
     // Filtering & Sorting Logic
-    const filteredFlights = MOCK_FLIGHTS.filter((flight) => {
+    const filteredFlights = flights.filter((flight) => {
         return flight.price >= priceRange[0] && flight.price <= priceRange[1];
     }).sort((a, b) => {
         if (sortBy === 'price_asc') return a.price - b.price;
@@ -130,7 +129,10 @@ const Flights: React.FC = () => {
                                 <div className="text-[15px] font-bold text-gray-900">{searchState.passengers}</div>
                             </div>
                         </div>
-                        <button className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                        <button 
+                            className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                            onClick={() => navigate('/')}
+                        >
                             <span className="material-symbols-outlined text-[18px]">edit</span>
                             Change Search
                         </button>
@@ -243,7 +245,12 @@ const Flights: React.FC = () => {
                         </div>
 
                         {/* Content */}
-                        {filteredFlights.length === 0 ? (
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 rounded-xl text-gray-400 mt-4 h-64 shadow-sm">
+                                <div className="w-8 h-8 border-4 border-travel-blue border-t-transparent rounded-full animate-spin mb-4"></div>
+                                <p className="font-bold text-gray-500">Searching flights...</p>
+                            </div>
+                        ) : filteredFlights.length === 0 ? (
                             <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 border-dashed rounded-xl text-gray-400 mt-4 h-64">
                                 <span className="material-symbols-outlined text-5xl mb-3 text-gray-300">flight_off</span>
                                 <p className="font-bold text-gray-500">No flights available</p>
