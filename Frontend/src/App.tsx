@@ -29,6 +29,9 @@ import DataPlans from './pages/Bills/DataPlans'
 import Electricity from './pages/Bills/Electricity'
 import Profile from './pages/Profile/Profile'
 import BookingHistory from './pages/Profile/BookingHistory'
+import Checkout from './pages/Checkout/Checkout'
+import PaymentCallback from './pages/PaymentCallback/PaymentCallback'
+import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess'
 
 function App() {
   return (
@@ -60,6 +63,9 @@ function App() {
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/search" element={<SearchResults />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment-return" element={<PaymentCallback />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/booking-history" element={<BookingHistory />} />
 

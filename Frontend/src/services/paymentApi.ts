@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api/payments';
+const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/payment` : 'http://localhost:3000/api/payment';
 
 export interface CreatePaymentRequest {
     amount: number;
@@ -42,7 +42,31 @@ export interface TransactionData {
 }
 
 /**
- * Tạo đơn hàng thanh toán
+ * Tạo URL thanh toán VNPay
+ */
+export const createVNPayUrl = async (amount: number, orderId: string): Promise<{ success: boolean; paymentUrl: string }> => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/create-vnpay`, { amount, orderId });
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || 'Failed to create VNPay URL');
+    }
+};
+
+/**
+ * Kiểm tra callback từ VNPay
+ */
+export const verifyVNPayReturn = async (queryString: string): Promise<any> => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/vnpay-return${queryString}`);
+        return response.data;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || 'Failed to verify VNPay return');
+    }
+};
+
+/**
+ * Tạo đơn hàng thanh toán (Mock / Khác)
  */
 export const createPayment = async (data: CreatePaymentRequest): Promise<PaymentResponse> => {
     try {
@@ -54,7 +78,7 @@ export const createPayment = async (data: CreatePaymentRequest): Promise<Payment
 };
 
 /**
- * Lấy thông tin transaction
+ * Lấy thông tin transaction (Mock / Khác)
  */
 export const getPayment = async (transactionId: string): Promise<{ success: boolean; transaction: TransactionData }> => {
     try {
@@ -66,7 +90,7 @@ export const getPayment = async (transactionId: string): Promise<{ success: bool
 };
 
 /**
- * Xác nhận thanh toán thành công
+ * Xác nhận thanh toán thành công (Mock / Khác)
  */
 export const confirmPayment = async (transactionId: string, userId: string) => {
     try {

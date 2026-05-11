@@ -31,4 +31,23 @@ export const bookingApi = {
 
         return response.json();
     },
+
+    createBooking: async (data: any): Promise<any> => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: token ? `Bearer ${token}` : '',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể tạo đặt phòng');
+        }
+        
+        return response.json();
+    }
 };

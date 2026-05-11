@@ -8,7 +8,13 @@ const otpStore = new Map();
 
 exports.register = async (req, res) => {
     try {
-        const { Ho, Ten, Email, SDT, Password } = req.body;
+        const Ho = req.body.Ho || req.body.ho;
+        const Ten = req.body.Ten || req.body.ten;
+        const Email = req.body.Email || req.body.email;
+        const SDT = req.body.SDT || req.body.sdt;
+        const Password = req.body.Password || req.body.password;
+        
+        if (!Email) return res.status(400).json({ message: "Email là bắt buộc" });
         const existingUser = await User.findOne({ where: { Email } });
         if (existingUser) return res.status(400).json({ message: "Email đã được sử dụng" });
 
@@ -18,13 +24,22 @@ exports.register = async (req, res) => {
         const token = jwt.sign({ id: newUser.UserID }, process.env.JWT_SECRET, { expiresIn: "7d" });
         res.status(201).json({ message: "Đăng ký thành công", token, user: { id: newUser.UserID, Ho, Ten, Email } });
     } catch (error) {
-        res.status(500).json({ message: "Lỗi Server", error: error.message });
+        console.error("Register Error:", error);
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ message: "Dữ liệu đã tồn tại (Email hoặc Số điện thoại)" });
+        }
+        res.status(500).json({ message: "Lỗi Server", error: error.message, details: error.errors });
     }
 };
 
 exports.login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const email = req.body.Email || req.body.email;
+        const password = req.body.Password || req.body.password;
+        
+        if (!email) return res.status(400).json({ message: "Vui lòng nhập Email" });
+        if (!password) return res.status(400).json({ message: "Vui lòng nhập Password" });
+
         const user = await User.findOne({ where: { Email: email } });
         if (!user) return res.status(400).json({ message: "Tài khoản không tồn tại" });
 
@@ -34,6 +49,7 @@ exports.login = async (req, res) => {
         const token = jwt.sign({ id: user.UserID }, process.env.JWT_SECRET, { expiresIn: "7d" });
         res.json({ message: "Đăng nhập thành công", token, user: { id: user.UserID, Ho: user.Ho, Ten: user.Ten, Email: user.Email } });
     } catch (error) {
+        console.error("Login Error:", error);
         res.status(500).json({ message: "Lỗi Server", error: error.message });
     }
 };
