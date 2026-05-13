@@ -9,6 +9,7 @@ const flightRoutes = require("./routes/flight.routes");
 const roomRoutes = require("./routes/room.routes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const dashboardRoutes = require("./routes/dashboard.routes");
 
 const app = express();
 
@@ -36,7 +37,7 @@ apiRouter.use("/booking", bookingRoutes);
 
 app.use("/api", apiRouter);
 
-
+app.use("/api/dashboard", dashboardRoutes);
 
 // Test API
 app.get('/', (req, res) => {
