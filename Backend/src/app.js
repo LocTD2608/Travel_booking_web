@@ -64,4 +64,3 @@ sequelize.authenticate()
   .catch(err => console.error("Database sync error:", err));
 module.exports = app;
 
-
