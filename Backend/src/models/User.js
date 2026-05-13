@@ -10,6 +10,8 @@ module.exports = (sequelize, DataTypes) => {
         SDT: DataTypes.STRING(20),
         CCCD: DataTypes.STRING(20),
         Email: DataTypes.STRING(100),
+        SDT: DataTypes.STRING(15),
+        CCCD: DataTypes.STRING(20),
         Password: {
             type: DataTypes.STRING(255),
             allowNull: false,

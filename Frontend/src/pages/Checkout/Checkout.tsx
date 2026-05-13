@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { Modal, Spin } from 'antd';
+import { bookingApi } from '../../services/bookingApi';
+import { createVNPayUrl, redirectToVNPay } from '../../services/paymentApi';
 import styles from './Checkout.module.css';
 
 interface BookingState {
@@ -44,8 +47,9 @@ const Checkout: React.FC = () => {
     const navigate = useNavigate();
     const booking = location.state as BookingState | null;
 
-    const [paymentMethod, setPaymentMethod] = useState('momo');
+    const [paymentMethod, setPaymentMethod] = useState('vnpay'); // Default to VNPay for testing
     const [submitted, setSubmitted] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [form, setForm] = useState({
         fullName: '',
         email: '',
@@ -76,11 +80,74 @@ const Checkout: React.FC = () => {
         return Object.keys(e).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        setSubmitted(true);
+        
+        setIsProcessing(true);
+        try {
+            // Get user ID from localStorage or token
+            const userStr = localStorage.getItem('user');
+            const userId = userStr ? JSON.parse(userStr).MaNguoiDung || JSON.parse(userStr).id : 1;
+
+            // 1. Create booking in Database
+            const createBookingData = {
+                UserID: userId,
+                TongTien: grandTotal,
+                details: [
+                    {
+                        nights: booking.nights,
+                        price: booking.room.price,
+                        type: 'hotel',
+                        name: booking.room.name,
+                        image: '',
+                        detail1: booking.hotel.name,
+                        detail2: booking.hotel.address,
+                        detail3: booking.dates.checkIn,
+                        detail4: booking.dates.checkOut
+                    }
+                ]
+            };
+            
+            const bookingResult = await bookingApi.createBooking(createBookingData);
+            const orderId = bookingResult.MaBooking;
+
+            // 2. Process Payment based on selected method
+            if (paymentMethod === 'vnpay') {
+                const vnpayResult = await createVNPayUrl(grandTotal, orderId.toString());
+                if (vnpayResult.success && vnpayResult.paymentUrl) {
+                    redirectToVNPay(vnpayResult.paymentUrl);
+                } else {
+                    throw new Error('Không thể tạo URL VNPay');
+                }
+            } else {
+                // For other payment methods (Mock)
+                setSubmitted(true);
+                setIsProcessing(false);
+            }
+        } catch (error: any) {
+            console.error('Checkout error:', error);
+            alert('Có lỗi xảy ra: ' + error.message);
+            setIsProcessing(false);
+        }
     };
+
+    if (isProcessing) {
+        return (
+            <Modal
+                title="Đang xử lý đặt phòng..."
+                visible={true}
+                footer={null}
+                closable={false}
+                centered
+            >
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                    <Spin size="large" />
+                    <p style={{ marginTop: '1rem' }}>Vui lòng đợi trong khi chúng tôi chuẩn bị thanh toán...</p>
+                </div>
+            </Modal>
+        );
+    }
 
     if (submitted) {
         return (

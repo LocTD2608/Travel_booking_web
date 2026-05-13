@@ -1,6 +1,7 @@
 const db = require("../models");
 const bookingQueue = require("../queues/bookingQueue");
 const sequelize = require("../configs/database");
+const { Op } = require("sequelize");
 
 // Đặt vé
 exports.createBooking = async (req, res) => {
@@ -148,6 +149,77 @@ exports.payBooking = async (req, res) => {
   } catch (err) {
     if (t) await t.rollback();
 
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// Thống kê cho admin: số vé đã thanh toán và tổng doanh thu
+exports.getBookingStats = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const paidStatuses = ["Đã thanh toán", "DA_THANH_TOAN"];
+    const where = {
+      TrangThaiBooking: {
+        [Op.in]: paidStatuses,
+      },
+    };
+
+    if (startDate || endDate) {
+      where.ThoiDiemThanhToan = {};
+
+      if (startDate) {
+        const start = new Date(startDate);
+        if (!isNaN(start.getTime())) {
+          where.ThoiDiemThanhToan[Op.gte] = start;
+        }
+      }
+
+      if (endDate) {
+        const end = new Date(endDate);
+        if (!isNaN(end.getTime())) {
+          where.ThoiDiemThanhToan[Op.lte] = end;
+        }
+      }
+    }
+
+    const [stats, bookings] = await Promise.all([
+      db.Booking.findAll({
+        attributes: [
+          [sequelize.fn("COUNT", sequelize.col("MaBooking")), "ticket_count"],
+          [sequelize.fn("SUM", sequelize.col("TongTien")), "total_revenue"],
+        ],
+        where,
+        raw: true,
+      }),
+      db.Booking.findAll({
+        attributes: [
+          "MaBooking",
+          "UserID",
+          "ThoiDiemDat",
+          "ThoiDiemThanhToan",
+          "TongTien",
+          "TrangThaiBooking",
+        ],
+        where,
+        order: [["ThoiDiemThanhToan", "DESC"]],
+      }),
+    ]);
+
+    const { ticket_count = 0, total_revenue = 0 } = stats[0] || {};
+
+    return res.json({
+      success: true,
+      message: "Thống kê booking thành công",
+      data: {
+        bookings,
+        ticket_count: parseInt(ticket_count, 10) || 0,
+        total_revenue: parseFloat(total_revenue) || 0,
+      },
+    });
+  } catch (err) {
     return res.status(500).json({
       success: false,
       message: err.message,
