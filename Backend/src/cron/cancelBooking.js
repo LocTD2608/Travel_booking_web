@@ -9,7 +9,7 @@ cron.schedule("*/2 * * * *", async () => {
 
   const bookings = await Booking.findAll({
     where: {
-      TrangThaiBooking: "PENDING",
+      TrangThaiBooking: "Chưa thanh toán",
       ThoiDiemDat: {
         [Op.lt]: tenMinutesAgo,
       },

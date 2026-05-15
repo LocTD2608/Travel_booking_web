@@ -77,18 +77,66 @@ JOIN (
 -- =========================
 -- KHÁCH SẠN (50 KS)
 -- =========================
-INSERT INTO KHACH_SAN (TenKS, DiaChi, HangSao) VALUES
-('KS Sunrise', 'Ha Noi', 4),
-('KS Ocean', 'Da Nang', 5),
-('KS Palm', 'Phu Quoc', 5),
-('KS Lotus', 'HCM', 4),
-('KS Sky', 'Nha Trang', 4);
+INSERT INTO khach_san (TenKS, DiaChi, HangSao) VALUES
+('InterContinental Hanoi Landmark', 'Ha Noi', 5),
+('Lotte Hotel Hanoi', 'Ha Noi', 5),
+('JW Marriott Hanoi', 'Ha Noi', 5),
+('Melia Hanoi', 'Ha Noi', 5),
+('Apricot Hotel', 'Ha Noi', 4),
 
--- nhân bản cho đủ 50
-INSERT INTO KHACH_SAN (TenKS, DiaChi, HangSao)
-SELECT CONCAT(TenKS, ' ', n), DiaChi, HangSao
-FROM KHACH_SAN
-JOIN (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t;
+('Rex Hotel Saigon', 'Ho Chi Minh', 5),
+('Hotel Nikko Saigon', 'Ho Chi Minh', 5),
+('The Reverie Saigon', 'Ho Chi Minh', 5),
+('Liberty Central Saigon', 'Ho Chi Minh', 4),
+('Silverland Yen Hotel', 'Ho Chi Minh', 4),
+
+('Novotel Danang Premier', 'Da Nang', 5),
+('Fusion Suites Danang', 'Da Nang', 4),
+('Sala Danang Beach Hotel', 'Da Nang', 4),
+('Mandila Beach Hotel', 'Da Nang', 4),
+('Grand Mercure Danang', 'Da Nang', 5),
+
+('Vinpearl Resort Nha Trang', 'Nha Trang', 5),
+('InterContinental Nha Trang', 'Nha Trang', 5),
+('Queen Ann Nha Trang', 'Nha Trang', 4),
+('Liberty Central Nha Trang', 'Nha Trang', 4),
+('Dendro Gold Hotel', 'Nha Trang', 4),
+
+('Seashells Phu Quoc', 'Phu Quoc', 5),
+('Movenpick Resort Waverly', 'Phu Quoc', 5),
+('Salinda Resort', 'Phu Quoc', 5),
+('Lahana Resort', 'Phu Quoc', 4),
+('VinHolidays Fiesta', 'Phu Quoc', 4),
+
+('Pao’s Sapa Leisure', 'Sapa', 5),
+('KK Sapa Hotel', 'Sapa', 5),
+('Amazing Sapa Hotel', 'Sapa', 4),
+('Sapa Horizon Hotel', 'Sapa', 4),
+('Bamboo Sapa Hotel', 'Sapa', 4),
+
+('Sheraton Can Tho', 'Can Tho', 5),
+('Muong Thanh Luxury Can Tho', 'Can Tho', 5),
+('West Hotel Can Tho', 'Can Tho', 4),
+('Nesta Hotel Can Tho', 'Can Tho', 4),
+('TTC Hotel Can Tho', 'Can Tho', 4),
+
+('Melia Vinpearl Hue', 'Hue', 5),
+('Indochine Palace Hue', 'Hue', 5),
+('Century Riverside Hue', 'Hue', 4),
+('Moonlight Hotel Hue', 'Hue', 4),
+('White Lotus Hue', 'Hue', 4),
+
+('FLC Halong Bay', 'Ha Long', 5),
+('Wyndham Legend Halong', 'Ha Long', 5),
+('Royal Halong Hotel', 'Ha Long', 4),
+('DeLaSea Ha Long', 'Ha Long', 4),
+('Muong Thanh Ha Long', 'Ha Long', 4),
+
+('Terracotta Hotel Da Lat', 'Da Lat', 4),
+('Colline Da Lat', 'Da Lat', 4),
+('Golf Valley Hotel', 'Da Lat', 4),
+('Dalat Wonder Resort', 'Da Lat', 5),
+('Ana Mandara Villas Dalat', 'Da Lat', 5);
 
 -- =========================
 -- LOẠI PHÒNG (200 phòng)
@@ -130,11 +178,46 @@ FROM LOAI_PHONG;
 INSERT INTO DICH_VU (LoaiDichVu, MoTa, Gia, DonViTinh) VALUES
 ('TRUNG_CHUYEN', 'Xe bus sân bay', 100000, 'lượt'),
 ('DU_LICH', 'Tour city', 1500000, 'tour'),
-('THUE_XE', 'Thuê xe tự lái', 800000, 'ngày');
+('THUE_XE', 'Thuê xe tự lái', 800000, 'ngày'),
+('DU_LICH', 'Tour Ha Long 2N1D', 2500000, 'tour'),
+('DU_LICH', 'Tour Da Nang - Hoi An', 3200000, 'tour'),
+('DU_LICH', 'Tour Phu Quoc 3N2D', 5500000, 'tour'),
+('DU_LICH', 'Tour Da Lat San May', 2900000, 'tour'),
+('DU_LICH', 'Tour Sapa Trekking', 3500000, 'tour'),
+('DU_LICH', 'Tour Hue Ancient Capital', 2100000, 'tour'),
+('DU_LICH', 'Tour Nha Trang Island', 4000000, 'tour'),
+('DU_LICH', 'Tour Mekong Delta', 1800000, 'tour'),
+('DU_LICH', 'Tour Ba Na Hills', 1700000, 'tour'),
+('DU_LICH', 'Tour Mui Ne Resort', 3600000, 'tour'),
+('DU_LICH', 'Tour Con Dao Relax', 6200000, 'tour'),
+('DU_LICH', 'Tour Ha Giang Loop', 4800000, 'tour'),
+('DU_LICH', 'Tour Quy Nhon Beach', 3900000, 'tour'),
+('DU_LICH', 'Tour Ninh Binh Discovery', 2300000, 'tour'),
+('DU_LICH', 'Tour Cat Ba Island', 2700000, 'tour');
 
 INSERT INTO DV_TRUNG_CHUYEN VALUES (1, 'Sân bay', 'Khách sạn', '1 chiều');
 INSERT INTO DV_DU_LICH VALUES (2, 'Khách sạn', 'Bà Nà Hills');
 INSERT INTO DV_THUE_XE VALUES (3, 'Theo ngày');
+INSERT INTO DV_DU_LICH (
+    MaDV_DL,
+    DiemDon,
+    DiaDiemThamQuan
+) VALUES
+(4, 'Ha Noi', 'Ha Long Bay'),
+(5, 'Da Nang', 'Hoi An Ancient Town'),
+(6, 'Ho Chi Minh', 'Phu Quoc Island'),
+(7, 'Ho Chi Minh', 'Da Lat'),
+(8, 'Ha Noi', 'Fansipan Sapa'),
+(9, 'Hue', 'Dai Noi Hue'),
+(10, 'Nha Trang', 'Hon Mun Island'),
+(11, 'Can Tho', 'Mekong Delta'),
+(12, 'Da Nang', 'Ba Na Hills'),
+(13, 'Ho Chi Minh', 'Mui Ne Beach'),
+(14, 'Ho Chi Minh', 'Con Dao'),
+(15, 'Ha Noi', 'Ha Giang'),
+(16, 'Quy Nhon', 'Ky Co Beach'),
+(17, 'Ha Noi', 'Trang An Ninh Binh'),
+(18, 'Hai Phong', 'Cat Ba Island');
 
 -- =========================
 -- BOOKING + CHI TIẾT (mẫu)
