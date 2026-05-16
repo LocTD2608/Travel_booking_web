@@ -22,17 +22,40 @@ exports.register = async (req, res) => {
     }
 };
 
+// Hardcoded admin credentials
+const ADMIN_EMAIL = "admintlk@gmail.com";
+const ADMIN_PASSWORD = "admintlk123";
+
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        // Check admin credentials first (not stored in DB)
+        if (email === ADMIN_EMAIL) {
+            if (password !== ADMIN_PASSWORD) {
+                return res.status(400).json({ message: "Mật khẩu không chính xác" });
+            }
+            const token = jwt.sign({ id: "admin", role: "ADMIN" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+            return res.json({
+                message: "Đăng nhập thành công",
+                token,
+                user: { id: "admin", Ho: "Admin", Ten: "TLK", Email: ADMIN_EMAIL, Role: "ADMIN" }
+            });
+        }
+
+        // Regular user login from DB
         const user = await User.findOne({ where: { Email: email } });
         if (!user) return res.status(400).json({ message: "Tài khoản không tồn tại" });
 
         const isMatch = await bcrypt.compare(password, user.Password);
         if (!isMatch) return res.status(400).json({ message: "Mật khẩu không chính xác" });
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-        res.json({ message: "Đăng nhập thành công", token, user: { id: user.id, Ho: user.Ho, Ten: user.Ten, Email: user.Email } });
+        const token = jwt.sign({ id: user.id, role: user.Role || "USER" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        res.json({
+            message: "Đăng nhập thành công",
+            token,
+            user: { id: user.id, Ho: user.Ho, Ten: user.Ten, Email: user.Email, Role: user.Role || "USER" }
+        });
     } catch (error) {
         res.status(500).json({ message: "Lỗi Server", error: error.message });
     }
