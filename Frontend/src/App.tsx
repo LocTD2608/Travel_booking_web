@@ -27,6 +27,8 @@ import CarRental from './pages/Transport/CarRental'
 import MobileCredit from './pages/Bills/MobileCredit'
 import DataPlans from './pages/Bills/DataPlans'
 import Electricity from './pages/Bills/Electricity'
+import AdminDashboard from './pages/Admin/AdminDashboard'
+import AdminRoute from './components/common/AdminRoute'
 import Profile from './pages/Profile/Profile'
 import BookingHistory from './pages/Profile/BookingHistory'
 import Checkout from './pages/Checkout/Checkout'
@@ -44,6 +46,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/booking" element={<BookingPage />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Admin route - protected */}
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
         {/* Route dùng MainLayout */}
         <Route element={<MainLayout />}>

@@ -1,25 +1,37 @@
-const { Worker } = require("bullmq");
 const connection = require("../configs/redis");
-const db = require("../models");
 
-const worker = new Worker(
-  "bookingQueue",
-  async (job) => {
-    const { bookingId } = job.data;
+if (connection) {
+  try {
+    const { Worker } = require("bullmq");
 
-    const booking = await db.Booking.findByPk(bookingId);
+    const db = require("../models");
 
-    if (!booking) return;
+    const worker = new Worker(
+      "bookingQueue",
+      async (job) => {
+        const { bookingId } = job.data;
 
-    if (booking.TrangThaiBooking === "Chưa thanh toán") {
-      await booking.update({
-        TrangThaiBooking: "Đã hủy",
-      });
+        const booking = await db.Booking.findByPk(bookingId);
 
-      console.log("Auto cancelled:", bookingId);
-    }
-  },
-  { connection }
-);
+        if (!booking) return;
 
-module.exports = worker;
+        if (booking.TrangThaiBooking === "Chưa thanh toán") {
+          await booking.update({
+            TrangThaiBooking: "Đã hủy",
+          });
+
+          console.log("Auto cancelled:", bookingId);
+        }
+      },
+      { connection }
+    );
+
+    module.exports = worker;
+  } catch (e) {
+    console.warn("⚠️  BookingWorker failed to start:", e.message);
+    module.exports = null;
+  }
+} else {
+  console.warn("⚠️  BookingWorker skipped (Redis not available)");
+  module.exports = null;
+}
