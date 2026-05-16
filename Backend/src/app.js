@@ -10,6 +10,7 @@ const roomRoutes = require("./routes/room.routes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const dashboardRoutes = require("./routes/dashboard.routes");
+const tourRoutes = require("./routes/tour.routes");
 
 const app = express();
 
@@ -32,6 +33,7 @@ apiRouter.use("/flights", flightRoutes);
 apiRouter.use("/rooms", roomRoutes);
 apiRouter.use("/payment", paymentRoutes);
 apiRouter.use("/booking", bookingRoutes);
+apiRouter.use("/tours", tourRoutes);
 apiRouter.use("/", testRoutes);
 apiRouter.use("/booking", bookingRoutes);
 
