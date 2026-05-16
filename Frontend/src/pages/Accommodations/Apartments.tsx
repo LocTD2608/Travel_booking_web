@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
+import { ApartmentCard } from '../../components/ui/cards/accommodations/ApartmentCard';
 
 const MOCK_APARTMENTS = [
     {
@@ -33,61 +34,6 @@ const MOCK_APARTMENTS = [
         stars: 3,
     }
 ];
-
-const ApartmentCard: React.FC<{ apartment: typeof MOCK_APARTMENTS[0]; onClick: () => void }> = ({ apartment, onClick }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-lg transition-shadow cursor-pointer" onClick={onClick}>
-        <div className="relative w-1/3 min-w-[280px] h-60">
-            <img src={apartment.image} alt={apartment.name} className="w-full h-full object-cover" />
-            {apartment.badge && (
-                <div className="absolute top-3 left-3 bg-white text-xs font-bold px-2 py-1 rounded shadow-sm text-purple-600">
-                    {apartment.badge}
-                </div>
-            )}
-        </div>
-        <div className="flex-1 p-5 flex flex-col justify-between">
-            <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{apartment.name}</h3>
-                <div className="text-sm text-gray-500 flex items-center gap-1 mb-3">
-                    <span className="material-symbols-outlined text-[16px]">location_on</span>
-                    {apartment.location}
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded text-sm">
-                        {apartment.rating.toFixed(1)}
-                    </span>
-                    <span className="text-purple-700 font-semibold text-sm">{apartment.ratingText}</span>
-                    <span className="text-gray-400 text-sm">({apartment.reviews} reviews)</span>
-                </div>
-            </div>
-            <div className="flex justify-between items-end mt-4">
-                <div className="flex flex-wrap gap-2">
-                    {apartment.facilities.map(fac => (
-                        <div key={fac} className="text-xs text-gray-500 bg-gray-50 border border-gray-200 px-2 py-1 rounded-full">
-                            {fac}
-                        </div>
-                    ))}
-                </div>
-                <div className="text-right">
-                    {apartment.originalPrice && (
-                        <div className="text-xs text-gray-400 line-through mb-0.5 mt-2">
-                            {apartment.originalPrice.toLocaleString()} VNĐ
-                        </div>
-                    )}
-                    <div className="text-2xl font-black text-gray-900 mb-0">
-                        {apartment.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
-                    </div>
-                    <div className="text-xs text-gray-400 mb-3">/ night</div>
-                    <button
-                        className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale"
-                        onClick={(e) => { e.stopPropagation(); onClick(); }}
-                    >
-                        Select Room
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-);
 
 const Apartments: React.FC = () => {
     const navigate = useNavigate();
@@ -128,7 +74,10 @@ const Apartments: React.FC = () => {
                             <div className="text-[15px] font-bold text-gray-900">Dec 01 - Dec 05, 2024</div>
                         </div>
                     </div>
-                    <button className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                    <button 
+                        className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                        onClick={() => navigate('/')}
+                    >
                         <span className="material-symbols-outlined text-[18px]">edit</span> Change Search
                     </button>
                 </div>
@@ -149,9 +98,9 @@ const Apartments: React.FC = () => {
                             <h4 className="font-semibold text-[15px] mb-3">Room Type</h4>
                             {['Studio', '1 Bedroom', '2 Bedrooms', 'Entire House'].map(type => (
                                 <label key={type} className="flex items-center gap-3 mb-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue" 
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue"
                                         checked={selectedTypes.includes(type)}
                                         onChange={() => toggleType(type)}
                                     />

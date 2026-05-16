@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const { User } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const emailService = require("../services/emailService");
@@ -8,17 +8,27 @@ const otpStore = new Map();
 
 exports.register = async (req, res) => {
     try {
-        const { Ho, Ten, Email, SDT, Password } = req.body;
+        const Ho = req.body.Ho || req.body.ho;
+        const Ten = req.body.Ten || req.body.ten;
+        const Email = req.body.Email || req.body.email;
+        const SDT = req.body.SDT || req.body.sdt;
+        const Password = req.body.Password || req.body.password;
+        
+        if (!Email) return res.status(400).json({ message: "Email là bắt buộc" });
         const existingUser = await User.findOne({ where: { Email } });
         if (existingUser) return res.status(400).json({ message: "Email đã được sử dụng" });
 
         const hashedPassword = await bcrypt.hash(Password, 10);
         const newUser = await User.create({ Ho, Ten, Email, SDT, Password: hashedPassword });
 
-        const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-        res.status(201).json({ message: "Đăng ký thành công", token, user: { id: newUser.id, Ho, Ten, Email } });
+        const token = jwt.sign({ id: newUser.UserID }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        res.status(201).json({ message: "Đăng ký thành công", token, user: { id: newUser.UserID, Ho, Ten, Email } });
     } catch (error) {
-        res.status(500).json({ message: "Lỗi Server", error: error.message });
+        console.error("Register Error:", error);
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ message: "Dữ liệu đã tồn tại (Email hoặc Số điện thoại)" });
+        }
+        res.status(500).json({ message: "Lỗi Server", error: error.message, details: error.errors });
     }
 };
 
@@ -28,7 +38,11 @@ const ADMIN_PASSWORD = "admintlk123";
 
 exports.login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const email = req.body.Email || req.body.email;
+        const password = req.body.Password || req.body.password;
+        
+        if (!email) return res.status(400).json({ message: "Vui lòng nhập Email" });
+        if (!password) return res.status(400).json({ message: "Vui lòng nhập Password" });
 
         // Check admin credentials first (not stored in DB)
         if (email === ADMIN_EMAIL) {
@@ -47,16 +61,28 @@ exports.login = async (req, res) => {
         const user = await User.findOne({ where: { Email: email } });
         if (!user) return res.status(400).json({ message: "Tài khoản không tồn tại" });
 
-        const isMatch = await bcrypt.compare(password, user.Password);
+        let isMatch = false;
+        try {
+            isMatch = await bcrypt.compare(password, user.Password);
+        } catch (err) {
+            isMatch = false;
+        }
+        
+        // Hỗ trợ đăng nhập cho các tài khoản dùng mật khẩu chưa mã hóa (mock data)
+        if (!isMatch && password === user.Password) {
+            isMatch = true;
+        }
+
         if (!isMatch) return res.status(400).json({ message: "Mật khẩu không chính xác" });
 
-        const token = jwt.sign({ id: user.id, role: user.Role || "USER" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        const token = jwt.sign({ id: user.UserID, role: user.Role || "USER" }, process.env.JWT_SECRET, { expiresIn: "7d" });
         res.json({
             message: "Đăng nhập thành công",
             token,
-            user: { id: user.id, Ho: user.Ho, Ten: user.Ten, Email: user.Email, Role: user.Role || "USER" }
+            user: { id: user.UserID, Ho: user.Ho, Ten: user.Ten, Email: user.Email, Role: user.Role || "USER" }
         });
     } catch (error) {
+        console.error("Login Error:", error);
         res.status(500).json({ message: "Lỗi Server", error: error.message });
     }
 };

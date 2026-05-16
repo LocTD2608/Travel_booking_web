@@ -1,144 +1,26 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../components/auth/AuthModal';
 import { Slider } from 'antd';
-
-// Mock Data for Flights
-const MOCK_FLIGHTS = [
-    {
-        id: 'f1',
-        airline: 'Vietnam Airlines',
-        airlineLogo: 'Lotus', // Placeholder for text logo
-        flightNumber: 'VN-128',
-        departureTime: '06:00',
-        arrivalTime: '08:15',
-        duration: '2h 15m',
-        from: 'Hanoi (HAN)',
-        to: 'Da Nang (DAD)',
-        price: 1850000,
-        originalPrice: 2200000,
-        type: 'Direct',
-        class: 'Economy',
-        baggage: '23kg Checked',
-    },
-    {
-        id: 'f2',
-        airline: 'Bamboo Airways',
-        airlineLogo: 'Bamboo',
-        flightNumber: 'QH-102',
-        departureTime: '09:30',
-        arrivalTime: '11:50',
-        duration: '2h 20m',
-        from: 'Hanoi (HAN)',
-        to: 'Da Nang (DAD)',
-        price: 1450000,
-        originalPrice: null,
-        type: 'Direct',
-        class: 'Economy',
-        baggage: '20kg Checked',
-    },
-    {
-        id: 'f3',
-        airline: 'Vietjet Air',
-        airlineLogo: 'VJ',
-        flightNumber: 'VJ-509',
-        departureTime: '14:00',
-        arrivalTime: '16:10',
-        duration: '2h 10m',
-        from: 'Hanoi (HAN)',
-        to: 'Da Nang (DAD)',
-        price: 950000,
-        originalPrice: null,
-        type: 'Direct',
-        class: 'Promo',
-        baggage: '7kg Cabin',
-    }
-];
-
-const FlightCard: React.FC<{ flight: typeof MOCK_FLIGHTS[0]; onSelect: () => void }> = ({ flight, onSelect }) => (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-        {/* Left Color Strip for Airline */}
-        <div className={`absolute left-0 top-0 bottom-0 w-1 ${flight.airline === 'Vietnam Airlines' ? 'bg-[#005F6E]' : flight.airline === 'Bamboo Airways' ? 'bg-[#00A14B]' : 'bg-[#ED1B24]'}`}></div>
-
-        <div className="flex justify-between items-center mb-4 pl-2">
-            <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex justify-center items-center font-bold text-white shadow-sm ${flight.airline === 'Vietnam Airlines' ? 'bg-[#005F6E]' : flight.airline === 'Bamboo Airways' ? 'bg-[#00A14B]' : 'bg-[#ED1B24]'}`}>
-                    {flight.airlineLogo.substring(0, 2).toUpperCase()}
-                </div>
-                <div>
-                    <h3 className="font-bold text-gray-900">{flight.airline}</h3>
-                    <div className="text-xs text-gray-500">{flight.flightNumber}</div>
-                </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-                <span className="bg-[#EBF3FF] text-travel-blue font-bold px-2 py-0.5 rounded text-xs">
-                    {flight.class}
-                </span>
-            </div>
-        </div>
-
-        <div className="flex justify-between items-center pl-2">
-
-            {/* Route & Time */}
-            <div className="flex items-center gap-6 flex-1 pr-6">
-                <div className="text-right">
-                    <div className="text-2xl font-black text-gray-900">{flight.departureTime}</div>
-                    <div className="text-sm font-semibold text-gray-500">{flight.from}</div>
-                </div>
-
-                <div className="flex-1 flex flex-col items-center px-4 relative">
-                    <div className="text-xs text-gray-400 font-semibold mb-1">{flight.duration}</div>
-                    <div className="w-full flex items-center justify-center relative">
-                        <div className="w-2 h-2 rounded-full border-2 border-gray-300 bg-white z-10"></div>
-                        <div className="h-[2px] bg-gray-200 flex-1 relative">
-                            {/* Line */}
-                        </div>
-                        <div className="w-2 h-2 rounded-full border-2 border-gray-300 bg-white z-10 text-travel-blue">
-                            <span className="material-symbols-outlined text-[16px] absolute -top-5 left-1/2 -ml-2 bg-white px-1 text-gray-400 rotate-90">flight</span>
-                        </div>
-                    </div>
-                    <div className="text-xs text-travel-blue font-bold mt-1 bg-blue-50 px-2 py-0.5 rounded">{flight.type}</div>
-                </div>
-
-                <div className="text-left">
-                    <div className="text-2xl font-black text-gray-900">{flight.arrivalTime}</div>
-                    <div className="text-sm font-semibold text-gray-500">{flight.to}</div>
-                </div>
-            </div>
-
-            {/* Price & Action */}
-            <div className="text-right border-l border-gray-100 pl-6 min-w-[200px]">
-                {flight.originalPrice && (
-                    <div className="text-xs text-gray-400 line-through mb-0.5">
-                        {flight.originalPrice.toLocaleString()} VNĐ
-                    </div>
-                )}
-                <div className="text-2xl font-black text-[#FF5E1F] mb-0 leading-none">
-                    {flight.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
-                </div>
-                <div className="text-xs text-gray-400 mb-3 mt-1 flex justify-end items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">work</span>
-                    {flight.baggage}
-                </div>
-                <button
-                    className="bg-[#FF5E1F] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#E64B0E] transition-colors hover-scale w-full shadow-sm"
-                    onClick={(e) => { e.stopPropagation(); onSelect(); }}
-                >
-                    Select
-                </button>
-            </div>
-        </div>
-    </div>
-);
+import { FlightCard, type FlightCardProps } from '../../components/ui/cards/transport/FlightCard';
+import { fetchFlights } from '../../services/searchApi';
 
 const Flights: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-    const handleSelectFlight = (flight: typeof MOCK_FLIGHTS[0]) => {
+    // Top Search State
+    const searchState = {
+        from: searchParams.get('origin') || searchParams.get('from') || 'Hanoi (HAN)',
+        to: searchParams.get('destination') || searchParams.get('to') || 'Da Nang (DAD)',
+        date: searchParams.get('departureDate') || searchParams.get('date') || 'Oct 12, 2024',
+        passengers: searchParams.get('passengers') || '1 Adult, Economy'
+    };
+
+    const handleSelectFlight = (flight: FlightCardProps) => {
         if (!isAuthenticated) { setIsAuthModalOpen(true); return; }
         const params = new URLSearchParams({
             type: 'flight',
@@ -151,19 +33,59 @@ const Flights: React.FC = () => {
         navigate(`/booking?${params.toString()}`);
     };
 
-    // Top Search State
-    const [searchState] = useState({
-        from: 'Hanoi (HAN)',
-        to: 'Da Nang (DAD)',
-        date: 'Oct 12, 2024',
-        passengers: '1 Adult, Economy'
-    });
+    const [flights, setFlights] = useState<FlightCardProps[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadFlights = async () => {
+            try {
+                setLoading(true);
+                const fromCity = searchState.from.split('(')[0].trim();
+                const toCity = searchState.to.split('(')[0].trim();
+                const res = await fetchFlights({ from: fromCity, to: toCity });
+                if (res.success) {
+                    const mapped = res.data.map(f => {
+                        const dep = new Date(`1970-01-01T${f.departure_time}`);
+                        const arr = new Date(`1970-01-01T${f.arrival_time}`);
+                        let diffMins = Math.round((arr.getTime() - dep.getTime()) / 60000);
+                        if (diffMins < 0) diffMins += 24 * 60;
+                        const h = Math.floor(diffMins / 60);
+                        const m = diffMins % 60;
+                        const duration = `${h}h ${m}m`;
+
+                        return {
+                            id: f.MaChuyenBay.toString(),
+                            airline: f.HangBay,
+                            airlineLogo: f.HangBay,
+                            flightNumber: `${f.HangBay.substring(0, 2).toUpperCase()}-${f.MaChuyenBay}`,
+                            departureTime: f.departure_time.substring(0, 5),
+                            arrivalTime: f.arrival_time.substring(0, 5),
+                            duration,
+                            from: f.from_name,
+                            to: f.to_name,
+                            price: f.price,
+                            originalPrice: null,
+                            type: 'Direct',
+                            class: f.HangGhe,
+                            baggage: '20kg Checked',
+                        };
+                    });
+                    setFlights(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to fetch flights:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadFlights();
+    }, [searchState.from, searchState.to]);
 
     const [priceRange, setPriceRange] = useState<[number, number]>([500000, 5000000]);
     const [sortBy, setSortBy] = useState('price_asc');
 
     // Filtering & Sorting Logic
-    const filteredFlights = MOCK_FLIGHTS.filter((flight) => {
+    const filteredFlights = flights.filter((flight) => {
         return flight.price >= priceRange[0] && flight.price <= priceRange[1];
     }).sort((a, b) => {
         if (sortBy === 'price_asc') return a.price - b.price;
@@ -207,7 +129,10 @@ const Flights: React.FC = () => {
                                 <div className="text-[15px] font-bold text-gray-900">{searchState.passengers}</div>
                             </div>
                         </div>
-                        <button className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                        <button 
+                            className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                            onClick={() => navigate('/')}
+                        >
                             <span className="material-symbols-outlined text-[18px]">edit</span>
                             Change Search
                         </button>
@@ -320,7 +245,12 @@ const Flights: React.FC = () => {
                         </div>
 
                         {/* Content */}
-                        {filteredFlights.length === 0 ? (
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 rounded-xl text-gray-400 mt-4 h-64 shadow-sm">
+                                <div className="w-8 h-8 border-4 border-travel-blue border-t-transparent rounded-full animate-spin mb-4"></div>
+                                <p className="font-bold text-gray-500">Searching flights...</p>
+                            </div>
+                        ) : filteredFlights.length === 0 ? (
                             <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 border-dashed rounded-xl text-gray-400 mt-4 h-64">
                                 <span className="material-symbols-outlined text-5xl mb-3 text-gray-300">flight_off</span>
                                 <p className="font-bold text-gray-500">No flights available</p>

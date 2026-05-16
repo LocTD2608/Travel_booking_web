@@ -1,146 +1,56 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
-
-// Mock Data for Hotels
-const MOCK_HOTELS = [
-    {
-        id: 'h1',
-        name: 'InterContinental Danang Resort',
-        location: 'Son Tra Peninsula, Da Nang',
-        rating: 9.4,
-        ratingText: 'Exceptional',
-        reviews: 1248,
-        price: 3850000,
-        originalPrice: 4200000,
-        badge: 'LIMITED DEAL',
-        image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facilities: ['Pool', 'Beach', 'Spa'],
-        stars: 5,
-    },
-    {
-        id: 'h2',
-        name: 'Novotel Danang Premier Han River',
-        location: 'Hai Chau District, Da Nang',
-        rating: 8.8,
-        ratingText: 'Excellent',
-        reviews: 3520,
-        price: 2450000,
-        originalPrice: null,
-        badge: '',
-        image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facilities: ['Gym', 'Bar', 'Free WiFi'],
-        stars: 4,
-    },
-    {
-        id: 'h3',
-        name: 'Sheraton Grand Danang Resort',
-        location: 'Non Nuoc Beach, Da Nang',
-        rating: 8.9,
-        ratingText: 'Excellent',
-        reviews: 890,
-        price: 3200000,
-        originalPrice: null,
-        badge: '',
-        image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        facilities: ['Pool', 'Free WiFi', 'Restaurant'],
-        stars: 5,
-    }
-];
-
-const HotelCard: React.FC<{ hotel: typeof MOCK_HOTELS[0]; onClick: () => void }> = ({ hotel, onClick }) => (
-    <div
-        className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
-        onClick={onClick}
-    >
-        {/* Left Image */}
-        <div className="relative w-1/3 min-w-[280px] h-60">
-            <img src={hotel.image} alt={hotel.name} className="w-full h-full object-cover" />
-            {hotel.badge && (
-                <div className="absolute top-3 left-3 bg-white text-xs font-bold px-2 py-1 rounded shadow-sm text-travel-blue">
-                    {hotel.badge}
-                </div>
-            )}
-        </div>
-
-        {/* Right Content */}
-        <div className="flex-1 p-5 flex flex-col justify-between">
-            <div>
-                <div className="flex gap-1 mb-1">
-                    {Array.from({ length: hotel.stars }).map((_, i) => (
-                        <span key={i} className="material-symbols-outlined text-yellow-500 text-[18px]">star</span>
-                    ))}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{hotel.name}</h3>
-                <div className="text-sm text-gray-500 flex items-center gap-1 mb-3">
-                    <span className="material-symbols-outlined text-[16px]">location_on</span>
-                    {hotel.location}
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <span className="bg-[#EBF3FF] text-travel-blue font-bold px-2 py-0.5 rounded text-sm">
-                        {hotel.rating.toFixed(1)}
-                    </span>
-                    <span className="text-travel-blue font-semibold text-sm">{hotel.ratingText}</span>
-                    <span className="text-gray-400 text-sm">({hotel.reviews.toLocaleString()} reviews)</span>
-                </div>
-            </div>
-
-            <div className="flex justify-between items-end mt-4">
-                {/* Facilities */}
-                <div className="flex gap-4">
-                    {hotel.facilities.map(fac => {
-                        let icon = 'check';
-                        if (fac.toLowerCase().includes('pool')) icon = 'pool';
-                        if (fac.toLowerCase().includes('wifi')) icon = 'wifi';
-                        if (fac.toLowerCase().includes('gym')) icon = 'fitness_center';
-                        if (fac.toLowerCase().includes('bar')) icon = 'local_bar';
-                        if (fac.toLowerCase().includes('beach')) icon = 'beach_access';
-                        if (fac.toLowerCase().includes('spa')) icon = 'spa';
-                        if (fac.toLowerCase().includes('restaurant')) icon = 'restaurant';
-
-                        return (
-                            <div key={fac} className="flex items-center gap-1 text-xs text-gray-500">
-                                <span className="material-symbols-outlined text-[16px] text-gray-400">{icon}</span>
-                                {fac}
-                            </div>
-                        )
-                    })}
-                </div>
-
-                {/* Price & Action */}
-                <div className="text-right">
-                    {hotel.originalPrice && (
-                        <div className="text-xs text-gray-400 line-through mb-0.5 mt-2">
-                            {hotel.originalPrice.toLocaleString()} VNĐ
-                        </div>
-                    )}
-                    <div className="text-2xl font-black text-gray-900 mb-0">
-                        {hotel.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
-                    </div>
-                    <div className="text-xs text-gray-400 mb-3">incl. taxes & fees</div>
-                    <button
-                        className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale"
-                        onClick={(e) => { e.stopPropagation(); onClick(); }}
-                    >
-                        Select Room
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-);
+import { HotelCard, type HotelCardProps } from '../../components/ui/cards/accommodations/HotelCard';
+import { fetchHotels } from '../../services/searchApi';
 
 const Hotels: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
+    
     // Top Search State
-    const [searchState] = useState({
-        destination: 'Da Nang, Vietnam',
-        dates: '',
-        guests: '2 Adults, 1 Room'
-    });
+    const searchState = {
+        destination: searchParams.get('destination') || 'Da Nang, Vietnam',
+        dates: searchParams.get('checkIn') ? `${searchParams.get('checkIn')} - ${searchParams.get('checkOut') || 'Unknown'}` : 'Oct 12 - Oct 15, 2024',
+        guests: searchParams.get('guests') || '2 Adults, 1 Room'
+    };
+
+    const [hotels, setHotels] = useState<HotelCardProps[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadHotels = async () => {
+            try {
+                setLoading(true);
+                const city = searchState.destination.split(',')[0].trim();
+                const res = await fetchHotels({ city });
+                if (res.success) {
+                    const mapped = res.data.map(h => ({
+                        id: h.MaKS.toString(),
+                        name: h.name,
+                        location: h.address,
+                        rating: 8.5,
+                        ratingText: 'Excellent',
+                        reviews: Math.floor(Math.random() * 1000) + 100,
+                        price: h.min_price,
+                        originalPrice: null,
+                        badge: '',
+                        image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                        facilities: ['Free WiFi', 'Pool'],
+                        stars: h.stars,
+                    }));
+                    setHotels(mapped);
+                }
+            } catch (err) {
+                console.error("Failed to fetch hotels:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadHotels();
+    }, [searchState.destination]);
 
     const [priceRange, setPriceRange] = useState<[number, number]>([500000, 5000000]);
     const [sortBy, setSortBy] = useState('popularity');
@@ -156,13 +66,15 @@ const Hotels: React.FC = () => {
     };
 
     // Filtering & Sorting Logic
-    const filteredHotels = MOCK_HOTELS.filter((hotel) => {
+    const filteredHotels = hotels.filter((hotel) => {
         const matchesPrice = hotel.price >= priceRange[0] && hotel.price <= priceRange[1];
         const matchesStars = selectedStars.length === 0 || selectedStars.includes(hotel.stars);
-        const matchesFacilities = selectedFacilities.length === 0 || selectedFacilities.every(fac => 
+        const matchesFacilities = selectedFacilities.length === 0 || selectedFacilities.every(fac =>
             hotel.facilities.some(hFac => hFac.toLowerCase().includes(fac.toLowerCase()))
         );
-        return matchesPrice && matchesStars && matchesFacilities;
+        const matchesDestination = hotel.location.toLowerCase().includes(searchState.destination.split(',')[0].toLowerCase()) || hotel.name.toLowerCase().includes(searchState.destination.toLowerCase());
+        
+        return matchesPrice && matchesStars && matchesFacilities && matchesDestination;
     }).sort((a, b) => {
         if (sortBy === 'price_asc') return a.price - b.price;
         if (sortBy === 'price_desc') return b.price - a.price;
@@ -184,7 +96,7 @@ const Hotels: React.FC = () => {
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div>
                             <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DATES</div>
-                            <div className="text-[15px] font-bold text-gray-900">Oct 12 - Oct 15, 2024</div>
+                            <div className="text-[15px] font-bold text-gray-900">{searchState.dates}</div>
                         </div>
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div>
@@ -192,7 +104,10 @@ const Hotels: React.FC = () => {
                             <div className="text-[15px] font-bold text-gray-900">{searchState.guests}</div>
                         </div>
                     </div>
-                    <button className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                    <button 
+                        className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                        onClick={() => navigate('/')}
+                    >
                         <span className="material-symbols-outlined text-[18px]">edit</span>
                         Change Search
                     </button>
@@ -235,9 +150,9 @@ const Hotels: React.FC = () => {
                             <h4 className="font-semibold text-[15px] mb-3">Star Rating</h4>
                             {[5, 4, 3, 2, 1].map(star => (
                                 <label key={star} className="flex items-center gap-3 mb-2 cursor-pointer group">
-                                    <input 
-                                        type="checkbox" 
-                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer"
                                         checked={selectedStars.includes(star)}
                                         onChange={() => handleStarToggle(star)}
                                     />
@@ -259,9 +174,9 @@ const Hotels: React.FC = () => {
                                 { name: 'Gym', icon: 'fitness_center' }
                             ].map(amenity => (
                                 <label key={amenity.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
-                                    <input 
-                                        type="checkbox" 
-                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer"
                                         checked={selectedFacilities.includes(amenity.name)}
                                         onChange={() => handleFacilityToggle(amenity.name)}
                                     />
@@ -316,7 +231,12 @@ const Hotels: React.FC = () => {
                     </div>
 
                     {/* Check if no results */}
-                    {filteredHotels.length === 0 ? (
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 rounded-xl text-gray-400 mt-4 h-64 shadow-sm">
+                            <div className="w-8 h-8 border-4 border-travel-blue border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <p className="font-bold text-gray-500">Searching hotels...</p>
+                        </div>
+                    ) : filteredHotels.length === 0 ? (
                         <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 border-dashed rounded-xl text-gray-400 mt-4 h-64">
                             <span className="material-symbols-outlined text-5xl mb-3 text-gray-300">travel_explore</span>
                             <p className="font-bold text-gray-500">No results to display</p>

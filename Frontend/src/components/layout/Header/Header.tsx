@@ -39,15 +39,19 @@ const Header: React.FC = () => {
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex items-center gap-6 text-sm font-medium">
                         <Link className="hover:text-travel-blue transition-colors" to="/help-center">Help</Link>
-                        <a className="hover:text-travel-blue transition-colors" href="#">My Booking</a>
+                        <Link className="hover:text-travel-blue transition-colors" to="/booking">My Booking</Link>
+                        {isAuthenticated && (
+                            <Link className="hover:text-travel-blue transition-colors" to="/profile">Profile</Link>
+                        )}
                     </div>
                     <div className="flex gap-3">
                         {isAuthenticated ? (
-                            <div className="flex items-center gap-4 animate-fade-in">
+                            <Link to="/profile" className="flex items-center gap-4 animate-fade-in group">
                                 <div className="flex flex-col items-end">
-                                    <span className="text-sm font-bold text-gray-900">Hi, {user?.Ten}</span>
+                                    <span className="text-sm font-bold text-gray-900 group-hover:text-travel-blue">Hi, {user?.Ten}</span>
                                     <button
-                                        onClick={() => setIsLogoutConfirmOpen(true)}
+                                        type="button"
+                                        onClick={(e) => { e.preventDefault(); setIsLogoutConfirmOpen(true); }}
                                         className="text-xs text-red-500 hover:underline"
                                     >
                                         Đăng xuất
@@ -56,7 +60,7 @@ const Header: React.FC = () => {
                                 <div className="w-8 h-8 rounded-full bg-travel-blue flex items-center justify-center text-white font-bold hover-scale cursor-pointer">
                                     {user?.Ten?.[0]}
                                 </div>
-                            </div>
+                            </Link>
                         ) : (
                             <>
                                 <button

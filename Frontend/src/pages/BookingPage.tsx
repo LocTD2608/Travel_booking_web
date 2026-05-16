@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+import { createVNPayUrl, redirectToVNPay } from '../services/paymentApi';
+
 // ─── Types ──────────────────────────────────────────────────────────────────
-type PaymentMethod = 'card' | 'momo' | 'bank';
+type PaymentMethod = 'card' | 'momo' | 'bank' | 'vnpay';
 
 // ─── BookingPage ─────────────────────────────────────────────────────────────
 const BookingPage: React.FC = () => {
@@ -77,11 +79,54 @@ const BookingPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!form.fullName || !form.email) { alert('Please fill in all required fields.'); return; }
+        if (!form.fullName || !form.email) { alert('Vui lòng điền đầy đủ thông tin bắt buộc.'); return; }
+        if (!user) { alert('Bạn cần đăng nhập để đặt vé.'); return; }
         setIsSubmitting(true);
-        await new Promise(r => setTimeout(r, 1800));
-        setIsSubmitting(false);
-        setBookingSuccess(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://127.0.0.1:3000/api/booking/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: token ? `Bearer ${token}` : '',
+                },
+                body: JSON.stringify({
+                    UserID: user.id,
+                    TongTien: total,
+                    details: [{
+                        type,
+                        name,
+                        price,
+                        nights,
+                        image,
+                        detail1,
+                        detail2,
+                        detail3,
+                        detail4
+                    }]
+                }),
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || err.message || 'Không thể tạo đơn đặt vé');
+            }
+            const bookingResult = await response.json();
+            
+            if (paymentMethod === 'vnpay') {
+                const vnpayResult = await createVNPayUrl(total, bookingResult.MaBooking.toString());
+                if (vnpayResult.success && vnpayResult.paymentUrl) {
+                    redirectToVNPay(vnpayResult.paymentUrl);
+                } else {
+                    throw new Error('Không thể tạo URL VNPay');
+                }
+            } else {
+                setBookingSuccess(true);
+            }
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Đặt vé thất bại. Vui lòng thử lại.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // ── Success Screen ────────────────────────────────────────────────────────
@@ -252,6 +297,7 @@ const BookingPage: React.FC = () => {
                             {([
                                 { id: 'card', icon: 'credit_card', label: 'Credit or Debit Card', desc: 'Visa, Mastercard, JCB, American Express', color: 'text-[#005CE6]' },
                                 { id: 'momo', icon: 'account_balance_wallet', label: 'MoMo E-Wallet', desc: 'Fast and secure local payment', color: 'text-pink-600' },
+                                { id: 'vnpay', icon: 'account_balance', label: 'VNPay', desc: 'Thanh toán an toàn qua VNPay Sandbox', color: 'text-blue-600' },
                                 { id: 'bank', icon: 'account_balance', label: 'Bank Transfer', desc: 'Direct transfer from local banks', color: 'text-gray-600' },
                             ] as { id: PaymentMethod; icon: string; label: string; desc: string; color: string }[]).map(pm => (
                                 <label
