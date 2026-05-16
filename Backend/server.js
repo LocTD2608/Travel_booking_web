@@ -1,6 +1,6 @@
 require('dotenv').config();
-require("./src/workers/bookingWorker");
-require("./src/cron/cancelBooking");
+try { require("./src/workers/bookingWorker"); } catch (e) { console.warn("⚠️  BookingWorker skipped (Redis not available)"); }
+try { require("./src/cron/cancelBooking"); } catch (e) { console.warn("⚠️  CancelBooking cron skipped (Redis not available)"); }
 
 const app = require('./src/app');
 

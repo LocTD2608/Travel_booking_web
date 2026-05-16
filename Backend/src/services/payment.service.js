@@ -1,5 +1,14 @@
 const crypto = require('crypto');
-const { redisClient } = require('../configs/redis');
+const redisConnection = require('../configs/redis');
+
+// In-memory fallback when Redis is not available
+const memoryStore = new Map();
+const redisClient = redisConnection || {
+    hset: async (key, data) => { memoryStore.set(key, { ...data }); },
+    hgetall: async (key) => memoryStore.get(key) || {},
+    del: async (key) => memoryStore.delete(key),
+    expire: async () => {},
+};
 
 /**
  * Payment Service - Xử lý thanh toán với Mock VNPay Sandbox

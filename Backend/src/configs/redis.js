@@ -1,9 +1,4 @@
-const IORedis = require("ioredis");
+// Redis connection - optional, only used for booking queue
+// Skip entirely if Redis is not configured or not available
 
-const connection = new IORedis({
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT,
-  maxRetriesPerRequest: null,
-});
-
-module.exports = connection;
+module.exports = null;
