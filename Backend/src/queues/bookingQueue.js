@@ -1,8 +1,14 @@
-const { Queue } = require("bullmq");
 const connection = require("../configs/redis");
 
-const bookingQueue = new Queue("bookingQueue", {
-  connection,
-});
+let bookingQueue = null;
+
+if (connection) {
+  try {
+    const { Queue } = require("bullmq");
+    bookingQueue = new Queue("bookingQueue", { connection });
+  } catch (e) {
+    console.warn("⚠️  BookingQueue skipped (Redis not available)");
+  }
+}
 
 module.exports = bookingQueue;
