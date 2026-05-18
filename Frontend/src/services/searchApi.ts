@@ -1,9 +1,9 @@
 import type {
     FlightResult, FlightFilters,
-    HotelResult, HotelFilters,
+    HotelResult, HotelFilters, HotelDetailResult,
     TrainResult, TrainFilters,
     ExperienceResult, ExperienceFilters,
-    ApiResponse,
+    ApiResponse, SingleResponse,
 } from '../types/search';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
@@ -29,6 +29,13 @@ export async function fetchFlights(filters: FlightFilters): Promise<ApiResponse<
 // ─── Hotels ──────────────────────────────────────────────────────────────────
 export async function fetchHotels(filters: HotelFilters): Promise<ApiResponse<HotelResult>> {
     const url = `${BASE_URL}/search/hotels${buildParams(filters as Record<string, string>)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
+export async function fetchHotelDetail(id: string): Promise<SingleResponse<HotelDetailResult>> {
+    const url = `${BASE_URL}/hotels/${id}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
     return res.json();

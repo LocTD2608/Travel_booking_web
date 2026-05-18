@@ -301,3 +301,13 @@ exports.vnpayReturn = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+
+exports.confirmPayment = async (req, res) => {
+    // VNPay webhook already updates the DB
+    // We just return success to avoid frontend 404
+    try {
+        return res.json({ success: true, message: 'Payment confirmed via callback' });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};

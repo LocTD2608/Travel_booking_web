@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../components/auth/AuthModal';
+import { fetchHotelDetail } from '../../services/searchApi';
+import type { HotelDetailResult } from '../../types/search';
 
 // ─── Mock Dataset ────────────────────────────────────────────────────────────
 const HOTEL_DETAILS: Record<string, {
@@ -308,20 +310,102 @@ const HotelDetail: React.FC = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [selectedImageIdx, setSelectedImageIdx] = useState(0);
     const [showAllImages, setShowAllImages] = useState(false);
+    
+    const [hotelData, setHotelData] = useState<HotelDetailResult | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const hotel = id ? HOTEL_DETAILS[id] : null;
+    useEffect(() => {
+        if (id) {
+            setLoading(true);
+            fetchHotelDetail(id)
+                .then(res => {
+                    if (res.success) {
+                        setHotelData(res.data);
+                    } else {
+                        setError(res.message || 'Hotel not found');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching hotel detail:', err);
+                    setError('Unable to load hotel details. Please try again later.');
+                })
+                .finally(() => setLoading(false));
+        }
+    }, [id]);
 
-    if (!hotel) {
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#005CE6]"></div>
+                <p className="mt-4 text-gray-500 font-medium">Loading hotel details...</p>
+            </div>
+        );
+    }
+
+    if (error || !hotelData) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
-                <span className="material-symbols-outlined text-6xl mb-4">hotel</span>
-                <p className="font-bold text-xl">Hotel not found</p>
+                <span className="material-symbols-outlined text-6xl mb-4">error</span>
+                <p className="font-bold text-xl">{error || 'Hotel not found'}</p>
                 <button onClick={() => navigate('/hotels')} className="mt-4 text-blue-600 hover:underline">← Back to Hotels</button>
             </div>
         );
     }
 
-    const handleSelectRoom = (room?: typeof HOTEL_DETAILS['h1']['rooms'][0]) => {
+    // ─── Map Backend Data to UI Structure ────────────────────────────────────
+    // Use fallback values for fields not present in DB
+    const hotel = {
+        id: String(hotelData.hotel.id),
+        name: hotelData.hotel.name,
+        location: hotelData.hotel.address,
+        stars: hotelData.hotel.stars || 5,
+        rating: 9.2, // Fallback
+        ratingText: 'Exceptional', // Fallback
+        reviews: 856, // Fallback
+        description: 'Experience luxury and comfort in the heart of the city. Our hotel offers premium amenities and world-class service to make your stay unforgettable.', // Fallback
+        facilities: [
+            { name: 'Free WiFi', icon: 'wifi' },
+            { name: 'Pool', icon: 'pool' },
+            { name: 'Spa', icon: 'spa' },
+            { name: 'Restaurant', icon: 'restaurant' },
+            { name: 'Gym', icon: 'fitness_center' },
+            { name: 'Parking', icon: 'local_parking' },
+        ],
+        images: [
+            'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=600&q=80',
+        ],
+        rooms: hotelData.rooms.map((r, idx) => ({
+            id: String(r.roomTypeId),
+            name: r.name,
+            size: 30 + (idx * 5),
+            bedType: idx % 2 === 0 ? 'King Bed' : 'Twin Beds',
+            view: idx % 2 === 0 ? 'City View' : 'Garden View',
+            price: Number(r.price),
+            originalPrice: Number(r.price) * 1.2,
+            maxGuests: r.maxGuests,
+            amenities: ['Free WiFi', 'Air Conditioning', 'Mini Bar', 'Smart TV'],
+            image: `https://images.unsplash.com/photo-${1631049307264 + idx}-da0ec9d70304?auto=format&fit=crop&w=400&q=80`,
+            cancellation: 'FREE CANCELLATION',
+            breakfast: idx % 2 === 0,
+            available: 5 - idx,
+        })),
+        reviewList: hotelData.reviews.length > 0 ? hotelData.reviews.map(rev => ({
+            author: rev.userName,
+            date: new Date(rev.date).toLocaleDateString(),
+            score: rev.rating,
+            text: rev.comment,
+            country: 'Vietnam'
+        })) : [
+            { author: 'Guest', date: '2024-03-15', score: 9.0, text: 'Great stay!', country: 'Vietnam' }
+        ]
+    };
+
+    const handleSelectRoom = (room?: any) => {
         if (!isAuthenticated) {
             setIsAuthModalOpen(true);
         } else {

@@ -5,10 +5,10 @@ const getHotelDetail = async (hotelId) => {
     const [hotelRows] = await sequelize.query(
         `
     SELECT 
-      MaKS,
-      TenKS,
-      DiaChi,
-      HangSao
+      MaKS as id,
+      TenKS as name,
+      DiaChi as address,
+      HangSao as stars
     FROM khach_san
     WHERE MaKS = :hotelId
     `,
@@ -25,10 +25,10 @@ const getHotelDetail = async (hotelId) => {
     const [roomRows] = await sequelize.query(
         `
     SELECT 
-      lp.MaLoaiPhong,
-      lp.TenPhong,
-      lp.GiaPhong,
-      lp.SoNguoiOToiDa
+      lp.MaLoaiPhong as roomTypeId,
+      lp.TenPhong as name,
+      lp.GiaPhong as price,
+      lp.SoNguoiOToiDa as maxGuests
     FROM loai_phong lp
     WHERE lp.MaKS = :hotelId
     ORDER BY lp.GiaPhong ASC
@@ -78,16 +78,16 @@ const getHotelDetail = async (hotelId) => {
 
     return {
         hotel: {
-            id: hotel.MaKS,
-            name: hotel.TenKS,
-            address: hotel.DiaChi,
-            stars: hotel.HangSao,
+            id: hotel.id,
+            name: hotel.name,
+            address: hotel.address,
+            stars: hotel.stars,
         },
         rooms: roomRows.map((r) => ({
-            roomTypeId: r.MaLoaiPhong,
-            name: r.TenPhong,
-            price: r.GiaPhong,
-            maxGuests: r.SoNguoiOToiDa,
+            roomTypeId: r.roomTypeId,
+            name: r.name,
+            price: r.price,
+            maxGuests: r.maxGuests,
         })),
         availability: availabilityRows.map((a) => ({
             id: a.MaPhongKhaDung,
@@ -103,6 +103,7 @@ const getHotelDetail = async (hotelId) => {
             userName: `${r.Ho} ${r.Ten}`,
         })),
     };
+
 };
 
 module.exports = { getHotelDetail };

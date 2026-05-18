@@ -93,6 +93,19 @@ exports.getDashboardStats = async (req, res) => {
       }
     );
 
+    // Booking gần đây
+    const recentBookings = await sequelize.query(
+      `
+      SELECT MaBooking, UserID, TongTien, TrangThaiBooking, ThoiDiemThanhToan, ThoiDiemDat
+      FROM booking
+      ORDER BY ThoiDiemDat DESC
+      LIMIT 5
+      `,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+
     res.status(200).json({
       success: true,
       data: {
@@ -107,6 +120,8 @@ exports.getDashboardStats = async (req, res) => {
         thongKeTrangThaiBooking: bookingStatus,
 
         thongKeBookingTheoThang: bookingsByMonth,
+
+        recentBookings: recentBookings,
       },
     });
 

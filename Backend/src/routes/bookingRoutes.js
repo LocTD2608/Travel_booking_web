@@ -8,5 +8,6 @@ router.post("/create", bookingController.createBooking);
 router.post("/pay/:id", bookingController.payBooking);
 router.post("/cancel/:id", bookingController.cancelBooking);
 router.get("/stats", jwtAuth, isAdmin, bookingController.getBookingStats);
+router.get("/user/:userId", bookingController.getUserBookings);
 
 module.exports = router;
