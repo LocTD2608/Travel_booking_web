@@ -48,14 +48,8 @@ exports.getTourDetail = async (req, res) => {
 
     if (!tour) {
       return res.status(404).json({
+        success: false,
         message: "Tour not found"
-      });
-    }
-
-    // Chỉ trả về nếu là tour du lịch
-    if (tour.LoaiDichVu !== "du_lich") {
-      return res.status(404).json({
-        message: "This is not a travel tour"
       });
     }
 
@@ -64,7 +58,10 @@ exports.getTourDetail = async (req, res) => {
       data: tour
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ 
+      success: false,
+      error: err.message 
+    });
   }
 };
 
