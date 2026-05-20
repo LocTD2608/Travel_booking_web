@@ -1,8 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const flightController = require("../controllers/flight.controller");
+const jwtAuth = require("../middlewares/jwtAuth");
+const { isAdmin } = require("../middlewares/auth");
 
-// GET flight detail
-router.get("/:id", flightController.getFlightDetail);
+// Flight CRUD
+router.get("/", jwtAuth, flightController.getFlights);
+router.get("/:id", jwtAuth, flightController.getFlightDetail);
+router.post("/", jwtAuth, isAdmin, flightController.createFlight);
+router.put("/:id", jwtAuth, isAdmin, flightController.updateFlight);
+router.delete("/:id", jwtAuth, isAdmin, flightController.deleteFlight);
 
 module.exports = router;
