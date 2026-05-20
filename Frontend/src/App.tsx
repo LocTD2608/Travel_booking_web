@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from "./components/layout/MainLayout"
 import { HomePage } from './pages/Home/HomePage'
 import Flights from './pages/Transport/Flights'
@@ -27,13 +27,22 @@ import CarRental from './pages/Transport/CarRental'
 import MobileCredit from './pages/Bills/MobileCredit'
 import DataPlans from './pages/Bills/DataPlans'
 import Electricity from './pages/Bills/Electricity'
-import AdminDashboard from './pages/Admin/AdminDashboard'
 import AdminRoute from './components/common/AdminRoute'
 import Profile from './pages/Profile/Profile'
 import BookingHistory from './pages/Profile/BookingHistory'
 import Checkout from './pages/Checkout/Checkout'
 import PaymentCallback from './pages/PaymentCallback/PaymentCallback'
 import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess'
+
+// Admin Layout & Pages
+import AdminLayout from './components/layout/AdminLayout'
+import AdminDashboard from './pages/Admin/dashboard'
+import AdminFlights from './pages/Admin/flights'
+import AdminAccommodations from './pages/Admin/accommodations'
+import AdminBookings from './pages/Admin/bookings'
+import AdminCancellations from './pages/Admin/cancellations'
+import AdminUsers from './pages/Admin/users'
+
 
 function App() {
   return (
@@ -47,8 +56,6 @@ function App() {
         <Route path="/booking" element={<BookingPage />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Admin route - protected */}
-        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
         {/* Route dùng MainLayout */}
         <Route element={<MainLayout />}>
@@ -80,6 +87,24 @@ function App() {
           <Route path="/mobile-credit" element={<MobileCredit />} />
           <Route path="/data-plans" element={<DataPlans />} />
           <Route path="/electricity" element={<Electricity />} />
+        </Route>
+
+        {/* Protected Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="flights" element={<AdminFlights />} />
+          <Route path="accommodations" element={<AdminAccommodations />} />
+          <Route path="bookings" element={<AdminBookings />} />
+          <Route path="cancellations" element={<AdminCancellations />} />
+          <Route path="users" element={<AdminUsers />} />
         </Route>
 
       </Routes>

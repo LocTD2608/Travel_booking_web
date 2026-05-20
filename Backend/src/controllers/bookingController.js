@@ -59,17 +59,21 @@ exports.createBooking = async (req, res) => {
     console.log("Created booking:", booking.MaBooking);
 
     await t.commit();
+    const committedTransaction = t;
+    t = null;
 
     // auto cancel
-    await bookingQueue.add(
-      "autoCancel",
-      {
-        bookingId: booking.MaBooking,
-      },
-      {
-        delay: 10000,
-      }
-    );
+    if (bookingQueue) {
+      await bookingQueue.add(
+        "autoCancel",
+        {
+          bookingId: booking.MaBooking,
+        },
+        {
+          delay: 10000,
+        }
+      );
+    }
 
     return res.json({
       success: true,
@@ -77,7 +81,9 @@ exports.createBooking = async (req, res) => {
       data: booking,
     });
   } catch (err) {
-    if (t) await t.rollback();
+    if (t) {
+      await t.rollback();
+    }
 
     console.error(err);
 
@@ -140,6 +146,7 @@ exports.payBooking = async (req, res) => {
     console.log("Paid booking:", booking.MaBooking);
 
     await t.commit();
+    t = null;
 
     return res.json({
       success: true,
@@ -161,26 +168,34 @@ exports.getBookingStats = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     const paidStatuses = ["Đã thanh toán", "DA_THANH_TOAN"];
-    const where = {
+
+    // Stats where: paid statuses only, date filters on ThoiDiemThanhToan
+    const statsWhere = {
       TrangThaiBooking: {
         [Op.in]: paidStatuses,
       },
     };
 
+    // Bookings where: all statuses, date filters on ThoiDiemDat
+    const bookingsWhere = {};
+
     if (startDate || endDate) {
-      where.ThoiDiemThanhToan = {};
+      statsWhere.ThoiDiemThanhToan = {};
+      bookingsWhere.ThoiDiemDat = {};
 
       if (startDate) {
         const start = new Date(startDate);
         if (!isNaN(start.getTime())) {
-          where.ThoiDiemThanhToan[Op.gte] = start;
+          statsWhere.ThoiDiemThanhToan[Op.gte] = start;
+          bookingsWhere.ThoiDiemDat[Op.gte] = start;
         }
       }
 
       if (endDate) {
         const end = new Date(endDate);
         if (!isNaN(end.getTime())) {
-          where.ThoiDiemThanhToan[Op.lte] = end;
+          statsWhere.ThoiDiemThanhToan[Op.lte] = end;
+          bookingsWhere.ThoiDiemDat[Op.lte] = end;
         }
       }
     }
@@ -191,7 +206,7 @@ exports.getBookingStats = async (req, res) => {
           [sequelize.fn("COUNT", sequelize.col("MaBooking")), "ticket_count"],
           [sequelize.fn("SUM", sequelize.col("TongTien")), "total_revenue"],
         ],
-        where,
+        where: statsWhere,
         raw: true,
       }),
       db.Booking.findAll({
@@ -203,8 +218,8 @@ exports.getBookingStats = async (req, res) => {
           "TongTien",
           "TrangThaiBooking",
         ],
-        where,
-        order: [["ThoiDiemThanhToan", "DESC"]],
+        where: bookingsWhere,
+        order: [["ThoiDiemDat", "DESC"]],
       }),
     ]);
 
@@ -276,6 +291,7 @@ exports.cancelBooking = async (req, res) => {
     console.log("Cancelled booking:", booking.MaBooking);
 
     await t.commit();
+    t = null;
 
     return res.json({
       success: true,
@@ -289,6 +305,48 @@ exports.cancelBooking = async (req, res) => {
   } catch (err) {
     if (t) await t.rollback();
 
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// Lấy lịch sử booking của user (có phân trang)
+exports.getUserBookings = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const offset = (page - 1) * limit;
+
+    const { count, rows: bookings } = await db.Booking.findAndCountAll({
+      where: { UserID: userId },
+      order: [["ThoiDiemDat", "DESC"]],
+      limit,
+      offset
+    });
+
+    const data = [];
+    for (const booking of bookings) {
+      const details = await db.ChiTietBooking.findAll({
+        where: { MaBooking: booking.MaBooking }
+      });
+      data.push({
+        booking,
+        details
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Lấy lịch sử booking thành công",
+      data,
+      totalItems: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page
+    });
+  } catch (err) {
     return res.status(500).json({
       success: false,
       message: err.message,

@@ -113,7 +113,7 @@ const BookingPage: React.FC = () => {
             const bookingResult = await response.json();
             
             if (paymentMethod === 'vnpay') {
-                const vnpayResult = await createVNPayUrl(total, bookingResult.MaBooking.toString());
+                const vnpayResult = await createVNPayUrl(total, bookingResult.data.MaBooking.toString());
                 if (vnpayResult.success && vnpayResult.paymentUrl) {
                     redirectToVNPay(vnpayResult.paymentUrl);
                 } else {

@@ -12,6 +12,8 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const tourRoutes = require("./routes/tour.routes");
 
+const hotelRoutes = require("./routes/hotel.routes");
+
 const app = express();
 
 // Middleware
@@ -30,12 +32,12 @@ apiRouter.use("/auth", authRoutes);
 apiRouter.use("/search", searchRoutes);
 apiRouter.use("/users", userRoutes);
 apiRouter.use("/flights", flightRoutes);
+apiRouter.use("/hotels", hotelRoutes);
 apiRouter.use("/rooms", roomRoutes);
 apiRouter.use("/payment", paymentRoutes);
 apiRouter.use("/booking", bookingRoutes);
 apiRouter.use("/tours", tourRoutes);
 apiRouter.use("/", testRoutes);
-apiRouter.use("/booking", bookingRoutes);
 
 app.use("/api", apiRouter);
 
@@ -59,11 +61,12 @@ app.use(errorHandler);
 
 require("./workers/bookingWorker");
 
-module.exports = app;
 // Database Sync
 const sequelize = require("./configs/database");
 sequelize.authenticate()
   .then(() => console.log("Database synced successfully"))
   .catch(err => console.error("Database sync error:", err));
+
 module.exports = app;
+
 

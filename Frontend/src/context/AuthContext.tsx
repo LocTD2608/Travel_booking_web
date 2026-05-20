@@ -26,7 +26,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token');
-        if (storedUser && token) setUser(JSON.parse(storedUser));
+        
+        if (storedUser || token) {
+            try {
+                if (!storedUser || !token) {
+                    throw new Error('Incomplete session storage');
+                }
+                const parsedUser = JSON.parse(storedUser);
+                if (typeof parsedUser !== 'object' || parsedUser === null || !parsedUser.id || !parsedUser.Email) {
+                    throw new Error('Invalid user storage structure');
+                }
+                if (typeof token !== 'string' || token.trim() === '' || token.includes('undefined') || token.includes('null')) {
+                    throw new Error('Invalid token structure');
+                }
+                setUser(parsedUser);
+            } catch (e) {
+                console.warn('Antigravity System: Legacy/incompatible session detected, clearing storage.', e);
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                localStorage.removeItem('authority');
+                localStorage.removeItem('antd-pro-authority');
+                setUser(null);
+            }
+        }
         setIsLoading(false);
     }, []);
 
@@ -40,7 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             // Redirect admin to admin dashboard
             if (data.user.Role === 'ADMIN') {
-                navigate('/admin');
+                window.location.href = '/admin';
             }
         } finally { setIsLoading(false); }
     };
