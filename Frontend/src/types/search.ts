@@ -74,6 +74,15 @@ export interface ExperienceFilters {
     sortBy?: string;
 }
 
+export interface DestinationResult {
+    id: number;
+    name: string;
+    subtitle: string;
+    price: string;
+    rating: number;
+    image: string;
+}
+
 // ─── Generic API response ────────────────────────────────────────────────────
 export interface ApiResponse<T> {
     success: boolean;

@@ -3,6 +3,7 @@ import type {
     HotelResult, HotelFilters, HotelDetailResult,
     TrainResult, TrainFilters,
     ExperienceResult, ExperienceFilters,
+    DestinationResult,
     ApiResponse, SingleResponse,
 } from '../types/search';
 
@@ -52,6 +53,13 @@ export async function fetchTrains(filters: TrainFilters): Promise<ApiResponse<Tr
 // ─── Experiences ─────────────────────────────────────────────────────────────
 export async function fetchExperiences(filters: ExperienceFilters): Promise<ApiResponse<ExperienceResult>> {
     const url = `${BASE_URL}/search/experiences${buildParams(filters as Record<string, string>)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
+export async function fetchDestinations(): Promise<ApiResponse<DestinationResult>> {
+    const url = `${BASE_URL}/search/destinations`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
     return res.json();

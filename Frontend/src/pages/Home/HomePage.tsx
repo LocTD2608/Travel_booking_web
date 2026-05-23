@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 import { Recommended } from '../../components/ui/Recommended/Recommended';
+import { fetchDestinations } from '../../services/searchApi';
+import type { DestinationResult } from '../../types/search';
 import styles from './HomePage.module.css';
 
 export const HomePage: React.FC = () => {
@@ -86,32 +88,55 @@ export const HomePage: React.FC = () => {
         },
     ];
 
-    const destinations = [
+    const [destinations, setDestinations] = useState<DestinationResult[]>([
         {
-            name: 'Tokyo, Japan',
-            price: '$450',
-            rating: '4.9',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAdIV-mcWLwmgavcRXse7Xu5pvGA6xrII2tYUSEJUDtH6r1X0EYvCzK6jaITBHixVwjwHOjepyqniZP4xajDAV4R4b-MGdCGGYYNTVZpFqorBX7m6c3YfNx1lLqR3uWFd07bTrOhHMgJxcH_hith4VAsY8laM965IrnTgm9ALmDhm7jrMUzf1iiTTVc1p2PcJdKInp8a0GKxC5AFfsIc6sM3N-DclU6C86m9b7QztHAj7PzqNrRRP13H0_LY7PhfWfus5GBLzfFlbs'
+            id: 1,
+            name: 'Ha Noi',
+            subtitle: 'Flights & stays from 752.000 VND',
+            price: '752.000 VND',
+            rating: 4.6,
+            image: 'https://images.unsplash.com/photo-1555921015-5532091f6026?q=80&w=1200&auto=format&fit=crop'
         },
         {
-            name: 'Singapore',
-            price: '$120',
-            rating: '4.8',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA_5N2Dv89LlDMJ7n4dzrgLjruOvWtdG-qZn_JVaVNZ2kcU4AlTczvFregIREZOVIMrNlBSZ4UZ7y0F5luXx5rNESKq2m6hHoSBkoBqiboHBc_1iH8yH2rUa_FKaLHQU_J0JCe9fmhz7UZPXMO6svI-iieAtKEGKgJ0pffB6AqECSLYwJgZbhlsQv9XgSbt9dWzOoRjdVFa7Zjdb0X2evvQlqmFgp98U8D_YKyqws0atT4jhwBD2v6t70zhUBaksGE3IREamA1v3bI'
+            id: 2,
+            name: 'Da Nang',
+            subtitle: 'Flights & stays from 814.000 VND',
+            price: '814.000 VND',
+            rating: 4.7,
+            image: 'https://images.unsplash.com/photo-1597047084897-51e81819a499?q=80&w=1200&auto=format&fit=crop'
         },
         {
-            name: 'Bali, Indonesia',
-            price: '$35/night',
-            rating: '4.7',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDO0goVIhlbzeMQ61KemMzFFfQg_FQ_z1GzQ57JVeVMDoBGucZbxu_YbKTx75nbC5aUAg3eX9QjFbQtfTPDOUqVyVO7cZYXb-I-oB2Waz07aPGFNRMpVYcp1tDH7uDFKGll-jjBKQ5d4Xtbrj4ipxfBCIJfdmh4NKd66ri6iPL4TosDQ83xAnVgnCfZ8Yy9sF-SSJ3gj0Vfa9RO1GDkz9YiJnwU1Cf8xB4TrqA5MgzpTM_mSYS7xElyHuGyRLqlRGBpu6CQ5PeO1zg'
+            id: 3,
+            name: 'Phu Quoc',
+            subtitle: 'Flights & stays from 876.000 VND',
+            price: '876.000 VND',
+            rating: 4.8,
+            image: 'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?q=80&w=1200&auto=format&fit=crop'
         },
         {
-            name: 'London, UK',
-            price: '$680',
-            rating: '4.6',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCw2DlHzNi0lXvZmUjh0Xp0VVa5rBowR5WjMyANtP9j16j8BeTuuzMTbZTl1qDO1ZjOius3qXLoJpMhlXGchoCdcouKoiaAp2DLxAuOG8e5BcKyP22I3k8PhnpyPZA78EJEK88rZNfqnlqLeAVQ0PhnoEi2xsHWz13TBKtgjDQm8s6_V_LvMce2Pb_ndFYRPKgvd5tUkvdbnBrOBJ_J1aWbMqdULQfn8cF7Dnbqz6dGTAzyhIE_dj65GkC6V5sB0-Xa9fQdSf6gqY8'
+            id: 4,
+            name: 'HCM',
+            subtitle: 'Flights & stays from 566.000 VND',
+            price: '566.000 VND',
+            rating: 4.9,
+            image: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=80&w=1200&auto=format&fit=crop'
         },
-    ];
+    ]);
+
+    useEffect(() => {
+        const loadDestinations = async () => {
+            try {
+                const response = await fetchDestinations();
+                if (response.success && response.data?.length) {
+                    setDestinations(response.data);
+                }
+            } catch (error) {
+                console.error('Không thể tải destinations từ backend:', error);
+            }
+        };
+
+        loadDestinations();
+    }, []);
 
     const features = [
         {
