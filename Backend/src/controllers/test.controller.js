@@ -10,7 +10,7 @@ exports.createTestBooking = async (req, res) => {
 
         const booking = await db.Booking.create({
             UserID: newUser.UserID,
-            TrangThaiBooking: 'pending'
+            TrangThaiBooking: 'Chưa thanh toán'
         });
 
         console.log("BOOKING DATA VALUES:", booking.dataValues);

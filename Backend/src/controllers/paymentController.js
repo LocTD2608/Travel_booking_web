@@ -43,7 +43,7 @@ exports.handleSuccess = async (req, res) => {
         // 3. Update trạng thái booking
         await booking.update(
             {
-                TrangThaiBooking: 'DA_THANH_TOAN',
+                TrangThaiBooking: 'Đã thanh toán',
                 ThoiDiemThanhToan: new Date()
             },
             { transaction: t }
@@ -125,9 +125,9 @@ exports.handleFail = async (req, res) => {
             transaction: t
         });
 
-        // 6. Cập nhật trạng thái booking thành "DA_HUY"
+        // 6. Cập nhật trạng thái booking thành "Đã hủy"
         await booking.update({
-            TrangThaiBooking: 'DA_HUY'
+            TrangThaiBooking: 'Đã hủy'
         }, { transaction: t });
 
         await t.commit();
@@ -236,7 +236,7 @@ exports.vnpayReturn = async (req, res) => {
                     if (booking) {
                         await booking.update(
                             {
-                                TrangThaiBooking: 'DA_THANH_TOAN',
+                                TrangThaiBooking: 'Đã thanh toán',
                                 ThoiDiemThanhToan: new Date()
                             },
                             { transaction: t }

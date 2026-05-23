@@ -17,7 +17,7 @@ cron.schedule("*/2 * * * *", async () => {
   });
 
   for (let b of bookings) {
-    b.TrangThaiBooking = "DA_HUY";
+    b.TrangThaiBooking = "Đã hủy";
     await b.save();
   }
 });

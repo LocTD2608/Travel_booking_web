@@ -14,6 +14,7 @@ const statusColor: Record<string, string> = {
   'Đã thanh toán': 'green',
   'Chưa thanh toán': 'gold',
   'Đã hủy': 'red',
+  'Đã hoàn tiền': 'blue',
 };
 
 const BookingsPage: React.FC = () => {
@@ -142,6 +143,7 @@ const BookingsPage: React.FC = () => {
             <Option value="Đã thanh toán">Đã thanh toán</Option>
             <Option value="Chưa thanh toán">Chưa thanh toán</Option>
             <Option value="Đã hủy">Đã hủy</Option>
+            <Option value="Đã hoàn tiền">Đã hoàn tiền</Option>
           </Select>
         </Space>
       </div>

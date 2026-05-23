@@ -37,7 +37,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, change, gradient, ico
   </Card>
 );
 
-const statusColor: Record<string, string> = { 'Đã thanh toán': 'green', 'Chưa thanh toán': 'gold', 'Đã hủy': 'red' };
+const statusColor: Record<string, string> = { 'Đã thanh toán': 'green', 'Chưa thanh toán': 'gold', 'Đã hủy': 'red', 'Đã hoàn tiền': 'blue' };
 
 const columns: ColumnsType<any> = [
   {

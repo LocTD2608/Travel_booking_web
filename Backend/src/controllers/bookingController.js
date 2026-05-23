@@ -167,7 +167,7 @@ exports.payBooking = async (req, res) => {
 exports.getBookingStats = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    const paidStatuses = ["Đã thanh toán", "DA_THANH_TOAN"];
+    const paidStatuses = ["Đã thanh toán"];
 
     // Stats where: paid statuses only, date filters on ThoiDiemThanhToan
     const statsWhere = {
@@ -273,15 +273,17 @@ exports.cancelBooking = async (req, res) => {
     }
 
     let hoanTien = 0;
+    let newStatus = "Đã hủy";
 
     // hoàn tiền
     if (booking.TrangThaiBooking === "Đã thanh toán") {
       hoanTien = booking.TongTien;
+      newStatus = "Đã hoàn tiền";
     }
 
     await booking.update(
       {
-        TrangThaiBooking: "Đã hủy",
+        TrangThaiBooking: newStatus,
       },
       {
         transaction: t,
@@ -295,10 +297,10 @@ exports.cancelBooking = async (req, res) => {
 
     return res.json({
       success: true,
-      message: "Đã hủy booking",
+      message: newStatus === "Đã hoàn tiền" ? "Đã hủy và hoàn tiền" : "Đã hủy booking",
       data: {
         MaBooking: booking.MaBooking,
-        TrangThaiBooking: "Đã hủy",
+        TrangThaiBooking: newStatus,
         HoanTien: hoanTien,
       },
     });

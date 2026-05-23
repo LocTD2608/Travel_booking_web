@@ -45,14 +45,14 @@ const BookingHistory: React.FC = () => {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'DA_THANH_TOAN':
-            case 'SUCCESS':
+            case 'Đã thanh toán':
                 return 'green';
             case 'Chưa thanh toán':
-            case 'PENDING':
                 return 'gold';
-            case 'CANCELLED':
+            case 'Đã hủy':
                 return 'red';
+            case 'Đã hoàn tiền':
+                return 'blue';
             default:
                 return 'blue';
         }

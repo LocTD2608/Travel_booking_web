@@ -77,7 +77,7 @@ JOIN (
 -- =========================
 -- KHÁCH SẠN (50 KS)
 -- =========================
-INSERT INTO khach_san (TenKS, DiaChi, HangSao) VALUES
+INSERT INTO KHACH_SAN (TenKS, DiaChi, HangSao) VALUES
 ('InterContinental Hanoi Landmark', 'Ha Noi', 5),
 ('Lotte Hotel Hanoi', 'Ha Noi', 5),
 ('JW Marriott Hanoi', 'Ha Noi', 5),
