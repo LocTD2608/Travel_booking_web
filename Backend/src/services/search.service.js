@@ -307,6 +307,45 @@ const recommendHotels = async (params) => {
   return recommended;
 };
 
+const popularDestinations = [
+  {
+    id: 1,
+    name: 'Ha Noi',
+    rating: 4.6,
+    price: '752.000 VND',
+    image: 'https://images.unsplash.com/photo-1555921015-5532091f6026?q=80&w=1200&auto=format&fit=crop',
+    subtitle: 'Flights & stays from 752.000 VND'
+  },
+  {
+    id: 2,
+    name: 'Da Nang',
+    rating: 4.7,
+    price: '814.000 VND',
+    image: 'https://images.unsplash.com/photo-1597047084897-51e81819a499?q=80&w=1200&auto=format&fit=crop',
+    subtitle: 'Flights & stays from 814.000 VND'
+  },
+  {
+    id: 3,
+    name: 'Phu Quoc',
+    rating: 4.8,
+    price: '876.000 VND',
+    image: 'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?q=80&w=1200&auto=format&fit=crop',
+    subtitle: 'Flights & stays from 876.000 VND'
+  },
+  {
+    id: 4,
+    name: 'HCM',
+    rating: 4.9,
+    price: '566.000 VND',
+    image: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=80&w=1200&auto=format&fit=crop',
+    subtitle: 'Flights & stays from 566.000 VND'
+  }
+];
+
+const getPopularDestinations = async () => {
+  return popularDestinations;
+};
+
 const recommendFlights = async (params) => {
   const {
     from,
@@ -464,4 +503,4 @@ const checkHotelAvailability = async ({ hotelId, roomId, checkIn, checkOut, gues
   };
 };
 
-module.exports = { searchFlights, searchHotels, recommendHotels, recommendFlights, searchTrains, searchExperiences, checkHotelAvailability };
+module.exports = { searchFlights, searchHotels, recommendHotels, recommendFlights, searchTrains, searchExperiences, checkHotelAvailability, getPopularDestinations };

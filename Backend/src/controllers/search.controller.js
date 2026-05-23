@@ -168,6 +168,15 @@ const searchExperiences = async (req, res) => {
   }
 };
 
+const getDestinations = async (req, res) => {
+  try {
+    const data = await searchService.getPopularDestinations();
+    res.json({ success: true, data, total: data.length });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const getRecommendations = async (req, res) => {
   try {
     const { type = 'hotels', limit = 5, ...filters } = req.query;
@@ -225,4 +234,4 @@ const checkAvailability = async (req, res) => {
   }
 };
 
-module.exports = { searchFlights, searchHotels, getRecommendations, searchTrains, searchExperiences, checkAvailability };
+module.exports = { searchFlights, searchHotels, getDestinations, getRecommendations, searchTrains, searchExperiences, checkAvailability };

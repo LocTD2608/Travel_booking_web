@@ -5,6 +5,7 @@ const searchController = require("../controllers/search.controller");
 // Base: /api/search
 router.get("/flights", searchController.searchFlights);
 router.get("/hotels", searchController.searchHotels);
+router.get("/destinations", searchController.getDestinations);
 router.get("/recommendations", searchController.getRecommendations);
 router.get("/trains", searchController.searchTrains);
 router.get("/experiences", searchController.searchExperiences);
