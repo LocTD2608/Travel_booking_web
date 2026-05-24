@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         MaKM: {
             type: DataTypes.INTEGER
         },
-        TenDichVu: {
+        LoaiDichVu: {
             type: DataTypes.STRING(255)
         },
         HinhAnh: {
