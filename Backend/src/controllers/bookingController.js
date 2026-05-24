@@ -72,7 +72,7 @@ exports.createBooking = async (req, res) => {
             SoLuongNguoi: d.nights || 1, // Using SoLuongNguoi for nights/quantity
             DonGia: d.price || 0,
             LoaiDoiTuong: d.type || "unknown",
-            TenDichVu: d.name || "",
+            LoaiDichVu: d.name || "",
             HinhAnh: d.image || "",
             ThongTinThem: JSON.stringify({
               detail1: d.detail1,

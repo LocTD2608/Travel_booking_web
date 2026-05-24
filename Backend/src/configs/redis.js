@@ -1,4 +1,18 @@
-// Redis connection - optional, only used for booking queue
-// Skip entirely if Redis is not configured or not available
+const Redis = require("ioredis");
 
-module.exports = null;
+const connection = new Redis({
+  host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT,
+
+  maxRetriesPerRequest: null,
+});
+
+connection.on("connect", () => {
+  console.log("Redis connected");
+});
+
+connection.on("error", (err) => {
+  console.error("Redis error:", err);
+});
+
+module.exports = connection;
