@@ -3,6 +3,7 @@ import MainLayout from "./components/layout/MainLayout"
 import { HomePage } from './pages/Home/HomePage'
 import Flights from './pages/Transport/Flights'
 import Experience from './pages/Experience/Experience'
+import ExperienceDetail from './pages/ExperienceDetail/ExperienceDetail'
 import Contact from './pages/Contact/Contact'
 import AboutUs from './pages/AboutUs/AboutUs'
 import Trains from './pages/Transport/Trains'
@@ -62,6 +63,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/flights" element={<Flights />} />
           <Route path="/experience" element={<Experience />} />
+          <Route path="/tour/:id" element={<ExperienceDetail />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/trains" element={<Trains />} />
