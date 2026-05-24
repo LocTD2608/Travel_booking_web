@@ -11,8 +11,9 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const tourRoutes = require("./routes/tour.routes");
-
 const hotelRoutes = require("./routes/hotel.routes");
+const accommodationRoutes = require("./routes/accommodation.routes");
+const cancellationRoutes = require("./routes/cancellation.routes");
 
 const app = express();
 
@@ -37,6 +38,8 @@ apiRouter.use("/rooms", roomRoutes);
 apiRouter.use("/payment", paymentRoutes);
 apiRouter.use("/booking", bookingRoutes);
 apiRouter.use("/tours", tourRoutes);
+apiRouter.use("/accommodations", accommodationRoutes);
+apiRouter.use("/cancellations", cancellationRoutes);
 apiRouter.use("/", testRoutes);
 
 app.use("/api", apiRouter);

@@ -4,6 +4,10 @@ import request from './index';
 export const getDashboardStats = () =>
   request.get('/dashboard');
 
+// GET /api/dashboard/top-destinations (Admin, cần JWT) → getTopDestinations
+export const getTopDestinations = () =>
+  request.get('/dashboard/top-destinations');
+
 // GET /api/booking/stats (Admin, cần JWT) → getBookingStats
 export const getBookingStats = (params?: { startDate?: string; endDate?: string }) =>
   request.get('/booking/stats', { params });

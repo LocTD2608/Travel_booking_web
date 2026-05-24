@@ -11,6 +11,15 @@ export interface Flight {
   status: 'active' | 'cancelled' | 'delayed';
 }
 
+export interface Room {
+  id: string;
+  roomNumber: string;
+  type: 'Standard' | 'Deluxe' | 'Suite' | 'Executive Suite' | 'Presidential';
+  status: 'available' | 'occupied' | 'maintenance';
+  pricePerNight: number;
+  capacity: number;
+}
+
 export interface Accommodation {
   id: string;
   name: string;
@@ -22,6 +31,8 @@ export interface Accommodation {
   availableRooms: number;
   status: 'active' | 'inactive';
   imageUrl?: string;
+  description?: string;
+  rooms?: Room[];
 }
 
 export interface Booking {
@@ -39,6 +50,10 @@ export interface CancellationRequest {
   id: string;
   bookingId: string;
   customerName: string;
+  customerEmail: string;
+  bookingType: 'flight' | 'hotel' | 'tour';
+  bookingDetail: string;
+  bookingClass?: string;
   reason: string;
   requestedAt: string;
   status: 'pending' | 'approved' | 'rejected';

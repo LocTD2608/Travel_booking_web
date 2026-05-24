@@ -1,0 +1,86 @@
+[
+  {
+    "id": "CR001",
+    "bookingId": "BK003",
+    "customerName": "Lê Minh Châu",
+    "customerEmail": "le.minh.chau@email.com",
+    "bookingType": "flight",
+    "bookingDetail": "VN-402 (SGN-NRT)",
+    "bookingClass": "Business Class",
+    "reason": "Thay đổi lịch trình công tác đột xuất. Có tài liệu xác nhận từ công ty.",
+    "requestedAt": "2024-10-24 14:20",
+    "status": "pending"
+  },
+  {
+    "id": "CR002",
+    "bookingId": "BK007",
+    "customerName": "Đặng Văn Quân",
+    "customerEmail": "dang.van.quan@travel.vn",
+    "bookingType": "hotel",
+    "bookingDetail": "Marina Bay Sands",
+    "bookingClass": "Singapore",
+    "reason": "Hội nghị bị hủy do vấn đề visa. Yêu cầu hoàn tiền toàn bộ.",
+    "requestedAt": "2024-10-23 09:45",
+    "status": "approved"
+  },
+  {
+    "id": "CR003",
+    "bookingId": "BK001",
+    "customerName": "Nguyễn Văn An",
+    "customerEmail": "nguyen.an@gmail.com",
+    "bookingType": "flight",
+    "bookingDetail": "AF-188 (CDG-JFK)",
+    "bookingClass": "Economy Plus",
+    "reason": "Thay đổi ngày bay. Tìm được chặng bay tốt hơn ở nơi khác. Hủy trong 24h.",
+    "requestedAt": "2024-10-22 18:12",
+    "status": "rejected"
+  },
+  {
+    "id": "CR004",
+    "bookingId": "BK004",
+    "customerName": "Phạm Thị Dung",
+    "customerEmail": "pham.dung@outlook.com",
+    "bookingType": "tour",
+    "bookingDetail": "Tour Phú Quốc 5N4Đ",
+    "bookingClass": "Premium Package",
+    "reason": "Sức khỏe không cho phép. Có giấy tờ y tế xác nhận.",
+    "requestedAt": "2024-10-21 10:30",
+    "status": "pending"
+  },
+  {
+    "id": "CR005",
+    "bookingId": "BK002",
+    "customerName": "Trần Thị Bình",
+    "customerEmail": "tran.binh@company.co",
+    "bookingType": "hotel",
+    "bookingDetail": "Vinpearl Resort & Spa",
+    "bookingClass": "Nha Trang",
+    "reason": "Không hài lòng với phòng được phân. Yêu cầu chuyển loại phòng hoặc hoàn tiền.",
+    "requestedAt": "2024-10-20 16:00",
+    "status": "pending"
+  },
+  {
+    "id": "CR006",
+    "bookingId": "BK009",
+    "customerName": "Hoàng Minh Tuấn",
+    "customerEmail": "hoang.tuan@tech.vn",
+    "bookingType": "flight",
+    "bookingDetail": "VJ-345 (HAN-BKK)",
+    "bookingClass": "Economy",
+    "reason": "Đặt nhầm ngày bay. Yêu cầu hoàn tiền hoặc đổi ngày.",
+    "requestedAt": "2024-10-19 08:45",
+    "status": "approved"
+  },
+  {
+    "id": "CR007",
+    "bookingId": "BK011",
+    "customerName": "Ngô Thanh Tú",
+    "customerEmail": "ngo.tu@startup.io",
+    "bookingType": "hotel",
+    "bookingDetail": "Mường Thanh Grand",
+    "bookingClass": "Đà Nẵng",
+    "reason": "Thay đổi kế hoạch du lịch gia đình do thiên tai.",
+    "requestedAt": "2024-10-18 20:15",
+    "status": "pending"
+  }
+]

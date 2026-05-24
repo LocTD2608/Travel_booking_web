@@ -1,0 +1,189 @@
+[
+  {
+    "id": "a1",
+    "name": "Vinpearl Resort & Spa",
+    "location": "Nha Trang",
+    "type": "Resort",
+    "rating": 5,
+    "pricePerNight": 3200000,
+    "totalRooms": 250,
+    "availableRooms": 45,
+    "status": "active",
+    "description": "Vinpearl Resort & Spa Nha Trang mang vẻ đẹp thuần khiết Á Đông với mái ngói đỏ tươi ôm lấy vịnh biển trong xanh kì vĩ.",
+    "imageUrl": "",
+    "rooms": [
+      {
+        "id": "a1-r1",
+        "roomNumber": "101",
+        "type": "Standard",
+        "status": "available",
+        "pricePerNight": 800000,
+        "capacity": 2
+      },
+      {
+        "id": "a1-r2",
+        "roomNumber": "201",
+        "type": "Deluxe",
+        "status": "occupied",
+        "pricePerNight": 1500000,
+        "capacity": 2
+      },
+      {
+        "id": "a1-r3",
+        "roomNumber": "301",
+        "type": "Suite",
+        "status": "available",
+        "pricePerNight": 3000000,
+        "capacity": 3
+      },
+      {
+        "id": "a1-r4",
+        "roomNumber": "401",
+        "type": "Executive Suite",
+        "status": "maintenance",
+        "pricePerNight": 5000000,
+        "capacity": 4
+      },
+      {
+        "id": "a1-r5",
+        "roomNumber": "102",
+        "type": "Standard",
+        "status": "occupied",
+        "pricePerNight": 800000,
+        "capacity": 2
+      },
+      {
+        "id": "r1779601444767",
+        "roomNumber": "501",
+        "type": "Standard",
+        "status": "available",
+        "pricePerNight": 100000,
+        "capacity": 2
+      }
+    ]
+  },
+  {
+    "id": "a2",
+    "name": "Mường Thanh Grand",
+    "location": "Đà Nẵng",
+    "type": "Hotel",
+    "rating": 4,
+    "pricePerNight": 2100000,
+    "totalRooms": 180,
+    "availableRooms": 72,
+    "status": "active",
+    "description": "Mường Thanh Grand Đà Nẵng sở hữu vị trí đắc địa bên bờ sông Hàn thơ mộng, mang lại tầm nhìn tuyệt vời và dịch vụ đẳng cấp.",
+    "imageUrl": "",
+    "rooms": [
+      {
+        "id": "a2-r1",
+        "roomNumber": "101",
+        "type": "Standard",
+        "status": "available",
+        "pricePerNight": 800000,
+        "capacity": 2
+      },
+      {
+        "id": "a2-r2",
+        "roomNumber": "201",
+        "type": "Deluxe",
+        "status": "occupied",
+        "pricePerNight": 1500000,
+        "capacity": 2
+      },
+      {
+        "id": "a2-r3",
+        "roomNumber": "301",
+        "type": "Suite",
+        "status": "available",
+        "pricePerNight": 3000000,
+        "capacity": 3
+      }
+    ]
+  },
+  {
+    "id": "a3",
+    "name": "Premier Village",
+    "location": "Phú Quốc",
+    "type": "Villa",
+    "rating": 5,
+    "pricePerNight": 8500000,
+    "totalRooms": 30,
+    "availableRooms": 8,
+    "status": "active",
+    "description": "Premier Village Phu Quoc Resort là quần thể biệt thự nghỉ dưỡng đẳng cấp ẩn mình giữa sắc xanh của thiên nhiên đảo ngọc.",
+    "imageUrl": "",
+    "rooms": [
+      {
+        "id": "a3-r1",
+        "roomNumber": "101",
+        "type": "Suite",
+        "status": "available",
+        "pricePerNight": 8500000,
+        "capacity": 4
+      },
+      {
+        "id": "a3-r2",
+        "roomNumber": "201",
+        "type": "Presidential",
+        "status": "available",
+        "pricePerNight": 15000000,
+        "capacity": 6
+      }
+    ]
+  },
+  {
+    "id": "a4",
+    "name": "Novotel Hanoi",
+    "location": "Hà Nội",
+    "type": "Hotel",
+    "rating": 4,
+    "pricePerNight": 2800000,
+    "totalRooms": 200,
+    "availableRooms": 0,
+    "status": "inactive",
+    "description": "Khách sạn hiện đại nằm tại trung tâm kinh tế sầm uất của thủ đô, phù hợp cho cả doanh nhân và khách du lịch nghỉ dưỡng.",
+    "imageUrl": "",
+    "rooms": [
+      {
+        "id": "a4-r1",
+        "roomNumber": "101",
+        "type": "Standard",
+        "status": "maintenance",
+        "pricePerNight": 1800000,
+        "capacity": 2
+      }
+    ]
+  },
+  {
+    "id": "a5",
+    "name": "Fusion Suites",
+    "location": "Đà Nẵng",
+    "type": "Suites",
+    "rating": 4,
+    "pricePerNight": 1950000,
+    "totalRooms": 90,
+    "availableRooms": 34,
+    "status": "active",
+    "description": "Với phong cách thiết kế hiện đại, trẻ trung, Fusion Suites Đà Nẵng mang đến không gian sống tràn đầy năng lượng tươi mới.",
+    "imageUrl": "",
+    "rooms": [
+      {
+        "id": "a5-r1",
+        "roomNumber": "101",
+        "type": "Standard",
+        "status": "available",
+        "pricePerNight": 1200000,
+        "capacity": 2
+      },
+      {
+        "id": "a5-r2",
+        "roomNumber": "201",
+        "type": "Deluxe",
+        "status": "available",
+        "pricePerNight": 1950000,
+        "capacity": 2
+      }
+    ]
+  }
+]
