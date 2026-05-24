@@ -68,7 +68,7 @@ const searchFlights = async (params) => {
   }
   if (date) { baseQuery += ` AND DATE(cb.GioKhoiHanh) = :date`; replacements.date = date; }
   if (airline) { baseQuery += ` AND cb.HangBay LIKE :airline`; replacements.airline = `%${airline}%`; }
-  if (seatClass) { baseQuery += ` AND cb.HangGhe = :seatClass`; replacements.seatClass = seatClass; }
+
   if (minPrice) { baseQuery += ` AND cb.GiaCoBan >= :minPrice`; replacements.minPrice = minPrice; }
   if (maxPrice) { baseQuery += ` AND cb.GiaCoBan <= :maxPrice`; replacements.maxPrice = maxPrice; }
 
@@ -104,7 +104,6 @@ const searchFlights = async (params) => {
       sb2.Code AS to_code,
       sb2.Ten  AS to_name,
       cb.HangBay,
-      cb.HangGhe,
       cb.GiaCoBan AS price,
       cb.GioKhoiHanh AS departure_time,
       cb.GioHaCanh AS arrival_time
@@ -384,7 +383,6 @@ const recommendFlights = async (params) => {
       if (from && flight.from_code === from) score += 25;
       if (to && flight.to_code === to) score += 25;
       if (airline && flight.HangBay && flight.HangBay.toLowerCase().includes(airline.toLowerCase())) score += 20;
-      if (seatClass && flight.HangGhe === seatClass) score += 15;
       if (keyword) {
         const keywordLower = keyword.toLowerCase();
         if (flight.from_name && flight.from_name.toLowerCase().includes(keywordLower)) score += 10;

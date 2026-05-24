@@ -44,13 +44,12 @@ BEGIN
     DECLARE i INT DEFAULT 1;
     WHILE i <= 1000 DO
         INSERT INTO CHUYEN_BAY (
-            MaTuyenDuong, HangBay, HangGhe, GiaCoBan,
+            MaTuyenDuong, HangBay, GiaCoBan,
             GioKhoiHanh, GioHaCanh
         )
         VALUES (
             FLOOR(1 + RAND() * 30),
             ELT(FLOOR(1 + RAND()*4), 'Vietnam Airlines', 'Vietjet', 'Bamboo', 'Vietravel'),
-            ELT(FLOOR(1 + RAND()*3), 'Economy', 'Premium', 'Business'),
             FLOOR(500000 + RAND()*3000000),
             DATE_ADD('2026-01-01 06:00:00', INTERVAL FLOOR(RAND()*720) HOUR),
             DATE_ADD('2026-01-01 08:00:00', INTERVAL FLOOR(RAND()*720) HOUR)
@@ -66,13 +65,35 @@ DROP PROCEDURE gen_chuyen_bay;
 -- =========================
 -- GHẾ (mỗi chuyến 10 ghế mẫu)
 -- =========================
-INSERT INTO GHE (MaChuyenBay, SoGhe, TrangThaiGhe)
-SELECT MaChuyenBay, CONCAT('A', n), 'TRONG'
-FROM CHUYEN_BAY
-JOIN (
-    SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5
-    UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10
-) x;
+DELIMITER $$
+CREATE PROCEDURE gen_ghe()
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    WHILE i <= 1000 DO
+        -- Business
+        INSERT INTO GHE (MaChuyenBay, SoGhe, HangGhe, GiaPhuPhi, TrangThaiGhe) VALUES
+        (i, '1A', 'business', 1500000, 'TRONG'), (i, '1C', 'business', 1500000, 'TRONG'), (i, '1D', 'business', 1500000, 'TRONG'), (i, '1F', 'business', 1500000, 'TRONG'),
+        (i, '2A', 'business', 1500000, 'TRONG'), (i, '2C', 'business', 1500000, 'TRONG'), (i, '2D', 'business', 1500000, 'TRONG'), (i, '2F', 'business', 1500000, 'TRONG');
+        
+        -- Premium
+        INSERT INTO GHE (MaChuyenBay, SoGhe, HangGhe, GiaPhuPhi, TrangThaiGhe) VALUES
+        (i, '3A', 'premium', 500000, 'TRONG'), (i, '3B', 'premium', 500000, 'TRONG'), (i, '3C', 'premium', 500000, 'TRONG'), (i, '3D', 'premium', 500000, 'TRONG'), (i, '3E', 'premium', 500000, 'TRONG'), (i, '3F', 'premium', 500000, 'TRONG'),
+        (i, '4A', 'premium', 500000, 'TRONG'), (i, '4B', 'premium', 500000, 'TRONG'), (i, '4C', 'premium', 500000, 'TRONG'), (i, '4D', 'premium', 500000, 'TRONG'), (i, '4E', 'premium', 500000, 'TRONG'), (i, '4F', 'premium', 500000, 'TRONG');
+        
+        -- Economy
+        INSERT INTO GHE (MaChuyenBay, SoGhe, HangGhe, GiaPhuPhi, TrangThaiGhe) VALUES
+        (i, '5A', 'eco', 0, 'TRONG'), (i, '5B', 'eco', 0, 'TRONG'), (i, '5C', 'eco', 0, 'TRONG'), (i, '5D', 'eco', 0, 'TRONG'), (i, '5E', 'eco', 0, 'TRONG'), (i, '5F', 'eco', 0, 'TRONG'),
+        (i, '6A', 'eco', 0, 'TRONG'), (i, '6B', 'eco', 0, 'TRONG'), (i, '6C', 'eco', 0, 'TRONG'), (i, '6D', 'eco', 0, 'TRONG'), (i, '6E', 'eco', 0, 'TRONG'), (i, '6F', 'eco', 0, 'TRONG');
+        
+        -- Randomly mark 1 seat as occupied to test UI
+        UPDATE GHE SET TrangThaiGhe = 'DA_DAT' WHERE MaChuyenBay = i AND SoGhe = '4C';
+        
+        SET i = i + 1;
+    END WHILE;
+END$$
+DELIMITER ;
+CALL gen_ghe();
+DROP PROCEDURE gen_ghe;
 
 -- =========================
 -- KHÁCH SẠN (50 KS)

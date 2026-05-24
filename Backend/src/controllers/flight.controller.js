@@ -1,4 +1,4 @@
-const { ChuyenBay, TuyenDuong, SanBay } = require("../models");
+const { ChuyenBay, TuyenDuong, SanBay, Ghe } = require("../models");
 
 const includeRouteDetails = [
   {
@@ -44,6 +44,19 @@ exports.getFlightDetail = async (req, res) => {
     res.json(flight);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getFlightSeats = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const seats = await Ghe.findAll({
+      where: { MaChuyenBay: id },
+      order: [['MaGhe', 'ASC']]
+    });
+    res.json({ success: true, data: seats });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 

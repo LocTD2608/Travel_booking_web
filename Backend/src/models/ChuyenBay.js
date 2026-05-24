@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         MaTuyenDuong: DataTypes.INTEGER,
         HangBay: DataTypes.STRING(50),
-        HangGhe: DataTypes.STRING(30),
+
         GiaCoBan: DataTypes.DECIMAL(15, 2),
         GioKhoiHanh: DataTypes.DATE,
         GioHaCanh: DataTypes.DATE
