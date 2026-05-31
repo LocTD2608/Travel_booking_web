@@ -46,25 +46,25 @@ const searchFlights = async (params) => {
 
   const replacements = {};
 
-  if (from) { 
+  if (from) {
     const fromCode = getAirportCode(from);
     if (fromCode) {
-      baseQuery += ` AND (sb1.Code = :fromCode OR sb1.Ten LIKE :from)`; 
+      baseQuery += ` AND (sb1.Code = :fromCode OR sb1.Ten LIKE :from)`;
       replacements.fromCode = fromCode;
     } else {
-      baseQuery += ` AND (sb1.Code LIKE :from OR sb1.Ten LIKE :from)`; 
+      baseQuery += ` AND (sb1.Code LIKE :from OR sb1.Ten LIKE :from)`;
     }
-    replacements.from = `%${from}%`; 
+    replacements.from = `%${from}%`;
   }
-  if (to) { 
+  if (to) {
     const toCode = getAirportCode(to);
     if (toCode) {
-      baseQuery += ` AND (sb2.Code = :toCode OR sb2.Ten LIKE :to)`; 
+      baseQuery += ` AND (sb2.Code = :toCode OR sb2.Ten LIKE :to)`;
       replacements.toCode = toCode;
     } else {
-      baseQuery += ` AND (sb2.Code LIKE :to OR sb2.Ten LIKE :to)`; 
+      baseQuery += ` AND (sb2.Code LIKE :to OR sb2.Ten LIKE :to)`;
     }
-    replacements.to = `%${to}%`; 
+    replacements.to = `%${to}%`;
   }
   if (date) { baseQuery += ` AND DATE(cb.GioKhoiHanh) = :date`; replacements.date = date; }
   if (airline) { baseQuery += ` AND cb.HangBay LIKE :airline`; replacements.airline = `%${airline}%`; }
@@ -157,10 +157,10 @@ const searchHotels = async (params) => {
 
   const replacements = {};
 
-  if (city) { 
+  if (city) {
     const normalizedCity = normalizeCityForHotel(city);
-    baseQuery += ` AND ks.DiaChi LIKE :city`; 
-    replacements.city = `%${normalizedCity}%`; 
+    baseQuery += ` AND ks.DiaChi LIKE :city`;
+    replacements.city = `%${normalizedCity}%`;
   }
   if (rating) { baseQuery += ` AND ks.HangSao >= :rating`; replacements.rating = rating; }
   if (minPrice) { baseQuery += ` AND lp.GiaPhong >= :minPrice`; replacements.minPrice = minPrice; }
@@ -241,66 +241,77 @@ const recommendHotels = async (params) => {
       ks.TenKS AS name,
       ks.DiaChi AS address,
       ks.HangSao AS stars,
-      AVG(lp.GiaPhong) AS min_price,
-      COUNT(DISTINCT lp.MaLoaiPhong) AS room_count
+      MIN(lp.GiaPhong) AS min_price,
+      SUM(COALESCE(ttp.SoLuongPhongCoSan, 0)) AS available_rooms
     FROM KHACH_SAN ks
     LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
+    LEFT JOIN TINH_TRANG_PHONG_TRONG ttp ON lp.MaLoaiPhong = ttp.MaLoaiPhong
     WHERE 1=1
   `;
 
   const replacements = {};
-
-  if (city) {
-    query += ` AND ks.DiaChi LIKE :city`;
-    replacements.city = `%${city}%`;
-  }
-
-  if (rating) {
-    query += ` AND ks.HangSao >= :rating`;
-    replacements.rating = rating;
-  }
-
-  if (minPrice) {
-    query += ` AND lp.GiaPhong >= :minPrice`;
-    replacements.minPrice = minPrice;
-  }
-
-  if (maxPrice) {
-    query += ` AND lp.GiaPhong <= :maxPrice`;
-    replacements.maxPrice = maxPrice;
-  }
-
-  if (keyword) {
-    query += ` AND (ks.TenKS LIKE :keyword OR ks.DiaChi LIKE :keyword)`;
-    replacements.keyword = `%${keyword}%`;
-  }
-
   query += ` GROUP BY ks.MaKS, ks.TenKS, ks.DiaChi, ks.HangSao`;
 
   const [hotels] = await db.query(query, { replacements });
 
   const parsedMinPrice = minPrice ? Number(minPrice) : null;
   const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
-  const avgPrice = parsedMinPrice !== null && parsedMaxPrice !== null
-    ? (parsedMinPrice + parsedMaxPrice) / 2
-    : null;
+
+  const scoreHotel = (hotel) => {
+    let score = 0;
+    const hotelName = hotel.name ? hotel.name.toLowerCase() : '';
+    const hotelAddress = hotel.address ? hotel.address.toLowerCase() : '';
+    const cityLower = city ? city.toLowerCase() : '';
+    const keywordLower = keyword ? keyword.toLowerCase() : '';
+
+    if (city && (hotelAddress.includes(cityLower) || hotelName.includes(cityLower))) {
+      score += 100;
+    }
+
+    if (keyword) {
+      if (hotelName.includes(keywordLower)) score += 100;
+      if (hotelAddress.includes(keywordLower)) score += 100;
+    }
+
+    if (hotel.min_price != null) {
+      if (parsedMinPrice !== null && parsedMaxPrice !== null) {
+        if (hotel.min_price >= parsedMinPrice && hotel.min_price <= parsedMaxPrice) score += 100;
+      } else if (parsedMaxPrice !== null) {
+        if (hotel.min_price <= parsedMaxPrice) score += 100;
+      } else if (parsedMinPrice !== null) {
+        if (hotel.min_price >= parsedMinPrice) score += 100;
+      }
+    }
+
+    const availableRooms = Number(hotel.available_rooms || 0);
+    score += Math.min(100, Math.max(0, availableRooms * 10));
+
+    const stars = Number(hotel.stars || 0);
+    if (stars >= 5) {
+      score += 100;
+    } else if (stars >= 3) {
+      score += Math.round(((stars - 2) / 3) * 100);
+    }
+
+    if (hotel.flash_sale || hotel.is_flash_sale || hotel.promoActive) {
+      score += 100;
+    }
+
+    return score;
+  };
 
   const recommended = hotels
-    .map((hotel) => {
-      let score = 0;
-      if (city && hotel.address.toLowerCase().includes(city.toLowerCase())) score += 30;
-      if (keyword) {
-        const keywordLower = keyword.toLowerCase();
-        if (hotel.name.toLowerCase().includes(keywordLower)) score += 20;
-        if (hotel.address.toLowerCase().includes(keywordLower)) score += 10;
-      }
-      score += hotel.stars * 12;
-      if (hotel.min_price && parsedMaxPrice !== null && hotel.min_price <= parsedMaxPrice) score += 15;
-      if (avgPrice !== null && hotel.min_price && hotel.min_price <= avgPrice) score += 10;
-      if (hotel.room_count >= 5) score += 8;
-      return { ...hotel, score };
+    .map((hotel) => ({
+      ...hotel,
+      available_rooms: Number(hotel.available_rooms || 0),
+      score: scoreHotel(hotel)
+    }))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.min_price !== b.min_price) return (a.min_price || 0) - (b.min_price || 0);
+      if (a.stars !== b.stars) return Number(b.stars) - Number(a.stars);
+      return b.available_rooms - a.available_rooms;
     })
-    .sort((a, b) => b.score - a.score)
     .slice(0, Number(limit));
 
   return recommended;
@@ -350,12 +361,12 @@ const recommendFlights = async (params) => {
     from,
     to,
     date,
-    passengers,
     airline,
     seatClass,
     minPrice,
     maxPrice,
     keyword,
+    time,
     limit = 5
   } = params;
 
@@ -363,11 +374,7 @@ const recommendFlights = async (params) => {
     from,
     to,
     date,
-    passengers,
-    airline,
     seatClass,
-    minPrice,
-    maxPrice,
     keyword,
     sortBy: 'price',
     limit: 100,
@@ -377,24 +384,88 @@ const recommendFlights = async (params) => {
   const parsedMinPrice = minPrice ? Number(minPrice) : null;
   const parsedMaxPrice = maxPrice ? Number(maxPrice) : null;
 
+  const parseSearchTime = (value) => {
+    if (!value) return null;
+    if (!value.includes(':') && !value.includes('T')) return null;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const searchDateTime = parseSearchTime(time);
+
   const recommended = searchResult.data
     .map((flight) => {
       let score = 0;
-      if (from && flight.from_code === from) score += 25;
-      if (to && flight.to_code === to) score += 25;
-      if (airline && flight.HangBay && flight.HangBay.toLowerCase().includes(airline.toLowerCase())) score += 20;
-      if (keyword) {
-        const keywordLower = keyword.toLowerCase();
-        if (flight.from_name && flight.from_name.toLowerCase().includes(keywordLower)) score += 10;
-        if (flight.to_name && flight.to_name.toLowerCase().includes(keywordLower)) score += 10;
-        if (flight.HangBay && flight.HangBay.toLowerCase().includes(keywordLower)) score += 10;
-      }
-      if (parsedMaxPrice !== null && flight.price <= parsedMaxPrice) score += 10;
-      if (parsedMinPrice !== null && flight.price >= parsedMinPrice) score += 5;
-      score += Math.max(0, 10 - Math.floor(flight.price / 1000000));
-      return { ...flight, score };
+      if (from && flight.from_code === from) score += 50;
+      if (to && flight.to_code === to) score += 50;
+      if (airline && flight.HangBay && flight.HangBay.toLowerCase().includes(airline.toLowerCase())) score += 100;
+      if (seatClass && flight.HangGhe === seatClass) score += 15;
+
+      const keywordLower = keyword ? keyword.toLowerCase() : '';
+      if (keywordLower) {
+        if (flight.from_name && flight.from_name.toLowerCase().includes(keywordLower)) score += 50;
+        if (flight.to_name && flight.to_name.toLowerCase().includes(keywordLower)) score += 50;
+        if (flight.HangBay && flight.HangBay.toLowerCase().includes(keywordLower)) score += 100;
+        if (from && flight.from_code === from) score += 25;
+        if (to && flight.to_code === to) score += 25;
+        if (airline && flight.HangBay && flight.HangBay.toLowerCase().includes(airline.toLowerCase())) score += 20;
+        if (keyword) {
+          const keywordLower = keyword.toLowerCase();
+          if (flight.from_name && flight.from_name.toLowerCase().includes(keywordLower)) score += 10;
+          if (flight.to_name && flight.to_name.toLowerCase().includes(keywordLower)) score += 10;
+          if (flight.HangBay && flight.HangBay.toLowerCase().includes(keywordLower)) score += 10;
+        }
+
+        if (flight.price != null) {
+          if (parsedMinPrice !== null && parsedMaxPrice !== null) {
+            if (flight.price >= parsedMinPrice && flight.price <= parsedMaxPrice) score += 100;
+          } else if (parsedMaxPrice !== null) {
+            if (flight.price <= parsedMaxPrice) score += 100;
+          } else if (parsedMinPrice !== null) {
+            if (flight.price >= parsedMinPrice) score += 100;
+          }
+        }
+
+        if (flight.rating != null) {
+          const ratingValue = Number(flight.rating);
+          if (!Number.isNaN(ratingValue)) {
+            if (ratingValue >= 5) {
+              score += 100;
+            } else if (ratingValue >= 3) {
+              score += Math.round(((ratingValue - 2) / 3) * 100);
+            }
+          }
+        }
+
+        const isDirect = flight.stops === 0 || flight.direct === true || (!('stops' in flight) && !('direct' in flight));
+        if (isDirect) score += 100;
+
+        if (searchDateTime && flight.departure_time) {
+          const departureTime = new Date(flight.departure_time);
+          if (!Number.isNaN(departureTime.getTime())) {
+            const diffHours = Math.abs(departureTime - searchDateTime) / (1000 * 60 * 60);
+            if (diffHours <= 0.5) {
+              score += 100;
+            } else if (diffHours <= 1) {
+              score += 50;
+            } else {
+              score += Math.max(0, 50 - Math.floor(diffHours - 1) * 10);
+            }
+          }
+        }
+
+        if (flight.flash_sale || flight.is_flash_sale || flight.promoActive) {
+          score += 100;
+        }
+
+        return { ...flight, score };
+      })
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.price !== b.price) return a.price - b.price;
+      if (a.departure_time && b.departure_time) return new Date(a.departure_time) - new Date(b.departure_time);
+      return 0;
     })
-    .sort((a, b) => b.score - a.score)
     .slice(0, Number(limit));
 
   return recommended;

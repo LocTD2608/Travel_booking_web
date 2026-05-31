@@ -28,10 +28,10 @@ if (connection) {
 
     module.exports = worker;
   } catch (e) {
-    console.warn("⚠️  BookingWorker failed to start:", e.message);
+    console.warn("BookingWorker failed to start:", e.message);
     module.exports = null;
   }
 } else {
-  console.warn("⚠️  BookingWorker skipped (Redis not available)");
+  console.warn("BookingWorker skipped (Redis not available)");
   module.exports = null;
 }
