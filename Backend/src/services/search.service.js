@@ -409,57 +409,52 @@ const recommendFlights = async (params) => {
         if (from && flight.from_code === from) score += 25;
         if (to && flight.to_code === to) score += 25;
         if (airline && flight.HangBay && flight.HangBay.toLowerCase().includes(airline.toLowerCase())) score += 20;
-        if (keyword) {
-          const keywordLower = keyword.toLowerCase();
-          if (flight.from_name && flight.from_name.toLowerCase().includes(keywordLower)) score += 10;
-          if (flight.to_name && flight.to_name.toLowerCase().includes(keywordLower)) score += 10;
-          if (flight.HangBay && flight.HangBay.toLowerCase().includes(keywordLower)) score += 10;
-        }
+      }
 
-        if (flight.price != null) {
-          if (parsedMinPrice !== null && parsedMaxPrice !== null) {
-            if (flight.price >= parsedMinPrice && flight.price <= parsedMaxPrice) score += 100;
-          } else if (parsedMaxPrice !== null) {
-            if (flight.price <= parsedMaxPrice) score += 100;
-          } else if (parsedMinPrice !== null) {
-            if (flight.price >= parsedMinPrice) score += 100;
+      if (flight.price != null) {
+        if (parsedMinPrice !== null && parsedMaxPrice !== null) {
+          if (flight.price >= parsedMinPrice && flight.price <= parsedMaxPrice) score += 100;
+        } else if (parsedMaxPrice !== null) {
+          if (flight.price <= parsedMaxPrice) score += 100;
+        } else if (parsedMinPrice !== null) {
+          if (flight.price >= parsedMinPrice) score += 100;
+        }
+      }
+
+      if (flight.rating != null) {
+        const ratingValue = Number(flight.rating);
+        if (!Number.isNaN(ratingValue)) {
+          if (ratingValue >= 5) {
+            score += 100;
+          } else if (ratingValue >= 3) {
+            score += Math.round(((ratingValue - 2) / 3) * 100);
           }
         }
+      }
 
-        if (flight.rating != null) {
-          const ratingValue = Number(flight.rating);
-          if (!Number.isNaN(ratingValue)) {
-            if (ratingValue >= 5) {
-              score += 100;
-            } else if (ratingValue >= 3) {
-              score += Math.round(((ratingValue - 2) / 3) * 100);
-            }
+      const isDirect = flight.stops === 0 || flight.direct === true || (!('stops' in flight) && !('direct' in flight));
+      if (isDirect) score += 100;
+
+      if (searchDateTime && flight.departure_time) {
+        const departureTime = new Date(flight.departure_time);
+        if (!Number.isNaN(departureTime.getTime())) {
+          const diffHours = Math.abs(departureTime - searchDateTime) / (1000 * 60 * 60);
+          if (diffHours <= 0.5) {
+            score += 100;
+          } else if (diffHours <= 1) {
+            score += 50;
+          } else {
+            score += Math.max(0, 50 - Math.floor(diffHours - 1) * 10);
           }
         }
+      }
 
-        const isDirect = flight.stops === 0 || flight.direct === true || (!('stops' in flight) && !('direct' in flight));
-        if (isDirect) score += 100;
+      if (flight.flash_sale || flight.is_flash_sale || flight.promoActive) {
+        score += 100;
+      }
 
-        if (searchDateTime && flight.departure_time) {
-          const departureTime = new Date(flight.departure_time);
-          if (!Number.isNaN(departureTime.getTime())) {
-            const diffHours = Math.abs(departureTime - searchDateTime) / (1000 * 60 * 60);
-            if (diffHours <= 0.5) {
-              score += 100;
-            } else if (diffHours <= 1) {
-              score += 50;
-            } else {
-              score += Math.max(0, 50 - Math.floor(diffHours - 1) * 10);
-            }
-          }
-        }
-
-        if (flight.flash_sale || flight.is_flash_sale || flight.promoActive) {
-          score += 100;
-        }
-
-        return { ...flight, score };
-      })
+      return { ...flight, score };
+    })
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       if (a.price !== b.price) return a.price - b.price;
