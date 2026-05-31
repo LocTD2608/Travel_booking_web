@@ -7,6 +7,7 @@ const Booking = require('./Booking')(sequelize, Sequelize);
 const ChiTietBooking = require('./ChiTietBooking')(sequelize, Sequelize);
 const TinhTrangPhongTrong = require('./TinhTrangPhongTrong')(sequelize, Sequelize);
 const ThanhToan = require('./ThanhToan')(sequelize, Sequelize);
+const Hotel = require('./Hotel')(sequelize, Sequelize);
 
 const ChuyenBay = require('./ChuyenBay')(sequelize, Sequelize);
 const TuyenDuong = require('./TuyenDuong')(sequelize, Sequelize);
@@ -51,6 +52,7 @@ db.Booking = Booking;
 db.ChiTietBooking = ChiTietBooking;
 db.TinhTrangPhongTrong = TinhTrangPhongTrong;
 db.ThanhToan = ThanhToan;
+db.Hotel = Hotel;
 
 db.ChuyenBay = ChuyenBay;
 db.TuyenDuong = TuyenDuong;

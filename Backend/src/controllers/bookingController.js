@@ -2,6 +2,7 @@ const db = require("../models");
 const bookingQueue = require("../queues/bookingQueue");
 const sequelize = require("../configs/database");
 const { Op } = require("sequelize");
+const sendMail = require("../utils/sendMail");
 
 // In-memory overrides for mock booking actions
 const mockBookingOverrides = new Map();
@@ -132,37 +133,47 @@ exports.payBooking = async (req, res) => {
 
   try {
     const id = parseInt(req.params.id, 10);
+
+    // Booking giả
     if (id >= 9900) {
-      const mock = getMockBookings().find(b => b.MaBooking === id);
+      const mock = getMockBookings().find((b) => b.MaBooking === id);
+
       if (!mock) {
         return res.status(404).json({
           success: false,
           message: "Booking không tồn tại",
         });
       }
-      
-      const currentStatus = mockBookingOverrides.get(id) || mock.TrangThaiBooking;
+
+      const currentStatus =
+        mockBookingOverrides.get(id) || mock.TrangThaiBooking;
+
       if (currentStatus === "Đã thanh toán") {
         return res.status(400).json({
           success: false,
           message: "Booking đã được thanh toán",
         });
       }
-      if (currentStatus === "Đã hủy" || currentStatus === "Đã hoàn tiền") {
+
+      if (
+        currentStatus === "Đã hủy" ||
+        currentStatus === "Đã hoàn tiền"
+      ) {
         return res.status(400).json({
           success: false,
           message: `Booking đã bị hủy (${currentStatus})`,
         });
       }
-      
+
       mockBookingOverrides.set(id, "Đã thanh toán");
+
       return res.json({
         success: true,
         message: "Thanh toán thành công",
         data: {
           MaBooking: id,
           TrangThaiBooking: "Đã thanh toán",
-          ThoiDiemThanhToan: new Date()
+          ThoiDiemThanhToan: new Date(),
         },
       });
     }
@@ -201,6 +212,7 @@ exports.payBooking = async (req, res) => {
       });
     }
 
+    // Update booking
     await booking.update(
       {
         TrangThaiBooking: "Đã thanh toán",
@@ -211,7 +223,71 @@ exports.payBooking = async (req, res) => {
       }
     );
 
+    // Lấy user
+    const user = await db.User.findByPk(booking.UserID);
+
     console.log("Paid booking:", booking.MaBooking);
+
+    // Gửi email
+    if (user && user.Email) {
+      await sendMail({
+        to: user.Email,
+
+        subject: "Xác nhận thanh toán thành công",
+
+        html: `
+          <div style="font-family: Arial; padding: 20px;">
+
+            <h2 style="color: green;">
+              Thanh toán thành công
+            </h2>
+
+            <p>
+              Xin chào ${user.HoTen || "Khách hàng"},
+            </p>
+
+            <p>
+              Booking của bạn đã được thanh toán thành công.
+            </p>
+
+            <hr>
+
+            <h3>Thông tin giao dịch</h3>
+
+            <p>
+              <b>Mã booking:</b>
+              ${booking.MaBooking}
+            </p>
+
+            <p>
+              <b>Ngày thanh toán:</b>
+              ${new Date().toLocaleString("vi-VN")}
+            </p>
+
+            <p>
+              <b>Tổng tiền:</b>
+              ${Number(booking.TongTien).toLocaleString()} VNĐ
+            </p>
+
+            <p>
+              <b>Trạng thái:</b>
+              ${booking.TrangThaiBooking}
+            </p>
+
+            <hr>
+
+            <p>
+              Cảm ơn bạn đã sử dụng dịch vụ Travel Booking.
+            </p>
+
+            <p>
+              Chúc bạn có chuyến đi vui vẻ.
+            </p>
+
+          </div>
+        `,
+      });
+    }
 
     await t.commit();
     t = null;
@@ -223,6 +299,8 @@ exports.payBooking = async (req, res) => {
     });
   } catch (err) {
     if (t) await t.rollback();
+
+    console.log(err);
 
     return res.status(500).json({
       success: false,
@@ -501,6 +579,28 @@ exports.getUserBookings = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: err.message,
+    });
+  }
+};
+
+// Lấy all booking
+exports.getAllBookings = async (req, res) => {
+  try {
+    const bookings = await db.Booking.findAll({
+      order: [["ThoiDiemDat", "DESC"]],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Lấy tất cả booking thành công",
+      data: bookings,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi server",
     });
   }
 };
