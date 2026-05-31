@@ -5,12 +5,15 @@ import AuthModal from '../../components/auth/AuthModal';
 import { Slider } from 'antd';
 import { FlightCard, type FlightCardProps } from '../../components/ui/cards/transport/FlightCard';
 import { fetchFlights } from '../../services/searchApi';
+import FlightSelectionModal from '../../components/ui/modal/FlightSelectionModal';
 
 const Flights: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isFlightModalOpen, setIsFlightModalOpen] = useState(false);
+    const [selectedFlight, setSelectedFlight] = useState<FlightCardProps | null>(null);
 
     // Top Search State
     const searchState = {
@@ -22,13 +25,19 @@ const Flights: React.FC = () => {
 
     const handleSelectFlight = (flight: FlightCardProps) => {
         if (!isAuthenticated) { setIsAuthModalOpen(true); return; }
+        setSelectedFlight(flight);
+        setIsFlightModalOpen(true);
+    };
+
+    const handleConfirmFlight = (finalData: any) => {
+        setIsFlightModalOpen(false);
         const params = new URLSearchParams({
             type: 'flight',
-            name: `${flight.airline} ${flight.flightNumber}`,
-            price: String(flight.price),
-            detail2: flight.class,
-            detail3: `${flight.from} → ${flight.to}`,
-            detail4: `${flight.departureTime} – ${flight.arrivalTime}`,
+            name: `${finalData.outbound.flight.airline} ${finalData.outbound.flight.flightNumber}`,
+            price: String(finalData.grandTotal),
+            detail2: `${finalData.outbound.seats.length} Seats` + (finalData.isRoundTrip ? ` & Return ${finalData.return.flight.flightNumber}` : ''),
+            detail3: `${finalData.outbound.flight.from} → ${finalData.outbound.flight.to}`,
+            detail4: `${finalData.outbound.flight.departureTime} – ${finalData.outbound.flight.arrivalTime}`,
         });
         navigate(`/booking?${params.toString()}`);
     };
@@ -267,6 +276,12 @@ const Flights: React.FC = () => {
                 </div>
             </div>
             <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialView="login" />
+            <FlightSelectionModal 
+                isOpen={isFlightModalOpen} 
+                onClose={() => setIsFlightModalOpen(false)} 
+                outboundFlight={selectedFlight}
+                onConfirm={handleConfirmFlight}
+            />
         </>
     );
 };

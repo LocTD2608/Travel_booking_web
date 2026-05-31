@@ -46,29 +46,29 @@ const searchFlights = async (params) => {
 
   const replacements = {};
 
-  if (from) { 
+  if (from) {
     const fromCode = getAirportCode(from);
     if (fromCode) {
-      baseQuery += ` AND (sb1.Code = :fromCode OR sb1.Ten LIKE :from)`; 
+      baseQuery += ` AND (sb1.Code = :fromCode OR sb1.Ten LIKE :from)`;
       replacements.fromCode = fromCode;
     } else {
-      baseQuery += ` AND (sb1.Code LIKE :from OR sb1.Ten LIKE :from)`; 
+      baseQuery += ` AND (sb1.Code LIKE :from OR sb1.Ten LIKE :from)`;
     }
-    replacements.from = `%${from}%`; 
+    replacements.from = `%${from}%`;
   }
-  if (to) { 
+  if (to) {
     const toCode = getAirportCode(to);
     if (toCode) {
-      baseQuery += ` AND (sb2.Code = :toCode OR sb2.Ten LIKE :to)`; 
+      baseQuery += ` AND (sb2.Code = :toCode OR sb2.Ten LIKE :to)`;
       replacements.toCode = toCode;
     } else {
-      baseQuery += ` AND (sb2.Code LIKE :to OR sb2.Ten LIKE :to)`; 
+      baseQuery += ` AND (sb2.Code LIKE :to OR sb2.Ten LIKE :to)`;
     }
-    replacements.to = `%${to}%`; 
+    replacements.to = `%${to}%`;
   }
   if (date) { baseQuery += ` AND DATE(cb.GioKhoiHanh) = :date`; replacements.date = date; }
   if (airline) { baseQuery += ` AND cb.HangBay LIKE :airline`; replacements.airline = `%${airline}%`; }
-  if (seatClass) { baseQuery += ` AND cb.HangGhe = :seatClass`; replacements.seatClass = seatClass; }
+
   if (minPrice) { baseQuery += ` AND cb.GiaCoBan >= :minPrice`; replacements.minPrice = minPrice; }
   if (maxPrice) { baseQuery += ` AND cb.GiaCoBan <= :maxPrice`; replacements.maxPrice = maxPrice; }
 
@@ -104,7 +104,6 @@ const searchFlights = async (params) => {
       sb2.Code AS to_code,
       sb2.Ten  AS to_name,
       cb.HangBay,
-      cb.HangGhe,
       cb.GiaCoBan AS price,
       cb.GioKhoiHanh AS departure_time,
       cb.GioHaCanh AS arrival_time
@@ -158,10 +157,10 @@ const searchHotels = async (params) => {
 
   const replacements = {};
 
-  if (city) { 
+  if (city) {
     const normalizedCity = normalizeCityForHotel(city);
-    baseQuery += ` AND ks.DiaChi LIKE :city`; 
-    replacements.city = `%${normalizedCity}%`; 
+    baseQuery += ` AND ks.DiaChi LIKE :city`;
+    replacements.city = `%${normalizedCity}%`;
   }
   if (rating) { baseQuery += ` AND ks.HangSao >= :rating`; replacements.rating = rating; }
   if (minPrice) { baseQuery += ` AND lp.GiaPhong >= :minPrice`; replacements.minPrice = minPrice; }
@@ -407,6 +406,9 @@ const recommendFlights = async (params) => {
         if (flight.from_name && flight.from_name.toLowerCase().includes(keywordLower)) score += 50;
         if (flight.to_name && flight.to_name.toLowerCase().includes(keywordLower)) score += 50;
         if (flight.HangBay && flight.HangBay.toLowerCase().includes(keywordLower)) score += 100;
+        if (from && flight.from_code === from) score += 25;
+        if (to && flight.to_code === to) score += 25;
+        if (airline && flight.HangBay && flight.HangBay.toLowerCase().includes(airline.toLowerCase())) score += 20;
       }
 
       if (flight.price != null) {

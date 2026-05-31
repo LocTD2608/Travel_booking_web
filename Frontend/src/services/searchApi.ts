@@ -27,6 +27,19 @@ export async function fetchFlights(filters: FlightFilters): Promise<ApiResponse<
     return res.json();
 }
 
+export async function fetchFlightSeats(flightId: string): Promise<any> {
+    const url = `${BASE_URL}/flights/${flightId}/seats`;
+    const token = localStorage.getItem('token');
+    const res = await fetch(url, {
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: token ? `Bearer ${token}` : '',
+        }
+    });
+    if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
 // ─── Hotels ──────────────────────────────────────────────────────────────────
 export async function fetchHotels(filters: HotelFilters): Promise<ApiResponse<HotelResult>> {
     const url = `${BASE_URL}/search/hotels${buildParams(filters as Record<string, string>)}`;

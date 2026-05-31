@@ -12,6 +12,8 @@ const Hotel = require('./Hotel')(sequelize, Sequelize);
 const ChuyenBay = require('./ChuyenBay')(sequelize, Sequelize);
 const TuyenDuong = require('./TuyenDuong')(sequelize, Sequelize);
 const SanBay = require('./SanBay')(sequelize, Sequelize);
+const Ghe = require('./Ghe')(sequelize, Sequelize);
+const CTBookingGhe = require('./CTBookingGhe')(sequelize, Sequelize);
 
 const DichVu = require('./DichVu')(sequelize, Sequelize);
 const DV_DU_LICH = require('./DV_DU_LICH')(sequelize, Sequelize);
@@ -30,6 +32,12 @@ TuyenDuong.belongsTo(SanBay, {
     as: "SanBayDen",
     foreignKey: "MaSanBayDich"
 });
+
+ChuyenBay.hasMany(Ghe, { foreignKey: 'MaChuyenBay' });
+Ghe.belongsTo(ChuyenBay, { foreignKey: 'MaChuyenBay' });
+
+ChiTietBooking.belongsToMany(Ghe, { through: CTBookingGhe, foreignKey: 'MaCTBooking' });
+Ghe.belongsToMany(ChiTietBooking, { through: CTBookingGhe, foreignKey: 'MaGhe' });
 
 // Tour Relations
 DV_DU_LICH.belongsTo(DichVu, {
@@ -57,6 +65,8 @@ db.Hotel = Hotel;
 db.ChuyenBay = ChuyenBay;
 db.TuyenDuong = TuyenDuong;
 db.SanBay = SanBay;
+db.Ghe = Ghe;
+db.CTBookingGhe = CTBookingGhe;
 
 db.DichVu = DichVu;
 db.DV_DU_LICH = DV_DU_LICH;
