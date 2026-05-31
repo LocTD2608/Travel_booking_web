@@ -29,7 +29,13 @@ export async function fetchFlights(filters: FlightFilters): Promise<ApiResponse<
 
 export async function fetchFlightSeats(flightId: string): Promise<any> {
     const url = `${BASE_URL}/flights/${flightId}/seats`;
-    const res = await fetch(url);
+    const token = localStorage.getItem('token');
+    const res = await fetch(url, {
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: token ? `Bearer ${token}` : '',
+        }
+    });
     if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
     return res.json();
 }
