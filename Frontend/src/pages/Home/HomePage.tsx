@@ -9,44 +9,44 @@ import styles from './HomePage.module.css';
 
 const faqData = [
     {
-        q: 'Cách đặt khách sạn trên Traveloka?',
-        a: 'Chỉ cần sử dụng công cụ đặt phòng ở đầu trang bằng cách nhập điểm đến, ngày nhận phòng, số đêm ở và số lượng khách. Sau khi nhấp "Tìm khách sạn", bạn có thể dùng bộ lọc để thu hẹp kết quả theo giá, hạng sao, tiện nghi,...'
+        q: 'How to book a hotel on Traveloka?',
+        a: 'Simply use the hotel search tool at the top of the page by entering your destination, check-in and check-out dates, number of rooms, and number of guests. After clicking "Search Hotels", you can use filters to narrow down results by price, star rating, amenities, and more.'
     },
     {
-        q: 'Làm thế nào để nhận ưu đãi khách sạn trên Traveloka?',
-        a: 'Dùng chức năng sắp xếp hoặc bộ lọc khoảng giá để xem khách sạn phù hợp ngân sách. Để tiết kiệm hơn, hãy xem mã giảm giá và khuyến mãi mới nhất. Nếu là người mới dùng Traveloka, bạn còn được giảm giá cho lần đầu đặt phòng. Sử dụng mã TVLKBANMOI để tiết kiệm nhiều hơn.'
+        q: 'How do I get the best hotel deals on Traveloka?',
+        a: 'Use the sorting options or the price range filter to find hotels that fit your budget. For extra savings, browse our latest promo codes and special campaigns. If you are a new Traveloka user, you can also get exclusive discounts on your first booking using the code TVLKBANMOI.'
     },
     {
-        q: 'Traveloka có bao nhiêu khách sạn được liệt kê?',
-        a: 'Traveloka có hơn 1,000,000+ khách sạn, villa, căn hộ và nhiều loại hình lưu trú khắp thế giới.'
+        q: 'How many hotels are listed on Traveloka?',
+        a: 'Traveloka lists more than 1,000,000+ accommodations globally, including luxury hotels, villas, apartments, resorts, and unique homestays.'
     },
     {
-        q: 'Có thể đặt khách sạn ở đâu trên thế giới với Traveloka?',
-        a: 'Ở bất cứ đâu! Chúng tôi giúp bạn đặt chỗ nghỉ toàn cầu. Các điểm đến phổ biến cho du khách Việt gồm Bali, Jakarta, Bangkok, Phuket, Hà Nội, Singapore, Kuala Lumpur và các thành phố lớn ở Úc như Sydney, Melbourne, Brisbane, Perth, Adelaide.'
+        q: 'Where in the world can I book a hotel with Traveloka?',
+        a: 'Anywhere! We help you secure accommodations globally. Popular international destinations include Bali, Jakarta, Bangkok, Phuket, Singapore, Kuala Lumpur, Tokyo, Seoul, as well as major Australian cities like Sydney, Melbourne, Brisbane, and Perth.'
     },
     {
-        q: 'Có những loại hình lưu trú nào?',
-        a: 'Dù bạn cần gì, chúng tôi đều có. Từ khách sạn, nhà nghỉ, villa, resort, căn hộ, khu cắm trại, homestay,...'
+        q: 'What types of accommodation are available on Traveloka?',
+        a: 'Whatever your travel style, we have it. Choose from a wide range of hotels, hostels, villas, resorts, apartments, guest houses, glamping, and cozy homestays.'
     },
     {
-        q: 'Làm thế nào để tìm khách sạn gần tôi?',
-        a: 'Cần đặt phòng gấp? Muốn nghỉ dưỡng tại chỗ? Dù ở đâu, hãy xem trang "Khách sạn gần tôi" để tìm chỗ nghỉ gần bạn.'
+        q: 'How do I find hotels near me?',
+        a: 'Need a last-minute room or planning a local staycation? Simply visit our "Hotels Near Me" page to instantly discover and book the top-rated accommodations located in your immediate vicinity.'
     },
     {
-        q: 'Tôi có thể thay đổi hoặc hủy đặt phòng trên Traveloka không?',
-        a: 'Các khách sạn có thể hủy/đổi sẽ được ghi rõ khi đặt phòng, với thời hạn hủy/đổi. Nếu đặt phòng hỗ trợ hoàn trả, tiền sẽ được hoàn về theo phương thức thanh toán ban đầu.'
+        q: 'Can I change or cancel my hotel booking on Traveloka?',
+        a: 'Hotels that support rescheduling or free cancellation are clearly marked during booking, along with their deadlines. If your booking is eligible for a refund, the amount will be returned to your original payment method.'
     },
     {
-        q: 'Làm thế nào để liên hệ bộ phận hỗ trợ khách hàng của Traveloka?',
-        a: 'Liên hệ bộ phận hỗ trợ Traveloka qua Trung tâm Trợ giúp Traveloka. Nếu không tìm thấy thông tin cần thiết, bạn có thể gửi yêu cầu trợ giúp. Tùy vị trí, bạn cũng có thể liên hệ qua điện thoại hoặc chat trực tuyến. Nếu đã đặt phòng thành công, bạn có thể chọn mã booking cần hỗ trợ.'
+        q: 'How do I contact Traveloka customer support?',
+        a: 'You can easily reach our customer care team through the Traveloka Help Center. If your question is not resolved, you can submit a support request. Depending on your location, phone support or live chat may also be available.'
     },
     {
-        q: 'Các phương thức thanh toán nào có sẵn trên Traveloka?',
-        a: 'Chúng tôi hỗ trợ đa dạng phương thức như thẻ Visa, Mastercard, các cổng ví điện tử phổ biến như MoMo, VNPay hoặc chuyển khoản ngân hàng nội địa tiện lợi.'
+        q: 'What payment methods are supported on Traveloka?',
+        a: 'We support a variety of safe, convenient payment methods including major credit/debit cards (Visa, Mastercard, JCB), popular e-wallets (MoMo, VNPay), and secure local bank transfers.'
     },
     {
-        q: 'Có những chuỗi khách sạn nào trên Traveloka?',
-        a: 'Tất cả các chuỗi khách sạn hàng đầu thế giới và nội địa bạn yêu thích như Marriott, Hilton, Accor, Wyndham, Best Western, InterContinental... Nếu thích phong cách độc đáo, các khách sạn boutique nghệ thuật cũng luôn sẵn sàng cho bạn lựa chọn.'
+        q: 'What major hotel chains are available on Traveloka?',
+        a: 'We list all your favorite leading international and local hotel chains including Marriott, Hilton, Accor, Wyndham, Best Western, and InterContinental. High-end boutique and artistic hotels are also available.'
     }
 ];
 
@@ -330,12 +330,12 @@ export const HomePage: React.FC = () => {
                 {/* Gợi ý cho bạn */}
                 <Recommended />
 
-                {/* Câu hỏi thường gặp (FAQ) */}
+                {/* Frequently Asked Questions (FAQ) */}
                 <section className={styles.faqSection}>
                     <div className={styles.sectionHeader}>
                         <div>
-                            <h3>Câu hỏi thường gặp</h3>
-                            <p>Giải đáp thắc mắc của bạn về đặt phòng và dịch vụ trên Traveloka</p>
+                            <h3>Frequently Asked Questions</h3>
+                            <p>Get answers to your common questions about hotel bookings and travel services on Traveloka</p>
                         </div>
                     </div>
                     <div className={styles.faqList}>

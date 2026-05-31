@@ -54,7 +54,7 @@ const Header: React.FC = () => {
                                         onClick={(e) => { e.preventDefault(); setIsLogoutConfirmOpen(true); }}
                                         className="text-xs text-red-500 hover:underline"
                                     >
-                                        Đăng xuất
+                                        Log Out
                                     </button>
                                 </div>
                                 <div className="w-8 h-8 rounded-full bg-travel-blue flex items-center justify-center text-white font-bold hover-scale cursor-pointer">
@@ -150,14 +150,14 @@ const Header: React.FC = () => {
             {isLogoutConfirmOpen && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
                     <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl animate-scale-in">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2 font-['Plus_Jakarta_Sans']">Xác nhận đăng xuất?</h3>
-                        <p className="text-gray-600 mb-6 text-sm">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không?</p>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 font-['Plus_Jakarta_Sans']">Log Out Confirmation</h3>
+                        <p className="text-gray-600 mb-6 text-sm">Are you sure you want to log out of your account?</p>
                         <div className="flex gap-3 justify-end">
                             <button
                                 onClick={() => setIsLogoutConfirmOpen(false)}
                                 className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors hover-scale"
                             >
-                                Hủy
+                                Cancel
                             </button>
                             <button
                                 onClick={() => {
@@ -166,7 +166,7 @@ const Header: React.FC = () => {
                                 }}
                                 className="px-4 py-2 text-sm font-bold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all hover-lift shadow-sm hover:shadow-red-200"
                             >
-                                Đăng xuất
+                                Log Out
                             </button>
                         </div>
                     </div>

@@ -120,7 +120,65 @@ const BookingPage: React.FC = () => {
                     throw new Error('Không thể tạo URL VNPay');
                 }
             } else {
-                setBookingSuccess(true);
+                if (paymentMethod === 'momo' || paymentMethod === 'bank' || paymentMethod === 'card') {
+                    try {
+                        await fetch(`http://127.0.0.1:3000/api/booking/pay/${bookingResult.data.MaBooking}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                    } catch (payErr) {
+                        console.error('Lỗi khi cập nhật trạng thái thanh toán:', payErr);
+                    }
+                }
+
+                // Phân tích ngày nhận/trả phòng an toàn từ detail4
+                let checkInDate = new Date().toISOString();
+                let checkOutDate = new Date(Date.now() + 86400000 * (nights || 1)).toISOString();
+                if (detail4 && detail4.includes(' - ')) {
+                    const parts = detail4.split(' - ');
+                    const parsedIn = Date.parse(parts[0]);
+                    const parsedOut = Date.parse(parts[1]);
+                    if (!isNaN(parsedIn)) checkInDate = new Date(parsedIn).toISOString();
+                    if (!isNaN(parsedOut)) checkOutDate = new Date(parsedOut).toISOString();
+                } else if (detail4) {
+                    const parsedIn = Date.parse(detail4);
+                    if (!isNaN(parsedIn)) {
+                        checkInDate = new Date(parsedIn).toISOString();
+                        checkOutDate = new Date(parsedIn + 86400000 * (nights || 1)).toISOString();
+                    }
+                }
+
+                // Chuyển hướng sang trang /payment-success cho momo, bank, card
+                navigate('/payment-success', {
+                    state: {
+                        transactionId: `TVK-PAY-${bookingResult.data.MaBooking}`,
+                        bookingInfo: {
+                            hotel: {
+                                id: type === 'hotel' ? bookingResult.data.MaBooking : 'Service',
+                                name: name,
+                                address: detail1 || 'N/A',
+                                stars: 5,
+                            },
+                            room: {
+                                name: detail2 || 'Tiêu chuẩn',
+                                price: price,
+                            },
+                            dates: {
+                                checkIn: checkInDate,
+                                checkOut: checkOutDate,
+                            },
+                            nights: nights || 1,
+                            totalPrice: total,
+                        },
+                        customerInfo: {
+                            fullName: form.fullName,
+                            email: form.email,
+                            phone: form.phone || 'N/A',
+                        }
+                    }
+                });
             }
         } catch (err) {
             alert(err instanceof Error ? err.message : 'Đặt vé thất bại. Vui lòng thử lại.');
@@ -337,6 +395,70 @@ const BookingPage: React.FC = () => {
                                     <div className="col-span-2">
                                         <label className="block text-xs font-semibold text-gray-500 mb-1">Cardholder Name</label>
                                         <input type="text" placeholder="Name as on card" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#005CE6]" />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* MoMo QR code */}
+                            {paymentMethod === 'momo' && (
+                                <div className="mt-3 border-t border-gray-100 pt-4 flex flex-col md:flex-row gap-5 items-center bg-pink-50/30 p-4 rounded-xl border border-pink-100">
+                                    <div className="flex-shrink-0 bg-white p-2 rounded-xl shadow-md border border-pink-100 flex items-center justify-center max-w-[200px]">
+                                        <img 
+                                            src={`https://img.vietqr.io/image/MB-966454800-print.png?amount=${total}&addInfo=TRAVELOKA%20MOMO%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
+                                            alt="MoMo QR" 
+                                            className="w-44 h-44 object-contain rounded-lg"
+                                        />
+                                    </div>
+                                    <div className="flex-1 space-y-2 text-sm text-gray-700">
+                                        <div className="font-bold text-pink-600 flex items-center gap-1.5">
+                                            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                                            Thanh toán qua Ví MoMo / App Ngân hàng
+                                        </div>
+                                        <div className="text-xs text-gray-500 leading-relaxed">
+                                            Vui lòng quét mã QR bằng ứng dụng <strong>MoMo</strong> hoặc bất kỳ <strong>ứng dụng Ngân hàng</strong> nào của bạn để thực hiện chuyển khoản số tiền tự động.
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-1.5 border-t border-pink-100/50 text-xs">
+                                            <div>Chủ tài khoản:</div>
+                                            <div className="font-bold text-gray-900">TRỊNH ĐỨC LỘC</div>
+                                            <div>Số điện thoại/TK:</div>
+                                            <div className="font-bold text-gray-900 font-mono">966454800</div>
+                                            <div>Ngân hàng nhận:</div>
+                                            <div className="font-bold text-gray-900">MB Bank (Quân Đội)</div>
+                                            <div>Số tiền chuyển:</div>
+                                            <div className="font-bold text-pink-600 text-sm">{total.toLocaleString()} VNĐ</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Bank Transfer QR code */}
+                            {paymentMethod === 'bank' && (
+                                <div className="mt-3 border-t border-gray-100 pt-4 flex flex-col md:flex-row gap-5 items-center bg-blue-50/30 p-4 rounded-xl border border-blue-100">
+                                    <div className="flex-shrink-0 bg-white p-2 rounded-xl shadow-md border border-blue-100 flex items-center justify-center max-w-[200px]">
+                                        <img 
+                                            src={`https://img.vietqr.io/image/MB-966454800-print.png?amount=${total}&addInfo=TRAVELOKA%20BANK%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
+                                            alt="VietQR" 
+                                            className="w-44 h-44 object-contain rounded-lg"
+                                        />
+                                    </div>
+                                    <div className="flex-1 space-y-2 text-sm text-gray-700">
+                                        <div className="font-bold text-[#005CE6] flex items-center gap-1.5">
+                                            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                                            Thanh toán qua chuyển khoản VietQR
+                                        </div>
+                                        <div className="text-xs text-gray-500 leading-relaxed">
+                                            Quét mã bằng ứng dụng ngân hàng của bạn. Số tiền và nội dung chuyển khoản đã được tạo tự động để hệ thống xác nhận thanh toán nhanh nhất.
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-1.5 border-t border-blue-100/50 text-xs">
+                                            <div>Ngân hàng nhận:</div>
+                                            <div className="font-bold text-gray-900">MB Bank (Quân Đội)</div>
+                                            <div>Số tài khoản:</div>
+                                            <div className="font-bold text-gray-900 font-mono">966454800</div>
+                                            <div>Chủ tài khoản:</div>
+                                            <div className="font-bold text-gray-900">TRỊNH ĐỨC LỘC</div>
+                                            <div>Số tiền:</div>
+                                            <div className="font-bold text-[#005CE6] text-sm">{total.toLocaleString()} VNĐ</div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
