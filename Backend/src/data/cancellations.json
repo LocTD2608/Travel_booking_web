@@ -9,7 +9,7 @@
     "bookingClass": "Business Class",
     "reason": "Thay đổi lịch trình công tác đột xuất. Có tài liệu xác nhận từ công ty.",
     "requestedAt": "2024-10-24 14:20",
-    "status": "pending"
+    "status": "approved"
   },
   {
     "id": "CR002",
