@@ -20,6 +20,27 @@ const Hotels: React.FC = () => {
     const [hotels, setHotels] = useState<HotelCardProps[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Map dynamic high-quality resort & hotel images based on hotel name
+    const getHotelImage = (name: string, location: string) => {
+        const text = (name + ' ' + location).toLowerCase();
+        if (text.includes('beach') || text.includes('sea') || text.includes('marina') || text.includes('ocean') || text.includes('cát bà') || text.includes('sông hàn')) {
+            return 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80';
+        }
+        if (text.includes('intercontinental') || text.includes('marriott') || text.includes('palace') || text.includes('grand') || text.includes('sheraton')) {
+            return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80';
+        }
+        if (text.includes('villa') || text.includes('resort') || text.includes('spa') || text.includes('retreat')) {
+            return 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80';
+        }
+        if (text.includes('đà nẵng') || text.includes('da nang')) {
+            return 'https://images.unsplash.com/photo-1597047084897-51e81819a499?auto=format&fit=crop&w=800&q=80';
+        }
+        if (text.includes('hà nội') || text.includes('hanoi')) {
+            return 'https://images.unsplash.com/photo-1555921015-5532091f6026?auto=format&fit=crop&w=800&q=80';
+        }
+        return 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80';
+    };
+
     useEffect(() => {
         const loadHotels = async () => {
             try {
@@ -32,13 +53,13 @@ const Hotels: React.FC = () => {
                         name: h.name,
                         location: h.address,
                         rating: 8.5,
-                        ratingText: 'Excellent',
-                        reviews: Math.floor(Math.random() * 1000) + 100,
+                        ratingText: 'Tuyệt vời',
+                        reviews: Math.floor(Math.random() * 800) + 120,
                         price: h.min_price,
-                        originalPrice: null,
-                        badge: '',
-                        image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                        facilities: ['Free WiFi', 'Pool'],
+                        originalPrice: h.min_price ? Math.round(h.min_price * 1.2 / 50000) * 50000 : null,
+                        badge: h.stars >= 5 ? 'Lựa chọn hàng đầu' : 'Phổ biến',
+                        image: getHotelImage(h.name, h.address),
+                        facilities: ['Free WiFi', 'Pool', 'Restaurant', 'Gym'],
                         stars: h.stars,
                     }));
                     setHotels(mapped);
@@ -123,6 +144,25 @@ const Hotels: React.FC = () => {
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-lg">Filters</h3>
                             <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => { setPriceRange([500000, 5000000]); setSortBy('popularity'); setSelectedStars([]); setSelectedFacilities([]); }}>Reset</button>
+                        </div>
+
+                        {/* Popular Cities */}
+                        <div className="mb-6">
+                            <h4 className="font-semibold text-[15px] mb-3">Popular Cities</h4>
+                            {['Da Nang, Vietnam', 'Hanoi, Vietnam', 'Phu Quoc, Vietnam', 'Ho Chi Minh, Vietnam'].map(city => (
+                                <button
+                                    key={city}
+                                    onClick={() => navigate(`/hotels?destination=${encodeURIComponent(city)}`)}
+                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold mb-1.5 transition-all flex items-center justify-between ${
+                                        searchState.destination.toLowerCase().includes(city.split(',')[0].toLowerCase())
+                                            ? 'bg-blue-50 text-travel-blue border border-blue-100'
+                                            : 'text-gray-600 hover:bg-gray-50 border border-transparent'
+                                    }`}
+                                >
+                                    <span>{city}</span>
+                                    <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                </button>
+                            ))}
                         </div>
 
                         {/* Price Filter */}

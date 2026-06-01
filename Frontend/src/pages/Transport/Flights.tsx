@@ -164,6 +164,30 @@ const Flights: React.FC = () => {
                                 </button>
                             </div>
 
+                            {/* Popular Routes */}
+                            <div className="mb-6">
+                                <h4 className="font-semibold text-[15px] mb-3">Popular Routes</h4>
+                                {[
+                                    { name: 'Hanoi ➔ Da Nang', from: 'Hanoi (HAN)', to: 'Da Nang (DAD)' },
+                                    { name: 'Ho Chi Minh ➔ Hanoi', from: 'Ho Chi Minh (SGN)', to: 'Hanoi (HAN)' },
+                                    { name: 'Da Nang ➔ Ho Chi Minh', from: 'Da Nang (DAD)', to: 'Ho Chi Minh (SGN)' },
+                                ].map(route => (
+                                    <button
+                                        key={route.name}
+                                        onClick={() => navigate(`/flights?origin=${encodeURIComponent(route.from)}&destination=${encodeURIComponent(route.to)}`)}
+                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold mb-1.5 transition-all flex items-center justify-between ${
+                                            searchState.from.toLowerCase().includes(route.from.split(' ')[0].toLowerCase()) &&
+                                            searchState.to.toLowerCase().includes(route.to.split(' ')[0].toLowerCase())
+                                                ? 'bg-orange-50 text-[#FF5E1F] border border-orange-100'
+                                                : 'text-gray-600 hover:bg-gray-50 border border-transparent'
+                                        }`}
+                                    >
+                                        <span>{route.name}</span>
+                                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                    </button>
+                                ))}
+                            </div>
+
                             {/* Price Filter */}
                             <div className="mb-6">
                                 <h4 className="font-semibold text-[15px] mb-4">Price / Passenger</h4>

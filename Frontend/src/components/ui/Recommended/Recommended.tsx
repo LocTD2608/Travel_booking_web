@@ -16,33 +16,33 @@ interface RecommendedItem {
 const mockData: RecommendedItem[] = [
     {
         id: '1',
-        title: 'Kỳ nghỉ dưỡng Maldives 4N3Đ - Overwater Villa',
+        title: 'Maldives 4D3N Vacation - Luxury Overwater Villa',
         location: 'Maldives',
         image: '/images/maldives.png',
         oldPrice: 35000000,
         newPrice: 28500000,
         rating: 4.9,
-        badge: 'Giảm 20%'
+        badge: '20% OFF'
     },
     {
         id: '2',
-        title: 'Tour Nhật Bản mùa Hoa Anh Đào - Ngắm núi Phú Sĩ',
-        location: 'Tokyo, Nhật Bản',
+        title: 'Japan Cherry Blossom Tour - Mt. Fuji Viewing',
+        location: 'Tokyo, Japan',
         image: '/images/fuji.png',
         oldPrice: 28000000,
         newPrice: 24900000,
         rating: 4.8,
-        badge: 'Hot nhất mùa'
+        badge: 'Seasonal Hot'
     },
     {
         id: '3',
-        title: 'Khám phá thủ đô Tokyo phồn hoa về đêm',
-        location: 'Tokyo, Nhật Bản',
+        title: 'Explore Bustling Tokyo by Night - Izakaya Tour',
+        location: 'Tokyo, Japan',
         image: '/images/tokyo.png',
         oldPrice: 15000000,
         newPrice: 12500000,
         rating: 4.7,
-        badge: 'Bán chạy'
+        badge: 'Best Seller'
     }
 ];
 
@@ -55,10 +55,10 @@ export const Recommended: React.FC = () => {
         <section className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h2 className={styles.title}>Gợi ý dành riêng cho bạn</h2>
-                    <p className={styles.subtitle}>Khám phá những điểm đến tuyệt vời với ưu đãi tốt nhất</p>
+                    <h2 className={styles.title}>Recommended For You</h2>
+                    <p className={styles.subtitle}>Discover incredible destinations with the best exclusive deals</p>
                 </div>
-                <Link to="/offers" className={styles.viewAll}>Xem tất cả ➔</Link>
+                <Link to="/offers" className={styles.viewAll}>View All ➔</Link>
             </div>
 
             <div className={styles.grid}>
@@ -84,7 +84,7 @@ export const Recommended: React.FC = () => {
                                     <span className={styles.oldPrice}>{formatCurrency(item.oldPrice)}</span>
                                 )}
                             </div>
-                            <button className={styles.actionBtn}>Đặt Ngay</button>
+                            <button className={styles.actionBtn}>Book Now</button>
                         </div>
                     </Link>
                 ))}
