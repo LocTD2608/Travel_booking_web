@@ -35,6 +35,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
     const [seatData, setSeatData] = useState<any[]>([]);
     const [zones, setZones] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Selected seats per tab
     const [selectedSeats, setSelectedSeats] = useState<{ outbound: Seat[], return: Seat[] }>({
@@ -53,6 +54,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
 
     const loadSeats = async (flightId: string) => {
         setIsLoading(true);
+        setError(null);
         try {
             const res = await fetchFlightSeats(flightId);
             const seats = res.data || [];
@@ -66,7 +68,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
             ];
 
             seats.forEach((seat: any) => {
-                const classId = seat.HangGhe;
+                const classId = seat.HangGhe ? seat.HangGhe.toLowerCase().trim() : '';
                 const group = grouped.find(g => g.id === classId);
                 if (group) {
                     group.items.push(seat);
@@ -106,8 +108,9 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
 
             setZones(grouped.filter(g => (g as any).rows.length > 0));
 
-        } catch (error) {
-            console.error('Error fetching seats:', error);
+        } catch (err: any) {
+            console.error('Error fetching seats:', err);
+            setError(err.message || 'Không thể tải sơ đồ ghế lúc này. Vui lòng đăng nhập lại hoặc thử lại sau.');
         } finally {
             setIsLoading(false);
         }
@@ -245,7 +248,19 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                     {/* Scrollable Content Area - DIRECTLY SEATMAP */}
                     <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center custom-scrollbar bg-gray-50 relative">
                         
-                        {isLoading ? (
+                        {error ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm text-gray-500 px-4 my-10">
+                                <span className="material-symbols-outlined text-red-500 text-5xl mb-4">error</span>
+                                <p className="font-bold text-gray-800 text-lg mb-2">Không thể tải sơ đồ ghế</p>
+                                <p className="text-sm text-gray-500 mb-6">{error}</p>
+                                <button
+                                    onClick={() => loadSeats(outboundFlight?.id?.toString() || '')}
+                                    className="bg-travel-blue hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all duration-150"
+                                >
+                                    Thử lại
+                                </button>
+                            </div>
+                        ) : isLoading ? (
                             <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
                                 <span className="material-symbols-outlined animate-spin text-4xl mb-4 text-travel-blue">progress_activity</span>
                                 <p className="font-semibold">Loading seat map...</p>
