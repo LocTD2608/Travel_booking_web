@@ -2,7 +2,9 @@ const db = require("../models");
 const bookingQueue = require("../queues/bookingQueue");
 const sequelize = require("../configs/database");
 const { Op } = require("sequelize");
-const sendMail = require("../utils/sendMail");
+const {
+  sendBookingSuccessEmail,
+} = require("../utils/sendMail");
 
 // In-memory overrides for mock booking actions
 const mockBookingOverrides = new Map();
@@ -228,66 +230,9 @@ exports.payBooking = async (req, res) => {
 
     console.log("Paid booking:", booking.MaBooking);
 
-    // Gửi email
-    if (user && user.Email) {
-      await sendMail({
-        to: user.Email,
-
-        subject: "Xác nhận thanh toán thành công",
-
-        html: `
-          <div style="font-family: Arial; padding: 20px;">
-
-            <h2 style="color: green;">
-              Thanh toán thành công
-            </h2>
-
-            <p>
-              Xin chào ${user.HoTen || "Khách hàng"},
-            </p>
-
-            <p>
-              Booking của bạn đã được thanh toán thành công.
-            </p>
-
-            <hr>
-
-            <h3>Thông tin giao dịch</h3>
-
-            <p>
-              <b>Mã booking:</b>
-              ${booking.MaBooking}
-            </p>
-
-            <p>
-              <b>Ngày thanh toán:</b>
-              ${new Date().toLocaleString("vi-VN")}
-            </p>
-
-            <p>
-              <b>Tổng tiền:</b>
-              ${Number(booking.TongTien).toLocaleString()} VNĐ
-            </p>
-
-            <p>
-              <b>Trạng thái:</b>
-              ${booking.TrangThaiBooking}
-            </p>
-
-            <hr>
-
-            <p>
-              Cảm ơn bạn đã sử dụng dịch vụ Travel Booking.
-            </p>
-
-            <p>
-              Chúc bạn có chuyến đi vui vẻ.
-            </p>
-
-          </div>
-        `,
-      });
-    }
+if (user && user.Email) {
+  await sendBookingSuccessEmail(user, booking);
+}
 
     await t.commit();
     t = null;
