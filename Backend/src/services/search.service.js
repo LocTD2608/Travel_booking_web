@@ -142,7 +142,7 @@ const searchHotels = async (params) => {
     if (!term) return null;
     const normalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     if (normalized.includes('ha noi') || normalized.includes('hanoi')) return 'Ha Noi';
-    if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('hcm')) return 'HCM';
+    if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('hcm')) return 'Ho Chi Minh';
     if (normalized.includes('da nang') || normalized.includes('danang')) return 'Da Nang';
     if (normalized.includes('nha trang') || normalized.includes('cam ranh')) return 'Nha Trang';
     if (normalized.includes('phu quoc') || normalized.includes('phuquoc')) return 'Phu Quoc';
