@@ -5,6 +5,13 @@ import { Slider } from 'antd';
 import { HotelCard, type HotelCardProps } from '../../components/ui/cards/accommodations/HotelCard';
 import { fetchHotels } from '../../services/searchApi';
 
+const normalizeSearchText = (text: string) =>
+    text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, '');
+
 const Hotels: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -93,7 +100,11 @@ const Hotels: React.FC = () => {
         const matchesFacilities = selectedFacilities.length === 0 || selectedFacilities.every(fac =>
             hotel.facilities.some(hFac => hFac.toLowerCase().includes(fac.toLowerCase()))
         );
-        const matchesDestination = hotel.location.toLowerCase().includes(searchState.destination.split(',')[0].toLowerCase()) || hotel.name.toLowerCase().includes(searchState.destination.toLowerCase());
+        const destinationCity = searchState.destination.split(',')[0].trim();
+        const normalizedDestinationCity = normalizeSearchText(destinationCity);
+        const normalizedHotelLocation = normalizeSearchText(hotel.location);
+        const normalizedHotelName = normalizeSearchText(hotel.name);
+        const matchesDestination = normalizedHotelLocation.includes(normalizedDestinationCity) || normalizedHotelName.includes(normalizedDestinationCity);
         
         return matchesPrice && matchesStars && matchesFacilities && matchesDestination;
     }).sort((a, b) => {
