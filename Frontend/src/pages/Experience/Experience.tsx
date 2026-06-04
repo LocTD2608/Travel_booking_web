@@ -5,6 +5,7 @@ import { useUrlFilters } from '../../hooks/useUrlFilters';
 import { fetchExperiences } from '../../services/searchApi';
 import type { ExperienceResult } from '../../types/search';
 import { ExperienceCard } from '../../components/ui/cards/experience/ExperienceCard';
+import { generateStarsFromId } from '../../utils/ratingUtils';
 
 const Experience: React.FC = () => {
     const navigate = useNavigate();
@@ -14,6 +15,7 @@ const Experience: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [searched, setSearched] = useState(false);
+    const [selectedStars, setSelectedStars] = useState<number[]>([]);
 
     // Default search parameters if not present in URL
     const searchState = {
@@ -30,7 +32,8 @@ const Experience: React.FC = () => {
             const res = await fetchExperiences({
                 destination: filters.destination,
                 priceMax: filters.priceMax,
-                sortBy: filters.sortBy
+                sortBy: filters.sortBy,
+                rating: selectedStars.length > 0 ? selectedStars.join(',') : undefined
             });
             setResults(res.data ?? []);
         } catch (e: unknown) {
@@ -38,12 +41,12 @@ const Experience: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [filters.destination, filters.priceMax, filters.sortBy]);
+    }, [filters.destination, filters.priceMax, filters.sortBy, selectedStars]);
 
     // Triggers search when filters update
     useEffect(() => {
         doSearch();
-    }, [filters.sortBy, filters.page, filters.destination, filters.priceMax, doSearch]);
+    }, [filters.sortBy, filters.page, filters.destination, filters.priceMax, selectedStars, doSearch]);
 
     // Handle Reset Filter
     const handleReset = () => {
@@ -51,8 +54,7 @@ const Experience: React.FC = () => {
         setFilter({ destination: 'Phú Quốc, Việt Nam' });
     };
 
-    // Rating star filter toggling (local filter simulation for UI completeness)
-    const [selectedStars, setSelectedStars] = useState<number[]>([]);
+    // Rating star filter toggling
     const handleStarToggle = (star: number) => {
         setSelectedStars(prev => prev.includes(star) ? prev.filter(s => s !== star) : [...prev, star]);
     };
@@ -60,9 +62,9 @@ const Experience: React.FC = () => {
     // Filter results on frontend for stars (if selected) to provide high fidelity
     const filteredResults = results.filter(item => {
         if (selectedStars.length === 0) return true;
-        // Mock star rating matching our ExperienceCard rating logic
-        const mockRating = (item.MaDV % 3 === 0) ? 5 : (item.MaDV % 3 === 1) ? 4 : 3;
-        return selectedStars.includes(mockRating);
+        // Use generateStarsFromId để tính sao giống frontend logic
+        const stars = generateStarsFromId(item.MaDV);
+        return selectedStars.includes(stars);
     });
 
     return (

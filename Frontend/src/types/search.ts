@@ -72,6 +72,7 @@ export interface ExperienceFilters {
     date?: string;
     priceMax?: string;
     sortBy?: string;
+    rating?: string;
 }
 
 export interface DestinationResult {

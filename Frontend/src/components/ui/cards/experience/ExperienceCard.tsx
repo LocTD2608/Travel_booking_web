@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ExperienceResult } from '../../../../types/search';
+import { generateStarsFromId, calculateDisplayRating, getRatingText } from '../../../../utils/ratingUtils';
 
 const fmt = (price: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -41,10 +42,11 @@ export const ExperienceCard: React.FC<{ item: ExperienceResult }> = ({ item }) =
         navigate(`/tour/${item.MaDV}?${params.toString()}`);
     };
 
-    // Randomize rating & reviews for realistic high-fidelity feel
-    const mockRating = (item.MaDV % 3 === 0) ? 4.9 : (item.MaDV % 3 === 1) ? 4.8 : 4.7;
+    // Tính rating từ MaDV (không cần lấy từ backend/database)
+    const stars = generateStarsFromId(item.MaDV);
+    const mockRating = calculateDisplayRating(stars, item.MaDV);
     const mockReviews = Math.floor((item.MaDV * 23) % 450) + 68;
-    const ratingText = mockRating >= 4.9 ? 'Tuyệt vời' : 'Rất tốt';
+    const ratingText = getRatingText(mockRating);
 
     return (
         <div 
