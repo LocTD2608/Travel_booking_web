@@ -138,5 +138,33 @@
     "status": "approved",
     "userId": 3,
     "acknowledged": true
+  },
+  {
+    "id": "CR012",
+    "bookingId": "7",
+    "customerName": "Le Chi",
+    "customerEmail": "chi3@gmail.com",
+    "bookingType": "hotel",
+    "bookingDetail": "Tour Nhật Bản mùa Hoa Anh Đào - Ngắm núi Phú Sĩ",
+    "bookingClass": "Tokyo - Kyoto - Phú Sĩ, Nhật Bản",
+    "reason": "thích",
+    "requestedAt": "2026-06-04 17:13",
+    "status": "pending",
+    "userId": 3,
+    "acknowledged": false
+  },
+  {
+    "id": "CR013",
+    "bookingId": "8",
+    "customerName": "Le Chi",
+    "customerEmail": "chi3@gmail.com",
+    "bookingType": "hotel",
+    "bookingDetail": "Novotel Danang Premier",
+    "bookingClass": "Da Nang",
+    "reason": "c",
+    "requestedAt": "2026-06-04 17:29",
+    "status": "pending",
+    "userId": 3,
+    "acknowledged": false
   }
 ]

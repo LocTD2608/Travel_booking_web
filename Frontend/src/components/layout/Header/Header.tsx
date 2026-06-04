@@ -127,10 +127,10 @@ const Header: React.FC = () => {
                             <span className="material-symbols-outlined mb-1 group-hover:-translate-y-0.5 transition-transform">local_activity</span>
                             <span className="text-sm font-bold">Experience</span>
                         </Link>
-                        <a className={getNavClass(activeMenu === 'bills')} href="#" onMouseEnter={() => setActiveMenu('bills')}>
+                        <Link to="/mobile-credit" className={getNavClass(activeMenu === 'bills')} onMouseEnter={() => setActiveMenu('bills')}>
                             <span className="material-symbols-outlined mb-1 group-hover:-translate-y-0.5 transition-transform">credit_card</span>
                             <span className="text-sm font-bold">Bills & Top-up</span>
-                        </a>
+                        </Link>
                     </nav>
                 </div>
 

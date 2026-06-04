@@ -62,7 +62,6 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
     // Cancellation modal states
     const [isCancelModalOpen, setIsCancelModalOpen] = useState<boolean>(false);
     const [selectedBookingId, setSelectedBookingId] = useState<number | string | null>(null);
-    const [submittingCancel, setSubmittingCancel] = useState<boolean>(false);
     const [cancelForm] = Form.useForm();
 
     // Refunds tab states
@@ -285,16 +284,32 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
 
     const handleCancelSubmit = async (values: { reason: string }) => {
         if (!selectedBookingId) return;
-        setSubmittingCancel(true);
+        
+        // 1. Optimistic UI update: set status to 'Yêu cầu hủy' instantly
+        setBookings(prev => prev.map(item => 
+            String(item.booking.MaBooking) === String(selectedBookingId) 
+                ? { ...item, booking: { ...item.booking, TrangThaiBooking: 'Yêu cầu hủy' } }
+                : item
+        ));
+        
+        // Close modal and show message instantly
+        handleCancelModalClose();
+        message.success('Gửi yêu cầu hủy thành công! Vui lòng chờ phản hồi của quản trị viên.');
+
         try {
+            // 2. Perform API call in background
             await cancellationApi.requestCancellation(selectedBookingId, values.reason);
-            message.success('Gửi yêu cầu hủy thành công! Vui lòng chờ phản hồi của quản trị viên.');
-            handleCancelModalClose();
+            // 3. Re-fetch in background to sync with server
             fetchBookings(currentPage);
         } catch (err: any) {
             message.error(err.message || 'Không thể gửi yêu cầu hủy');
-        } finally {
-            setSubmittingCancel(false);
+            // Rollback on error
+            setBookings(prev => prev.map(item => 
+                String(item.booking.MaBooking) === String(selectedBookingId) 
+                    ? { ...item, booking: { ...item.booking, TrangThaiBooking: 'Đã thanh toán' } }
+                    : item
+            ));
+            fetchBookings(currentPage);
         }
     };
 
@@ -1037,7 +1052,6 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                             type="primary"
                             htmlType="submit"
                             danger
-                            loading={submittingCancel}
                             className="rounded-lg font-bold text-xs bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600"
                         >
                             Gửi yêu cầu hủy
