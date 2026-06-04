@@ -319,7 +319,8 @@ import {
   getAccommodations,
   createAccommodation,
   updateAccommodation,
-  deleteAccommodation
+  deleteAccommodation,
+  getAccommodationStats
 } from '../../../services/admin/accommodations';
 
 const AccommodationsPage: React.FC = () => {
@@ -329,6 +330,26 @@ const AccommodationsPage: React.FC = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editing, setEditing] = useState<Accommodation | null>(null);
   const [roomModalAccommodation, setRoomModalAccommodation] = useState<Accommodation | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
+  const [stats, setStats] = useState({
+    totalActiveBookings: 1284,
+    pendingCheckouts: 2,
+    estDailyRevenue: 184800000,
+    occupancyRate: 100
+  });
+
+  const fetchStats = async () => {
+    try {
+      const res = await getAccommodationStats();
+      const s = res.data || res;
+      if (s) {
+        setStats(s);
+      }
+    } catch (error) {
+      console.error('Error fetching accommodation stats:', error);
+    }
+  };
 
   const fetchAccommodations = async () => {
     try {
@@ -347,15 +368,24 @@ const AccommodationsPage: React.FC = () => {
 
   React.useEffect(() => {
     fetchAccommodations();
+    fetchStats();
   }, []);
 
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   const filtered = data.filter(a => a.name.toLowerCase().includes(search.toLowerCase()) || a.location.toLowerCase().includes(search.toLowerCase()));
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginatedData = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleDelete = async (id: string) => {
     try {
       await deleteAccommodation(id);
       setData(prev => prev.filter(a => a.id !== id));
       message.success('Đã xóa cơ sở lưu trú');
+      fetchStats();
     } catch (error: any) {
       console.error('Error deleting accommodation:', error);
       message.error('Không thể xóa cơ sở lưu trú');
@@ -376,6 +406,7 @@ const AccommodationsPage: React.FC = () => {
         message.success('Đã thêm chỗ lưu trú mới');
       }
       setAddModalOpen(false);
+      fetchStats();
     } catch (error: any) {
       console.error('Error saving accommodation:', error);
       message.error('Không thể lưu thông tin cơ sở lưu trú');
@@ -391,13 +422,12 @@ const AccommodationsPage: React.FC = () => {
       setData(prev => prev.map(a => a.id === accommodationId ? { ...a, ...updated } : a));
       setRoomModalAccommodation(prev => prev?.id === accommodationId ? { ...prev!, ...updated } : prev);
       message.success('Đã đồng bộ thông tin phòng về hệ thống');
+      fetchStats();
     } catch (error: any) {
       console.error('Error updating rooms:', error);
       message.error('Không thể cập nhật thông tin phòng');
     }
   };
-
-  const totalRevenue = data.reduce((s, a) => s + (a.pricePerNight || 0) * (a.availableRooms || 0), 0);
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -410,10 +440,10 @@ const AccommodationsPage: React.FC = () => {
       {/* Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 22 }}>
         {[
-          { label: 'Total Active Bookings', value: '1,284', icon: 'hotel', sub: '+12%', color: TEAL },
-          { label: 'Pending Checkouts', value: data.filter(a => a.availableRooms === 0).length, icon: 'pending_actions', sub: '8 Urgent', color: '#f97316' },
-          { label: 'Est. Daily Revenue', value: `₫${(totalRevenue / 1000000).toFixed(1)}M`, icon: 'payments', sub: '$4.2k today', color: '#10b981' },
-          { label: 'Occupancy Rate', value: data.length > 0 ? `${Math.round((data.filter(a => a.status === 'active').length / data.length) * 100)}%` : '0%', icon: 'room_service', sub: '98.2% efficiency', color: '#6366f1' },
+          { label: 'Total Active Bookings', value: stats.totalActiveBookings.toLocaleString('vi-VN'), icon: 'hotel', sub: '+12%', color: TEAL },
+          { label: 'Pending Checkouts', value: stats.pendingCheckouts, icon: 'pending_actions', sub: '8 Urgent', color: '#f97316' },
+          { label: 'Est. Daily Revenue', value: `₫${(stats.estDailyRevenue / 1000000).toFixed(1)}M`, icon: 'payments', sub: '$4.2k today', color: '#10b981' },
+          { label: 'Occupancy Rate', value: `${stats.occupancyRate.toFixed(1)}%`, icon: 'room_service', sub: '98.2% efficiency', color: '#6366f1' },
         ].map(s => (
           <div key={s.label} style={{ background: '#fff', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -481,7 +511,7 @@ const AccommodationsPage: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filtered.map(acc => {
+                  paginatedData.map(acc => {
                     const s = accomStatusCfg[acc.status] || { bg: '#f1f5f9', color: '#64748b' };
                     return (
                       <tr key={acc.id} style={{ borderTop: '1px solid #f8fafc' }}
@@ -549,12 +579,117 @@ const AccommodationsPage: React.FC = () => {
 
         {/* Pagination */}
         <div style={{ padding: '12px 20px', borderTop: '1px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fafafa' }}>
-          <span style={{ fontSize: 12, color: '#64748b' }}>Hiển thị 1–{filtered.length} / {data.length} cơ sở</span>
-          <div style={{ display: 'flex', gap: 4 }}>
-            {[1, 2].map(p => (
-              <button key={p} style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: p === 1 ? TEAL : '#f1f5f9', color: p === 1 ? '#fff' : '#64748b', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>{p}</button>
-            ))}
-          </div>
+          <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+            Hiển thị {filtered.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0} - {Math.min(currentPage * PAGE_SIZE, filtered.length)} trong tổng số {filtered.length} cơ sở
+          </span>
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {/* Prev Button */}
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#f1f5f9',
+                  color: currentPage === 1 ? '#cbd5e1' : '#64748b',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_left</span>
+              </button>
+
+              {/* Page numbers */}
+              {(() => {
+                const pages: (number | string)[] = [];
+                if (totalPages <= 7) {
+                  for (let i = 1; i <= totalPages; i++) pages.push(i);
+                } else {
+                  pages.push(1);
+                  if (currentPage > 4) {
+                    pages.push('...');
+                  }
+                  const start = Math.max(2, currentPage - 2);
+                  const end = Math.min(totalPages - 1, currentPage + 2);
+                  let adjustedStart = start;
+                  let adjustedEnd = end;
+                  if (currentPage <= 4) {
+                    adjustedEnd = 5;
+                  } else if (currentPage >= totalPages - 3) {
+                    adjustedStart = totalPages - 4;
+                  }
+                  for (let i = adjustedStart; i <= adjustedEnd; i++) {
+                    pages.push(i);
+                  }
+                  if (currentPage < totalPages - 3) {
+                    pages.push('...');
+                  }
+                  pages.push(totalPages);
+                }
+
+                return pages.map((p, idx) => {
+                  if (p === '...') {
+                    return (
+                      <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', color: '#94a3b8', fontWeight: 600, fontSize: 13, userSelect: 'none' }}>
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p as number)}
+                      style={{
+                        width: 30,
+                        height: 30,
+                        borderRadius: 8,
+                        border: 'none',
+                        background: p === currentPage ? TEAL : '#f1f5f9',
+                        color: p === currentPage ? '#fff' : '#64748b',
+                        fontWeight: 700,
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {p}
+                    </button>
+                  );
+                });
+              })()}
+
+              {/* Next Button */}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#f1f5f9',
+                  color: currentPage === totalPages ? '#cbd5e1' : '#64748b',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_right</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

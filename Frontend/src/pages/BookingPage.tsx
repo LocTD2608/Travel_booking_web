@@ -404,7 +404,7 @@ const BookingPage: React.FC = () => {
                                 <div className="mt-3 border-t border-gray-100 pt-4 flex flex-col md:flex-row gap-5 items-center bg-pink-50/30 p-4 rounded-xl border border-pink-100">
                                     <div className="flex-shrink-0 bg-white p-2 rounded-xl shadow-md border border-pink-100 flex items-center justify-center max-w-[200px]">
                                         <img 
-                                            src={`https://img.vietqr.io/image/MB-966454800-print.png?amount=${total}&addInfo=TRAVELOKA%20MOMO%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
+                                            src={`https://img.vietqr.io/image/VIB-966454800-print.png?amount=${total}&addInfo=TRAVELOKA%20MOMO%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
                                             alt="MoMo QR" 
                                             className="w-44 h-44 object-contain rounded-lg"
                                         />
@@ -423,7 +423,7 @@ const BookingPage: React.FC = () => {
                                             <div>Số điện thoại/TK:</div>
                                             <div className="font-bold text-gray-900 font-mono">966454800</div>
                                             <div>Ngân hàng nhận:</div>
-                                            <div className="font-bold text-gray-900">MB Bank (Quân Đội)</div>
+                                            <div className="font-bold text-gray-900">VIB (Ngân hàng Quốc Tế)</div>
                                             <div>Số tiền chuyển:</div>
                                             <div className="font-bold text-pink-600 text-sm">{total.toLocaleString()} VNĐ</div>
                                         </div>
@@ -436,7 +436,7 @@ const BookingPage: React.FC = () => {
                                 <div className="mt-3 border-t border-gray-100 pt-4 flex flex-col md:flex-row gap-5 items-center bg-blue-50/30 p-4 rounded-xl border border-blue-100">
                                     <div className="flex-shrink-0 bg-white p-2 rounded-xl shadow-md border border-blue-100 flex items-center justify-center max-w-[200px]">
                                         <img 
-                                            src={`https://img.vietqr.io/image/MB-966454800-print.png?amount=${total}&addInfo=TRAVELOKA%20BANK%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
+                                            src={`https://img.vietqr.io/image/VIB-966454800-print.png?amount=${total}&addInfo=TRAVELOKA%20BANK%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
                                             alt="VietQR" 
                                             className="w-44 h-44 object-contain rounded-lg"
                                         />
@@ -451,7 +451,7 @@ const BookingPage: React.FC = () => {
                                         </div>
                                         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-1.5 border-t border-blue-100/50 text-xs">
                                             <div>Ngân hàng nhận:</div>
-                                            <div className="font-bold text-gray-900">MB Bank (Quân Đội)</div>
+                                            <div className="font-bold text-gray-900">VIB (Ngân hàng Quốc Tế)</div>
                                             <div>Số tài khoản:</div>
                                             <div className="font-bold text-gray-900 font-mono">966454800</div>
                                             <div>Chủ tài khoản:</div>

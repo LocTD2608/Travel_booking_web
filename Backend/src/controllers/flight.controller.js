@@ -60,10 +60,40 @@ exports.getFlightSeats = async (req, res) => {
   }
 };
 
+const getOrCreateRoute = async (originCode, destinationCode) => {
+  let originAirport = await SanBay.findOne({ where: { Code: originCode } });
+  if (!originAirport) {
+    originAirport = await SanBay.create({ Code: originCode, Ten: `${originCode} Airport` });
+  }
+
+  let destinationAirport = await SanBay.findOne({ where: { Code: destinationCode } });
+  if (!destinationAirport) {
+    destinationAirport = await SanBay.create({ Code: destinationCode, Ten: `${destinationCode} Airport` });
+  }
+
+  let route = await TuyenDuong.findOne({
+    where: {
+      MaSanBayXuatPhat: originAirport.MaSanBay,
+      MaSanBayDich: destinationAirport.MaSanBay
+    }
+  });
+
+  if (!route) {
+    route = await TuyenDuong.create({
+      MaSanBayXuatPhat: originAirport.MaSanBay,
+      MaSanBayDich: destinationAirport.MaSanBay
+    });
+  }
+
+  return route.MaTuyenDuong;
+};
+
 exports.createFlight = async (req, res) => {
   try {
     const {
       MaTuyenDuong,
+      origin,
+      destination,
       HangBay,
       HangGhe,
       GiaCoBan,
@@ -71,8 +101,13 @@ exports.createFlight = async (req, res) => {
       GioHaCanh
     } = req.body;
 
+    let routeId = MaTuyenDuong;
+    if (!routeId && origin && destination) {
+      routeId = await getOrCreateRoute(origin, destination);
+    }
+
     const flight = await ChuyenBay.create({
-      MaTuyenDuong,
+      MaTuyenDuong: routeId,
       HangBay,
       HangGhe,
       GiaCoBan,
@@ -80,7 +115,11 @@ exports.createFlight = async (req, res) => {
       GioHaCanh
     });
 
-    res.status(201).json(flight);
+    const fullFlight = await ChuyenBay.findByPk(flight.MaChuyenBay, {
+      include: includeRouteDetails
+    });
+
+    res.status(201).json(fullFlight);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -91,6 +130,8 @@ exports.updateFlight = async (req, res) => {
     const { id } = req.params;
     const {
       MaTuyenDuong,
+      origin,
+      destination,
       HangBay,
       HangGhe,
       GiaCoBan,
@@ -103,8 +144,13 @@ exports.updateFlight = async (req, res) => {
       return res.status(404).json({ message: "Flight not found" });
     }
 
+    let routeId = MaTuyenDuong;
+    if (!routeId && origin && destination) {
+      routeId = await getOrCreateRoute(origin, destination);
+    }
+
     await flight.update({
-      MaTuyenDuong,
+      MaTuyenDuong: routeId || flight.MaTuyenDuong,
       HangBay,
       HangGhe,
       GiaCoBan,
@@ -112,7 +158,11 @@ exports.updateFlight = async (req, res) => {
       GioHaCanh
     });
 
-    res.json(flight);
+    const fullFlight = await ChuyenBay.findByPk(id, {
+      include: includeRouteDetails
+    });
+
+    res.json(fullFlight);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -45,7 +45,7 @@
     "bookingClass": "Premium Package",
     "reason": "Sức khỏe không cho phép. Có giấy tờ y tế xác nhận.",
     "requestedAt": "2024-10-21 10:30",
-    "status": "pending"
+    "status": "approved"
   },
   {
     "id": "CR005",
@@ -57,7 +57,7 @@
     "bookingClass": "Nha Trang",
     "reason": "Không hài lòng với phòng được phân. Yêu cầu chuyển loại phòng hoặc hoàn tiền.",
     "requestedAt": "2024-10-20 16:00",
-    "status": "pending"
+    "status": "approved"
   },
   {
     "id": "CR006",
@@ -81,6 +81,62 @@
     "bookingClass": "Đà Nẵng",
     "reason": "Thay đổi kế hoạch du lịch gia đình do thiên tai.",
     "requestedAt": "2024-10-18 20:15",
-    "status": "pending"
+    "status": "approved"
+  },
+  {
+    "id": "CR008",
+    "bookingId": "3",
+    "customerName": "Le Chi",
+    "customerEmail": "chi3@gmail.com",
+    "bookingType": "hotel",
+    "bookingDetail": "Grand Mercure Danang",
+    "bookingClass": "Da Nang",
+    "reason": "gaf",
+    "requestedAt": "2026-06-04 16:31",
+    "status": "approved",
+    "userId": 3,
+    "acknowledged": true
+  },
+  {
+    "id": "CR009",
+    "bookingId": "4",
+    "customerName": "Le Chi",
+    "customerEmail": "chi3@gmail.com",
+    "bookingType": "hotel",
+    "bookingDetail": "Tour Nhật Bản mùa Hoa Anh Đào - Ngắm núi Phú Sĩ",
+    "bookingClass": "Tokyo - Kyoto - Phú Sĩ, Nhật Bản",
+    "reason": "Gà\n",
+    "requestedAt": "2026-06-04 16:42",
+    "status": "approved",
+    "userId": 3,
+    "acknowledged": true
+  },
+  {
+    "id": "CR010",
+    "bookingId": "5",
+    "customerName": "Le Chi",
+    "customerEmail": "chi3@gmail.com",
+    "bookingType": "hotel",
+    "bookingDetail": "Fusion Suites Danang",
+    "bookingClass": "Da Nang",
+    "reason": "c",
+    "requestedAt": "2026-06-04 16:49",
+    "status": "rejected",
+    "userId": 3,
+    "acknowledged": true
+  },
+  {
+    "id": "CR011",
+    "bookingId": "6",
+    "customerName": "Le Chi",
+    "customerEmail": "chi3@gmail.com",
+    "bookingType": "hotel",
+    "bookingDetail": "Grand Mercure Danang",
+    "bookingClass": "Da Nang",
+    "reason": "bbbbb",
+    "requestedAt": "2026-06-04 16:52",
+    "status": "approved",
+    "userId": 3,
+    "acknowledged": true
   }
 ]
