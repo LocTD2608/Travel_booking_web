@@ -39,7 +39,7 @@ export const TrainCard: React.FC<{ train: TrainCardProps; onSelect?: () => void 
                     <div className="text-sm font-semibold text-gray-500">{train.from}</div>
                 </div>
                 <div className="flex-1 flex flex-col items-center px-4 relative">
-                    <div className="text-xs text-gray-400 font-semibold mb-1">{train.duration}</div>
+                    <div className="h-5"></div>
                     <div className="w-full flex items-center justify-center relative">
                         <div className="w-2 h-2 rounded-full border-2 border-gray-300 bg-white z-10"></div>
                         <div className="h-[2px] bg-gray-200 flex-1 relative"></div>
