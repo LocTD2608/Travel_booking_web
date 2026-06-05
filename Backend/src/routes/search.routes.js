@@ -10,5 +10,6 @@ router.get("/recommendations", searchController.getRecommendations);
 router.get("/trains", searchController.searchTrains);
 router.get("/experiences", searchController.searchExperiences);
 router.get("/availability", searchController.checkAvailability);
+router.get("/promotions", searchController.getPromotions);
 
 module.exports = router;

@@ -249,3 +249,32 @@ VALUES (1, NOW(), NOW(), 5000000, 'DA_THANH_TOAN');
 INSERT INTO CHI_TIET_BOOKING
 (MaCTBooking, MaBooking, SoLuongNguoi, DonGia, LoaiDoiTuong, MaKM)
 VALUES (1, 1, 2, 2500000, 'FLIGHT', NULL);
+
+-- =========================
+-- KHUYẾN MÃI
+-- =========================
+INSERT INTO KHUYEN_MAI (TenKM, LoaiKM, NgayApDung, NgayKetThuc, DieuKien, TrangThaiKM) VALUES 
+('Up to 20% Off\nDining Vouchers', 'PROMO', '2026-06-01', '2026-12-31', 
+ '{"badge": "LIMITED TIME", "badgeColor": "yellow", "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCUh0E7h4kKz315MnHIzv_UTPH9iYSAgKp5u59CVwebESS8qSBsR-xoVQ2FnLHoG5zZJl_Fogvhc8S0JhBWbxmRMBY0e2ehHNkC1z1VcRZGaNtQxLDWBvFPsZxf9nlwpRZ4fC5oBPlOw-cT8QWF6VVE7zimKRvocqbiKSv5f4cA9S9W8vrQIgFuW7Yk5ktPwbIWZaPyOG527-J3nX-IawG9l7rUMl5xXTHdd5FRn9LzMkLbuXDkUyImJ5mM6g3gCN9PAqVNmcLU47c", "targetUrl": "/experience"}', 
+ 'ACTIVE'),
+
+('International Flights\nStarting from $199', 'PROMO', '2026-06-01', '2026-12-31', 
+ '{"badge": "FLIGHT DEAL", "badgeColor": "blue", "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAMv7gS5O3bc8_67hLa_ydpldx0r7L-BjMVVuBXmPyPgxNAKGl4T3lEVXH7yom2ylDE7ZXpw0ydLkviVAoRUd3fiznhTZOp1e_anYolCVExsN7jbxyhTLXMBiuIIsrjUTR1rSLBebaqGKiWZ57YKgfPR-owgYKTWy1qgRIoFXWfU7YIMmjoBYyH7qnu0j629oPlTus3NFbKsejq68LMsWL2MnMHMmI2TFvTAgPLJkHPb0SJvQoQZNRzy3xC3MbkUjXzR81uOH4M0-g", "targetUrl": "/flights"}', 
+ 'ACTIVE'),
+
+('Weekend Getaway\nPackages', 'PROMO', '2026-06-01', '2026-12-31', 
+ '{"badge": "STAYCATION", "badgeColor": "purple", "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAOUxGIqRVbUdCmNozeycTjPhDt_WulULzmrpwAYNT23GLnTpMZIjQx3_lMKlzxDiPhxyoPNv94FFLJ1h5LsFyBY9HCq9S1hDbYRY4rn8cJQUil7v5O8Ii3aJSaS5-tLEvLTVfgYcbBKlyuGWlxWvtpPur_Vl4dqHseFqq9iJIkY4t1srjZcnCy0hJyD_el7_KKlhpACaERsV-cfTdy2YQ-KFLzUobD6DqOpaGzJIm44DDbz1bmqcOOD4IUT7525OZGvfKAZTKNxE0", "targetUrl": "/hotels"}', 
+ 'ACTIVE');
+
+INSERT INTO KHUYEN_MAI (TenKM, LoaiKM, NgayApDung, NgayKetThuc, DieuKien, TrangThaiKM) VALUES 
+('FLYHIGH', 'COUPON', '2026-06-01', '2026-12-31', 
+ '{"title": "International Flights", "discount": "Save $50", "terms": "Min. spend $500 • Valid until Dec 31", "icon": "flight_takeoff", "color": "blue"}', 
+ 'ACTIVE'),
+
+('STAYLUXE', 'COUPON', '2026-06-01', '2026-12-31', 
+ '{"title": "First Hotel Booking", "discount": "15% OFF", "terms": "Max discount $30 • New users only", "icon": "hotel", "color": "orange"}', 
+ 'ACTIVE'),
+
+('FUNTIME', 'COUPON', '2026-06-01', '2026-12-31', 
+ '{"title": "Xperience Activity", "discount": "10% Back", "terms": "Cashback in points • All activities", "icon": "local_activity", "color": "purple"}', 
+ 'ACTIVE');

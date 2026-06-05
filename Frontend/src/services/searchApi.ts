@@ -84,3 +84,10 @@ export async function fetchRecommendations(type: 'hotels' | 'flights', limit: nu
     if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
     return res.json();
 }
+
+export async function fetchPromotions(): Promise<ApiResponse<any>> {
+    const url = `${BASE_URL}/search/promotions`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+    return res.json();
+}
