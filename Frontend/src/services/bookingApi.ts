@@ -1,4 +1,5 @@
-const API_URL = "http://127.0.0.1:3000/api/booking";
+const BASE_API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+const API_URL = `${BASE_API_URL}/booking`;
 
 export interface BookingDetails {
     booking: any;
