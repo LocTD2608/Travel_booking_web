@@ -288,3 +288,14 @@
         font-size: 60px;
     }
 }
+
+.loadingCard {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 48px !important;
+}
+
+.loadingContent {
+    text-align: center;
+}

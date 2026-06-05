@@ -131,6 +131,14 @@ exports.updateUser = async (req, res) => {
       TinhTrangXacMinh
     } = req.body;
 
+    // Validate CCCD
+    const cccdRegex = /^\d{12}$/;
+    if (CCCD && !cccdRegex.test(CCCD)) {
+      return res.status(400).json({
+        message: "CCCD phải gồm đúng 12 chữ số"
+      });
+    }
+
     const user = await User.findByPk(id);
 
     if (!user) {

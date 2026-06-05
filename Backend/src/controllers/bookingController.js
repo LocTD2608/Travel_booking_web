@@ -549,3 +549,41 @@ exports.getAllBookings = async (req, res) => {
     });
   }
 };
+
+// Lấy chi tiết một booking
+exports.getBookingDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const booking = await db.Booking.findByPk(id);
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking không tồn tại",
+      });
+    }
+
+    const details = await db.ChiTietBooking.findAll({
+      where: { MaBooking: booking.MaBooking }
+    });
+
+    const user = await db.User.findByPk(booking.UserID, {
+      attributes: ['Ho', 'Ten', 'Email', 'SDT']
+    });
+
+    return res.json({
+      success: true,
+      message: "Lấy chi tiết booking thành công",
+      data: {
+        booking,
+        details,
+        user
+      }
+    });
+  } catch (err) {
+    console.error("Lỗi getBookingDetail:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};

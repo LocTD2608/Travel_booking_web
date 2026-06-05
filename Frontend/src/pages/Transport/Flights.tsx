@@ -106,7 +106,7 @@ const Flights: React.FC = () => {
                             duration,
                             from: f.from_name,
                             to: f.to_name,
-                            price: f.price,
+                            price: Number(f.price),
                             originalPrice: null,
                             type: 'Direct',
                             class: f.HangGhe,
@@ -287,8 +287,8 @@ const Flights: React.FC = () => {
                                     handleStyle={[{ borderColor: '#005CE6', width: 16, height: 16, marginTop: -6 }, { borderColor: '#005CE6', width: 16, height: 16, marginTop: -6 }]}
                                 />
                                 <div className="flex justify-between text-xs font-semibold text-gray-400 mt-2">
-                                    <span>{priceRange[0].toLocaleString()}đ</span>
-                                    <span>{priceRange[1].toLocaleString()}đ</span>
+                                    <span>{priceRange[0].toLocaleString()} VNĐ</span>
+                                    <span>{priceRange[1].toLocaleString()} VNĐ</span>
                                 </div>
                             </div>
 

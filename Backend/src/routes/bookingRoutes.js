@@ -10,5 +10,6 @@ router.post("/cancel/:id", bookingController.cancelBooking);
 router.get("/stats", jwtAuth, isAdmin, bookingController.getBookingStats);
 router.get("/user/:userId", bookingController.getUserBookings);
 router.get("/all", bookingController.getAllBookings);
+router.get("/detail/:id", bookingController.getBookingDetail);
 
 module.exports = router;
