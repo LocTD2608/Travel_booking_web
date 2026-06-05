@@ -1,4 +1,5 @@
-const API_URL = "http://127.0.0.1:3000/api/auth";
+const BASE_API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+const API_URL = `${BASE_API_URL}/auth`;
 
 export const authApi = {
     login: async (credentials: Record<string, unknown>) => {

@@ -91,7 +91,8 @@ const BookingPage: React.FC = () => {
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://127.0.0.1:3000/api/booking/create', {
+            const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+            const response = await fetch(`${baseUrl}/booking/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -129,7 +130,8 @@ const BookingPage: React.FC = () => {
             } else {
                 if (paymentMethod === 'momo' || paymentMethod === 'bank' || paymentMethod === 'card') {
                     try {
-                        await fetch(`http://127.0.0.1:3000/api/booking/pay/${bookingResult.data.MaBooking}`, {
+                        const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+                        await fetch(`${baseUrl}/booking/pay/${bookingResult.data.MaBooking}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
