@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 import { Recommended } from '../../components/ui/Recommended/Recommended';
-import { fetchDestinations } from '../../services/searchApi';
+import { fetchDestinations, fetchPromotions } from '../../services/searchApi';
 import type { DestinationResult } from '../../types/search';
 import styles from './HomePage.module.css';
 
@@ -52,8 +53,37 @@ const faqData = [
 
 export const HomePage: React.FC = () => {
     const { isAuthenticated } = useAuth();
+    const { showSuccess, showError } = useNotification();
     const navigate = useNavigate();
     const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
+    const [promos, setPromos] = useState<any[]>([]);
+    const [coupons, setCoupons] = useState<any[]>([]);
+
+    useEffect(() => {
+        const loadPromotions = async () => {
+            try {
+                const response = await fetchPromotions();
+                if (response.success && response.data) {
+                    const allItems = response.data;
+                    setPromos(allItems.filter((item: any) => item.type === 'PROMO'));
+                    setCoupons(allItems.filter((item: any) => item.type === 'COUPON'));
+                }
+            } catch (error) {
+                console.error('Không thể tải promotions từ backend:', error);
+            }
+        };
+        loadPromotions();
+    }, []);
+
+    const handleCopyCode = (code: string) => {
+        if (!code) return;
+        navigator.clipboard.writeText(code).then(() => {
+            showSuccess(`Successfully copied promo code: ${code}`);
+        }).catch((err) => {
+            console.error('Không thể copy code:', err);
+            showError('Failed to copy promo code');
+        });
+    };
 
     const handleSearchClick = (searchData: Record<string, string>) => {
         const params = new URLSearchParams();
@@ -82,54 +112,6 @@ export const HomePage: React.FC = () => {
         { icon: 'directions_bus', title: 'Bus &', subtitle: 'Shuttle', color: 'pink', to: '/bus' },
         { icon: 'airport_shuttle', title: 'Airport', subtitle: 'Transfer', color: 'teal', to: '/airport-transfer' },
         ...(isAuthenticated ? [{ icon: 'person', title: 'My', subtitle: 'Profile', color: 'cyan', to: '/profile' }] : []),
-    ];
-
-    const promos = [
-        {
-            badge: 'LIMITED TIME',
-            badgeColor: 'yellow',
-            title: 'Up to 20% Off\nDining Vouchers',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCUh0E7h4kKz315MnHIzv_UTPH9iYSAgKp5u59CVwebESS8qSBsR-xoVQ2FnLHoG5zZJl_Fogvhc8S0JhBWbxmRMBY0e2ehHNkC1z1VcRZGaNtQxLDWBvFPsZxf9nlwpRZ4fC5oBPlOw-cT8QWF6VVE7zimKRvocqbiKSv5f4cA9S9W8vrQIgFuW7Yk5ktPwbIWZaPyOG527-J3nX-IawG9l7rUMl5xXTHdd5FRn9LzMkLbuXDkUyImJ5mM6g3gCN9PAqVNmcLU47c'
-        },
-        {
-            badge: 'FLIGHT DEAL',
-            badgeColor: 'blue',
-            title: 'International Flights\nStarting from $199',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMv7gS5O3bc8_67hLa_ydpldx0r7L-BjMVVuBXmPyPgxNAKGl4T3lEVXH7yom2ylDE7ZXpw0ydLkviVAoRUd3fiznhTZOp1e_anYolCVExsN7jbxyhTLXMBiuIIsrjUTR1rSLBebaqGKiWZ57YKgfPR-owgYKTWy1qgRIoFXWfU7YIMmjoBYyH7qnu0j629oPlTus3NFbKsejq68LMsWL2MnMHMmI2TFvTAgPLJkHPb0SJvQoQZNRzy3xC3MbkUjXzR81uOH4M0-g'
-        },
-        {
-            badge: 'STAYCATION',
-            badgeColor: 'purple',
-            title: 'Weekend Getaway\nPackages',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAOUxGIqRVbUdCmNozeycTjPhDt_WulULzmrpwAYNT23GLnTpMZIjQx3_lMKlzxDiPhxyoPNv94FFLJ1h5LsFyBY9HCq9S1hDbYRY4rn8cJQUil7v5O8Ii3aJSaS5-tLEvLTVfgYcbBKlyuGWlxWvtpPur_Vl4dqHseFqq9iJIkY4t1srjZcnCy0hJyD_el7_KKlhpACaERsV-cfTdy2YQ-KFLzUobD6DqOpaGzJIm44DDbz1bmqcOOD4IUT7525OZGvfKAZTKNxE0'
-        },
-    ];
-
-    const coupons = [
-        {
-            icon: 'flight_takeoff',
-            color: 'blue',
-            discount: 'Save $50',
-            title: 'International Flights',
-            terms: 'Min. spend $500 • Valid until Dec 31',
-            code: 'FLYHIGH'
-        },
-        {
-            icon: 'hotel',
-            color: 'orange',
-            discount: '15% OFF',
-            title: 'First Hotel Booking',
-            terms: 'Max discount $30 • New users only',
-            code: 'STAYLUXE'
-        },
-        {
-            icon: 'local_activity',
-            color: 'purple',
-            discount: '10% Back',
-            title: 'Xperience Activity',
-            terms: 'Cashback in points • All activities',
-            code: 'FUNTIME'
-        },
     ];
 
     const [destinations, setDestinations] = useState<DestinationResult[]>([
@@ -221,7 +203,7 @@ export const HomePage: React.FC = () => {
                     ))}
                 </div>
 
-                {/* Ongoing Promos */}
+                 {/* Ongoing Promos */}
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
                         <div>
@@ -234,7 +216,7 @@ export const HomePage: React.FC = () => {
                     </div>
                     <div className={styles.promosGrid}>
                         {promos.map((promo, index) => (
-                            <div key={index} className={styles.promoCard}>
+                            <div key={index} className={styles.promoCard} onClick={() => promo.targetUrl && navigate(promo.targetUrl)}>
                                 <div
                                     className={styles.promoImage}
                                     style={{ backgroundImage: `url(${promo.image})` }}
@@ -243,9 +225,9 @@ export const HomePage: React.FC = () => {
                                     <span className={`${styles.promoBadge} ${styles[promo.badgeColor]}`}>
                                         {promo.badge}
                                     </span>
-                                    <h4>{promo.title.split('\n').map((line, i) => (
+                                    <h4>{((promo.title || '') as string).split('\n').map((line: string, i: number) => (
                                         <React.Fragment key={i}>
-                                            {line}{i < promo.title.split('\n').length - 1 && <br />}
+                                            {line}{i < ((promo.title || '') as string).split('\n').length - 1 && <br />}
                                         </React.Fragment>
                                     ))}</h4>
                                 </div>
@@ -287,7 +269,10 @@ export const HomePage: React.FC = () => {
                                 <div className={styles.couponRight}>
                                     <span className={styles.codeLabel}>Promo Code</span>
                                     <div className={styles.codeBox}>{coupon.code}</div>
-                                    <button className={styles.copyButton}>
+                                    <button 
+                                        className={styles.copyButton}
+                                        onClick={() => handleCopyCode(coupon.code)}
+                                    >
                                         Copy <span className="material-symbols-outlined">content_copy</span>
                                     </button>
                                 </div>

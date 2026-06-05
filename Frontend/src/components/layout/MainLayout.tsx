@@ -3,6 +3,7 @@ import Header from './Header/Header';
 import Footer from './Footer/Footer';
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { NotificationToast } from '../common/NotificationToast';
 
 const MainLayout: React.FC = () => {
     const { isAuthenticated, isAdmin } = useAuth();
@@ -18,6 +19,7 @@ const MainLayout: React.FC = () => {
                 <Outlet />
             </main>
             <Footer />
+            <NotificationToast />
         </div>
     );
 };
