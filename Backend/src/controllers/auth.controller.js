@@ -74,7 +74,16 @@ exports.login = async (req, res) => {
         }
 
         // Regular user login from DB
-        const user = await User.findOne({ where: { Email: email } });
+        const { Op } = require("sequelize");
+        //test
+        const user = await User.findOne({
+        where: {
+            Email: {
+            [Op.eq]: email.trim()
+            }
+        }
+        });
+        
         if (!user) return res.status(400).json({ message: "Tài khoản không tồn tại" });
 
         let isMatch = false;
