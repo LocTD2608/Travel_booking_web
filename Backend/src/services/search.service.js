@@ -49,7 +49,7 @@ const searchFlights = async (params) => {
   } = params;
 
   let baseQuery = `
-    FROM CHUYEN_BAY cb
+    FROM chuyen_bay cb
     JOIN TUYEN_DUONG td ON cb.MaTuyenDuong = td.MaTuyenDuong
     JOIN SAN_BAY sb1 ON td.MaSanBayXuatPhat = sb1.MaSanBay
     JOIN SAN_BAY sb2 ON td.MaSanBayDich     = sb2.MaSanBay
