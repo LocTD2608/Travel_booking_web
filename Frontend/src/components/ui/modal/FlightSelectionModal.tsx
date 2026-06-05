@@ -222,6 +222,14 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
         const seatObj = seatData.find(s => s.SoGhe === seatId);
         if (!seatObj || seatObj.TrangThaiGhe !== 'TRONG') return; // Prevent clicking occupied seats
 
+        const currentSeats = selectedSeats[activeTab];
+        const isAlreadySelected = currentSeats.some(s => s.id === seatId);
+
+        if (!isAlreadySelected && currentSeats.length >= passengerCount) {
+            alert(`Bạn đã chọn đủ số lượng ghế cho ${passengerCount} hành khách.`);
+            return;
+        }
+
         const priceAddition = parseFloat(seatObj.GiaPhuPhi || '0');
         const className = classId === 'business' ? 'Business' : classId === 'premium' ? 'Premium Economy' : 'Economy';
 
@@ -233,20 +241,14 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
         };
 
         setSelectedSeats(prev => {
-            const currentSeats = prev[activeTab];
-            const isAlreadySelected = currentSeats.find(s => s.id === seatId);
-            
-            if (isAlreadySelected) {
+            const current = prev[activeTab];
+            const isSel = current.some(s => s.id === seatId);
+            if (isSel) {
                 // Deselect
-                return { ...prev, [activeTab]: currentSeats.filter(s => s.id !== seatId) };
+                return { ...prev, [activeTab]: current.filter(s => s.id !== seatId) };
             } else {
-                // Limit selection to passengerCount
-                if (currentSeats.length >= passengerCount) {
-                    alert(`Bạn đã chọn đủ số lượng ghế cho ${passengerCount} hành khách.`);
-                    return prev;
-                }
                 // Select
-                return { ...prev, [activeTab]: [...currentSeats, newSeat] };
+                return { ...prev, [activeTab]: [...current, newSeat] };
             }
         });
     };
