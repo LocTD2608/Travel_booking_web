@@ -5,7 +5,7 @@ import {
 } from 'antd';
 import { SearchOutlined, UserDeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { getAllUsers, updateUser, deleteUser } from '../../../services/admin/users';
+import { getAllUsers, updateUser, deleteUser, createUser } from '../../../services/admin/users';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -21,6 +21,8 @@ const UsersPage: React.FC = () => {
   const [editVisible, setEditVisible] = useState(false);
   const [editUser, setEditUser] = useState<any>(null);
   const [form] = Form.useForm();
+  const [addVisible, setAddVisible] = useState(false);
+  const [addForm] = Form.useForm();
 
   const fetchUsers = () => {
     setLoading(true);
@@ -75,6 +77,20 @@ const UsersPage: React.FC = () => {
       fetchUsers();
     } catch {
       message.error('Cập nhật thất bại');
+    }
+  };
+
+  const handleAddUser = async () => {
+    try {
+      const values = await addForm.validateFields();
+      await createUser(values);
+      message.success('Thêm người dùng thành công');
+      setAddVisible(false);
+      addForm.resetFields();
+      fetchUsers();
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || 'Thêm người dùng thất bại';
+      message.error(errorMsg);
     }
   };
 
@@ -136,6 +152,7 @@ const UsersPage: React.FC = () => {
         <Title level={4} style={{ margin: 0 }}>Quản Lý Người Dùng ({users.length})</Title>
         <Space>
           <Input.Search placeholder="Tìm kiếm tên / email..." allowClear onSearch={handleSearch} style={{ width: 260 }} prefix={<SearchOutlined />} />
+          <Button type="primary" onClick={() => setAddVisible(true)}>Thêm người dùng</Button>
         </Space>
       </div>
 
@@ -169,6 +186,83 @@ const UsersPage: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={12}>
+              <Form.Item label="Xác minh" name="TinhTrangXacMinh">
+                <Select>
+                  <Option value="VERIFIED">VERIFIED</Option>
+                  <Option value="UNVERIFIED">UNVERIFIED</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
+
+      <Modal title="Thêm người dùng mới" open={addVisible} onOk={handleAddUser} onCancel={() => setAddVisible(false)} okText="Thêm" destroyOnClose>
+        <Form form={addForm} layout="vertical" style={{ marginTop: 16 }} initialValues={{ Role: 'USER', TrangThai: 'ACTIVE', TinhTrangXacMinh: 'UNVERIFIED' }}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="Họ" name="Ho" rules={[{ required: true, message: 'Vui lòng nhập họ' }]}>
+                <Input placeholder="Nguyễn" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Tên" name="Ten" rules={[{ required: true, message: 'Vui lòng nhập tên' }]}>
+                <Input placeholder="Văn A" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item label="Email" name="Email" rules={[
+                { required: true, message: 'Vui lòng nhập email' },
+                { type: 'email', message: 'Email không đúng định dạng' }
+              ]}>
+                <Input placeholder="example@gmail.com" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item label="Mật khẩu" name="Password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
+                <Input.Password placeholder="Nhập mật khẩu" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="Số điện thoại" name="SDT" rules={[
+                { pattern: /^0\d{9}$/, message: 'SĐT gồm 10 chữ số bắt đầu bằng 0' }
+              ]}>
+                <Input placeholder="0912345678" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="CCCD" name="CCCD" rules={[
+                { pattern: /^\d{12}$/, message: 'CCCD gồm đúng 12 chữ số' }
+              ]}>
+                <Input placeholder="001090123456" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item label="Role" name="Role">
+                <Select>
+                  <Option value="USER">USER</Option>
+                  <Option value="ADMIN">ADMIN</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item label="Trạng thái" name="TrangThai">
+                <Select>
+                  <Option value="ACTIVE">ACTIVE</Option>
+                  <Option value="INACTIVE">INACTIVE</Option>
+                  <Option value="BANNED">BANNED</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
               <Form.Item label="Xác minh" name="TinhTrangXacMinh">
                 <Select>
                   <Option value="VERIFIED">VERIFIED</Option>

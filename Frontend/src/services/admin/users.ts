@@ -11,3 +11,7 @@ export const updateUser = (id: string | number, data: Record<string, any>) =>
 // DELETE /api/users/:id (Admin only)
 export const deleteUser = (id: string | number) =>
   request.delete(`/users/${id}`);
+
+// POST /api/users (Admin only)
+export const createUser = (data: Record<string, any>) =>
+  request.post('/users', data);

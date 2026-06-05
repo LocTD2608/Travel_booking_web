@@ -9,6 +9,9 @@ const { isAdmin, isUserOrAdmin } = require("../middlewares/auth");
 // Admin xem toàn bộ user
 router.get("/", jwtAuth, isAdmin, userController.getAllUsers);
 
+// Admin tạo user mới
+router.post("/", jwtAuth, isAdmin, userController.createUser);
+
 // param bắt buộc
 router.get("/:id", jwtAuth, isUserOrAdmin, userController.getUserById);
 

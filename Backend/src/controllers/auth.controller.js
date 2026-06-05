@@ -100,11 +100,11 @@ exports.login = async (req, res) => {
 
         if (!isMatch) return res.status(400).json({ message: "Mật khẩu không chính xác" });
 
-        const token = jwt.sign({ id: user.UserID, role: "USER" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        const token = jwt.sign({ id: user.UserID, role: user.Role }, process.env.JWT_SECRET, { expiresIn: "7d" });
         res.json({
             message: "Đăng nhập thành công",
             token,
-            user: { id: user.UserID, Ho: user.Ho, Ten: user.Ten, Email: user.Email, Role: "USER" }
+            user: { id: user.UserID, Ho: user.Ho, Ten: user.Ten, Email: user.Email, Role: user.Role }
         });
     } catch (error) {
         console.error("Login Error:", error);

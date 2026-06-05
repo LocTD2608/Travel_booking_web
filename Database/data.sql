@@ -8,7 +8,32 @@ INSERT INTO USERS (Ho, Ten, Email, SDT, CCCD, Password, Role, TrangThai, TinhTra
 ('Tran', 'Binh', 'binh2@gmail.com', '090000002', '001001002', '123456', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-02 09:30:00'),
 ('Le', 'Chi', 'chi3@gmail.com', '090000003', '001001003', '123456', 'ADMIN', 'ACTIVE', 'VERIFIED', '2026-01-01 07:00:00'),
 ('Pham', 'Dung', 'dung4@gmail.com', '090000004', '001001004', '123456', 'USER', 'INACTIVE', 'PENDING', '2026-01-05 14:20:00'),
-('Hoang', 'Ha', 'ha5@gmail.com', '090000005', '001001005', '123456', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-10 10:15:00');
+('Hoang', 'Ha', 'ha5@gmail.com', '090000005', '001001005', '123456', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-10 10:15:00'),
+-- Admins
+('Nguyen Van', 'Hai', 'admin_van@gmail.com', '0910000001', '100100100101', 'password123', 'ADMIN', 'ACTIVE', 'VERIFIED', '2026-01-01 07:00:00'),
+('Tran Thi', 'Lan', 'admin_thi@gmail.com', '0910000002', '100100100102', 'password123', 'ADMIN', 'ACTIVE', 'VERIFIED', '2026-01-01 07:00:00'),
+('Le Hoang', 'Nam', 'admin_hoang@gmail.com', '0910000003', '100100100103', 'password123', 'ADMIN', 'ACTIVE', 'VERIFIED', '2026-01-01 07:00:00'),
+-- Users
+('Nguyen Dinh', 'Hoang', 'hoangnguyen@gmail.com', '0920000001', '200200200201', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Tran Minh', 'Khoa', 'khoatran@gmail.com', '0920000002', '200200200202', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Le Thanh', 'Hai', 'haile@gmail.com', '0920000003', '200200200203', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Pham Quoc', 'Bao', 'baopham@gmail.com', '0920000004', '200200200204', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Hoang Khanh', 'Chi', 'chihoang@gmail.com', '0920000005', '200200200205', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Vu Thuy', 'Linh', 'linhvu@gmail.com', '0920000006', '200200200206', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Phan Anh', 'Tuan', 'tuanphan@gmail.com', '0920000007', '200200200207', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Do Thu', 'Ha', 'hado@gmail.com', '0920000008', '200200200208', 'password123', 'USER', 'INACTIVE', 'UNVERIFIED', '2026-01-01 08:00:00'),
+('Bui Tien', 'Dung', 'dungbui@gmail.com', '0920000009', '200200200209', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Huynh Minh', 'Triet', 'triethuynh@gmail.com', '0920000010', '200200200210', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Trinh Cong', 'Son', 'sontrinh@gmail.com', '0920000011', '200200200211', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Dang Thu', 'Thao', 'thaodang@gmail.com', '0920000012', '200200200212', 'password123', 'USER', 'ACTIVE', 'UNVERIFIED', '2026-01-01 08:00:00'),
+('Mai Phuong', 'Thuy', 'thuymai@gmail.com', '0920000013', '200200200213', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Ngo Bao', 'Chau', 'chaungo@gmail.com', '0920000014', '200200200214', 'password123', 'USER', 'BANNED', 'UNVERIFIED', '2026-01-01 08:00:00'),
+('Duong Trung', 'Quoc', 'quocduong@gmail.com', '0920000015', '200200200215', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Ly Thuong', 'Kiet', 'kietly@gmail.com', '0920000016', '200200200216', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Vo Nguyen', 'Giap', 'giapvo@gmail.com', '0920000017', '200200200217', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Phan Chau', 'Trinh', 'trinhphan@gmail.com', '0920000018', '200200200218', 'password123', 'USER', 'INACTIVE', 'UNVERIFIED', '2026-01-01 08:00:00'),
+('Nguyen', 'Hue', 'huenguyen@gmail.com', '0920000019', '200200200219', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Dinh Bo', 'Linh', 'linhdinh@gmail.com', '0920000020', '200200200220', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00');
 
 -- =========================
 -- SAN BAY (10 sân bay)
