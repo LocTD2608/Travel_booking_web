@@ -1,6 +1,7 @@
 export interface DestinationItem {
     city: string;
     detail: string;
+    isInternational?: boolean;
 }
 
 export const ALL_DESTINATIONS: DestinationItem[] = [
@@ -30,19 +31,19 @@ export const ALL_DESTINATIONS: DestinationItem[] = [
     { city: 'Thanh Hoa', detail: 'Thanh Hoa, Vietnam (THD - Tho Xuan Airport)' },
     
     // International
-    { city: 'Bangkok', detail: 'Bangkok, Thailand (BKK - Suvarnabhumi Airport)' },
-    { city: 'Singapore', detail: 'Singapore (SIN - Changi Airport)' },
-    { city: 'Seoul', detail: 'Seoul, South Korea (ICN - Incheon Intl.)' },
-    { city: 'Tokyo', detail: 'Tokyo, Japan (NRT - Narita Airport / HND - Haneda Airport)' },
-    { city: 'Kuala Lumpur', detail: 'Kuala Lumpur, Malaysia (KUL - Kuala Lumpur Intl.)' },
-    { city: 'Taipei', detail: 'Taipei, Taiwan (TPE - Taoyuan Airport)' },
-    { city: 'Bali', detail: 'Bali, Indonesia (DPS - Ngurah Rai Intl.)' },
-    { city: 'Hong Kong', detail: 'Hong Kong (HKG - Hong Kong Intl.)' },
-    { city: 'Siem Reap', detail: 'Siem Reap, Cambodia (SAI - Siem Reap–Angkor Airport)' },
-    { city: 'Paris', detail: 'Paris, France (CDG - Charles de Gaulle Airport)' },
-    { city: 'London', detail: 'London, United Kingdom (LHR - Heathrow Airport)' },
-    { city: 'New York', detail: 'New York, USA (JFK - John F. Kennedy Airport)' },
-    { city: 'Sydney', detail: 'Sydney, Australia (SYD - Sydney Kingsford Smith Airport)' }
+    { city: 'Bangkok', detail: 'Bangkok, Thailand (BKK - Suvarnabhumi Airport)', isInternational: true },
+    { city: 'Singapore', detail: 'Singapore (SIN - Changi Airport)', isInternational: true },
+    { city: 'Seoul', detail: 'Seoul, South Korea (ICN - Incheon Intl.)', isInternational: true },
+    { city: 'Tokyo', detail: 'Tokyo, Japan (NRT - Narita Airport / HND - Haneda Airport)', isInternational: true },
+    { city: 'Kuala Lumpur', detail: 'Kuala Lumpur, Malaysia (KUL - Kuala Lumpur Intl.)', isInternational: true },
+    { city: 'Taipei', detail: 'Taipei, Taiwan (TPE - Taoyuan Airport)', isInternational: true },
+    { city: 'Bali', detail: 'Bali, Indonesia (DPS - Ngurah Rai Intl.)', isInternational: true },
+    { city: 'Hong Kong', detail: 'Hong Kong (HKG - Hong Kong Intl.)', isInternational: true },
+    { city: 'Siem Reap', detail: 'Siem Reap, Cambodia (SAI - Siem Reap–Angkor Airport)', isInternational: true },
+    { city: 'Paris', detail: 'Paris, France (CDG - Charles de Gaulle Airport)', isInternational: true },
+    { city: 'London', detail: 'London, United Kingdom (LHR - Heathrow Airport)', isInternational: true },
+    { city: 'New York', detail: 'New York, USA (JFK - John F. Kennedy Airport)', isInternational: true },
+    { city: 'Sydney', detail: 'Sydney, Australia (SYD - Sydney Kingsford Smith Airport)', isInternational: true }
 ];
 
 // Normalize text by converting to lowercase and stripping Vietnamese accents
@@ -58,8 +59,10 @@ const normalizeText = (text: string): string => {
 export const filterDestinations = (query: string): DestinationItem[] => {
     const cleanQuery = normalizeText(query);
     if (!cleanQuery) {
-        // Return first 6 popular destinations as default
-        return ALL_DESTINATIONS.slice(0, 6);
+        // Return a mix of domestic and international destinations by default
+        const domestic = ALL_DESTINATIONS.filter(d => !d.isInternational).slice(0, 4);
+        const international = ALL_DESTINATIONS.filter(d => d.isInternational).slice(0, 4);
+        return [...domestic, ...international];
     }
     
     return ALL_DESTINATIONS.filter(item => {

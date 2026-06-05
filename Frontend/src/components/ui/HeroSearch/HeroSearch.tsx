@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
 import styles from './HeroSearch.module.css';
-import { filterDestinations } from '../../../utils/destinations';
+import { filterDestinations, ALL_DESTINATIONS } from '../../../utils/destinations';
 
 const { RangePicker } = DatePicker;
 
@@ -80,10 +80,58 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
 
     const renderSuggestionsDropdown = (field: 'destination' | 'origin') => {
         const query = searchParams[field] || '';
+        const cleanQuery = query.trim();
+        const icon = field === 'destination' ? 'location_on' : 'flight_takeoff';
+
+        if (!cleanQuery) {
+            const domestic = ALL_DESTINATIONS.filter(d => !d.isInternational).slice(0, 4);
+            const international = ALL_DESTINATIONS.filter(d => d.isInternational).slice(0, 4);
+
+            return (
+                <div 
+                    className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-[999] overflow-hidden text-left"
+                    style={{ maxHeight: '280px', overflowY: 'auto' }}
+                >
+                    {/* Domestic Section */}
+                    <div className="px-3 py-2 text-[10px] font-extrabold text-blue-600 border-b border-gray-100 bg-blue-50/50 tracking-wider">PHỔ BIẾN TRONG NƯỚC</div>
+                    {domestic.map((dest) => (
+                        <button
+                            key={dest.detail}
+                            type="button"
+                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-750 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none cursor-pointer"
+                            onClick={() => selectSuggestion(field, dest.detail)}
+                        >
+                            <span className="material-symbols-outlined text-gray-400 text-[18px]">{icon}</span>
+                            <div>
+                                <div className="text-gray-900 font-bold text-xs">{dest.city}</div>
+                                <div className="text-[10px] text-gray-500 font-medium mt-0.5">{dest.detail}</div>
+                            </div>
+                        </button>
+                    ))}
+
+                    {/* International Section */}
+                    <div className="px-3 py-2 text-[10px] font-extrabold text-orange-600 border-b border-gray-100 border-t bg-orange-50/50 tracking-wider">PHỔ BIẾN QUỐC TẾ</div>
+                    {international.map((dest) => (
+                        <button
+                            key={dest.detail}
+                            type="button"
+                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-750 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none cursor-pointer"
+                            onClick={() => selectSuggestion(field, dest.detail)}
+                        >
+                            <span className="material-symbols-outlined text-gray-400 text-[18px]">{icon}</span>
+                            <div>
+                                <div className="text-gray-900 font-bold text-xs">{dest.city}</div>
+                                <div className="text-[10px] text-gray-500 font-medium mt-0.5">{dest.detail}</div>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            );
+        }
+
         const filtered = filterDestinations(query);
         const title = field === 'destination' ? 'POPULAR DESTINATIONS' : 'POPULAR ORIGINS';
-        const icon = field === 'destination' ? 'location_on' : 'flight_takeoff';
-        
+
         return (
             <div 
                 className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-[999] overflow-hidden text-left"
@@ -97,7 +145,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                         <button
                             key={dest.detail}
                             type="button"
-                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-700 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none"
+                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-700 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none cursor-pointer"
                             onClick={() => selectSuggestion(field, dest.detail)}
                         >
                             <span className="material-symbols-outlined text-gray-400 text-[18px]">{icon}</span>
