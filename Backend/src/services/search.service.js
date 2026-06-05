@@ -478,7 +478,7 @@ const searchTrains = async ({ from, to, date, priceMax, sortBy }) => {
       tc.DiemDi      AS \`from\`,
       tc.DiemDen     AS \`to\`,
       tc.LoaiVe      AS seat_type
-    FROM DICH_VU dv
+    FROM dich_vu dv
     JOIN DV_TRUNG_CHUYEN tc ON dv.MaDV = tc.MaDV_TC
     WHERE 1=1
   `;
@@ -535,7 +535,7 @@ const searchExperiences = async ({ destination, priceMax, sortBy, rating }) => {
       dv.DonViTinh  AS unit,
       dl.DiemDon             AS pickup,
       dl.DiaDiemThamQuan     AS attraction
-    FROM DICH_VU dv
+    FROM dich_vu dv
     JOIN DV_DU_LICH dl ON dv.MaDV = dl.MaDV_DL
     WHERE 1=1
   `;
