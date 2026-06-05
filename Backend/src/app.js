@@ -86,6 +86,9 @@ const sequelize = require("./configs/database");
   try {
     await sequelize.authenticate();
     console.log("Database connected successfully");
+
+    await sequelize.sync();
+    
   } catch (err) {
     console.error("Database connection error:", err);
   }
