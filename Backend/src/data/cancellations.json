@@ -166,5 +166,19 @@
     "status": "pending",
     "userId": 3,
     "acknowledged": false
+  },
+  {
+    "id": "CR014",
+    "bookingId": "8",
+    "customerName": "Vũ Linh",
+    "customerEmail": "shinnosakine@gmail.com",
+    "bookingType": "hotel",
+    "bookingDetail": "Dai Noi Hue",
+    "bookingClass": "Hue",
+    "reason": "sd",
+    "requestedAt": "2026-06-05 13:06",
+    "status": "pending",
+    "userId": 6,
+    "acknowledged": false
   }
 ]
