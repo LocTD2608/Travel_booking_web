@@ -552,18 +552,94 @@ const searchExperiences = async ({ destination, priceMax, sortBy, rating }) => {
 
   const [rows] = await db.query(query, { replacements });
   
+  // --- MOCK DATA INJECTION ---
+  const mockTours = [
+    {
+      MaDV: 9901,
+      description: "VinWonders Phú Quốc - Công viên chủ đề lớn nhất Việt Nam với hàng trăm trò chơi hấp dẫn, các show diễn thực cảnh hoành tráng và thủy cung rùa biển.",
+      price: 950000,
+      unit: "người",
+      pickup: "Tự túc",
+      attraction: "VinWonders Phú Quốc"
+    },
+    {
+      MaDV: 9902,
+      description: "Tour 4 Đảo Phú Quốc: Câu cá, lặn ngắm san hô tại hòn Móng Tay, hòn Gầm Ghì, hòn Mây Rút. Bao gồm bữa trưa BBQ hải sản trên tàu.",
+      price: 850000,
+      unit: "khách",
+      pickup: "Khách sạn trung tâm Dương Đông",
+      attraction: "Quần đảo An Thới, Phú Quốc"
+    },
+    {
+      MaDV: 9903,
+      description: "Vé cáp treo Hòn Thơm Nature Park - Trải nghiệm tuyến cáp treo vượt biển dài nhất thế giới, thỏa sức vui chơi tại công viên nước Aquatopia.",
+      price: 600000,
+      unit: "vé",
+      pickup: "Nhà ga An Thới",
+      attraction: "Sun World Hon Thom Phú Quốc"
+    },
+    {
+      MaDV: 9904,
+      description: "Tour Bán Đảo Sơn Trà - Ngũ Hành Sơn - Phố cổ Hội An. Khám phá vẻ đẹp di sản văn hóa thế giới lúc lên đèn.",
+      price: 650000,
+      unit: "khách",
+      pickup: "Khách sạn trung tâm Đà Nẵng",
+      attraction: "Hội An, Đà Nẵng"
+    },
+    {
+      MaDV: 9905,
+      description: "Du thuyền sông Hàn về đêm - Thưởng thức bữa tối sang trọng, ngắm tứ đại mỹ cầu và xem rồng phun lửa.",
+      price: 350000,
+      unit: "khách",
+      pickup: "Bến du thuyền sông Hàn",
+      attraction: "Sông Hàn, Đà Nẵng"
+    },
+    {
+      MaDV: 9906,
+      description: "Tour tham quan thủ đô: Lăng Bác, Văn Miếu, Chùa Một Cột, Hồ Gươm và thưởng thức đặc sản Phở Hà Nội truyền thống.",
+      price: 550000,
+      unit: "khách",
+      pickup: "Nhà Hát Lớn Hà Nội",
+      attraction: "Trung tâm Hà Nội"
+    }
+  ];
+
+  let finalRows = [...rows];
+  
+  if (destination) {
+    const normalizedDest = normalizeCity(destination).toLowerCase();
+    mockTours.forEach(t => {
+      const isMatch = 
+        t.attraction.toLowerCase().includes(normalizedDest) || 
+        t.description.toLowerCase().includes(normalizedDest) ||
+        (normalizedDest === 'phu quoc' && (t.attraction.toLowerCase().includes('phú quốc') || t.description.toLowerCase().includes('phú quốc'))) ||
+        (normalizedDest === 'da nang' && (t.attraction.toLowerCase().includes('đà nẵng') || t.description.toLowerCase().includes('đà nẵng'))) ||
+        (normalizedDest === 'ha noi' && (t.attraction.toLowerCase().includes('hà nội') || t.description.toLowerCase().includes('hà nội')));
+      if (isMatch) {
+        finalRows.push(t);
+      }
+    });
+  } else {
+    finalRows.push(...mockTours);
+  }
+
+  // Lọc lại priceMax cho finalRows
+  if (priceMax) {
+    finalRows = finalRows.filter(r => r.price <= priceMax);
+  }
+
   // Filter theo rating nếu có
   if (rating && typeof rating === 'string' && rating.trim()) {
     const selectedStars = rating.split(',').map(s => parseInt(s, 10)).filter(s => !isNaN(s));
     if (selectedStars.length > 0) {
-      return rows.filter(row => {
+      return finalRows.filter(row => {
         const stars = generateStarsFromId(row.MaDV);
         return selectedStars.includes(stars);
       });
     }
   }
   
-  return rows;
+  return finalRows;
 };
 
 // Check phòng trống
