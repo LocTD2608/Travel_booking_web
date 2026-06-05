@@ -7,11 +7,9 @@ module.exports = (sequelize, DataTypes) => {
         },
         Ho: DataTypes.STRING(50),
         Ten: DataTypes.STRING(50),
-        SDT: DataTypes.STRING(20),
-        CCCD: DataTypes.STRING(20),
-        Email: DataTypes.STRING(100),
         SDT: DataTypes.STRING(15),
         CCCD: DataTypes.STRING(20),
+        Email: DataTypes.STRING(100),
         Password: {
             type: DataTypes.STRING(255),
             allowNull: false,
