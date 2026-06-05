@@ -220,7 +220,7 @@ const BookingPage: React.FC = () => {
             <div className="bg-white border-b border-gray-200 py-3 px-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[#005CE6] text-2xl">flight_takeoff</span>
-                    <span className="font-black text-xl text-gray-900">Traveloka</span>
+                    <span className="font-black text-xl text-gray-900">Booking Travel</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                     <span className="material-symbols-outlined text-green-500 text-[18px]">lock</span>
@@ -404,7 +404,7 @@ const BookingPage: React.FC = () => {
                                 <div className="mt-3 border-t border-gray-100 pt-4 flex flex-col md:flex-row gap-5 items-center bg-pink-50/30 p-4 rounded-xl border border-pink-100">
                                     <div className="flex-shrink-0 bg-white p-2 rounded-xl shadow-md border border-pink-100 flex items-center justify-center max-w-[200px]">
                                         <img 
-                                            src={`https://img.vietqr.io/image/MB-966454800-print.png?amount=${total}&addInfo=TRAVELOKA%20MOMO%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
+                                            src={`https://img.vietqr.io/image/MB-966454800-print.png?amount=${total}&addInfo=BOOKING%20TRAVEL%20MOMO%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
                                             alt="MoMo QR" 
                                             className="w-44 h-44 object-contain rounded-lg"
                                         />
@@ -436,7 +436,7 @@ const BookingPage: React.FC = () => {
                                 <div className="mt-3 border-t border-gray-100 pt-4 flex flex-col md:flex-row gap-5 items-center bg-blue-50/30 p-4 rounded-xl border border-blue-100">
                                     <div className="flex-shrink-0 bg-white p-2 rounded-xl shadow-md border border-blue-100 flex items-center justify-center max-w-[200px]">
                                         <img 
-                                            src={`https://img.vietqr.io/image/MB-966454800-print.png?amount=${total}&addInfo=TRAVELOKA%20BANK%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
+                                            src={`https://img.vietqr.io/image/MB-966454800-print.png?amount=${total}&addInfo=BOOKING%20TRAVEL%20BANK%20PAYMENT&accountName=TRINH%20DUC%20LOC`} 
                                             alt="VietQR" 
                                             className="w-44 h-44 object-contain rounded-lg"
                                         />
@@ -468,7 +468,7 @@ const BookingPage: React.FC = () => {
                     {/* Terms & Submit */}
                     <div className="text-center">
                         <p className="text-xs text-gray-400 mb-4">
-                            By clicking "Complete Booking", you agree to Traveloka's{' '}
+                            By clicking "Complete Booking", you agree to Booking Travel's{' '}
                             <span className="text-[#005CE6] cursor-pointer hover:underline">Terms of Service</span> and{' '}
                             <span className="text-[#005CE6] cursor-pointer hover:underline">Privacy Policy</span>.
                         </p>

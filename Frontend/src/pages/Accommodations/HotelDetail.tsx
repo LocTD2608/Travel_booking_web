@@ -617,7 +617,7 @@ const HotelDetail: React.FC = () => {
 
                         <div className="mt-4 bg-gray-50 rounded-lg p-3 text-xs text-gray-500 flex items-start gap-2">
                             <span className="material-symbols-outlined text-[16px] text-green-500 flex-shrink-0">verified</span>
-                            Verified Traveloka Partner · Trusted by 3M+ travelers
+                            Verified Booking Travel Partner · Trusted by 3M+ travelers
                         </div>
                     </div>
                 </div>

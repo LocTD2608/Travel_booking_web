@@ -5,7 +5,7 @@ const HowToBook: React.FC = () => {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1>How to Book on Traveloka</h1>
+                <h1>How to Book on Booking Travel</h1>
                 <p>Follow these simple steps to book your next trip</p>
             </div>
 

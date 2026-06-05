@@ -210,7 +210,7 @@ const ExperienceDetail: React.FC = () => {
             setIsAuthModalOpen(true);
         } else {
             const params = new URLSearchParams({
-                type: 'hotel', // Using hotel type to match Traveloka theme styles cleanly in Checkout
+                type: 'hotel', // Using hotel type to match Booking Travel theme styles cleanly in Checkout
                 name: tour.name,
                 image: tour.images[0],
                 price: String(tour.price),
@@ -446,7 +446,7 @@ const ExperienceDetail: React.FC = () => {
 
                         <div className="mt-4 bg-gray-50 rounded-lg p-3 text-xs text-gray-500 flex items-start gap-2">
                             <span className="material-symbols-outlined text-[16px] text-green-500 flex-shrink-0 mt-0.5">verified</span>
-                            <span>Đối tác bảo mật của Traveloka · Đáng tin cậy cho 3M+ khách du lịch toàn cầu</span>
+                            <span>Đối tác bảo mật của Booking Travel · Đáng tin cậy cho 3M+ khách du lịch toàn cầu</span>
                         </div>
                     </div>
                 </div>

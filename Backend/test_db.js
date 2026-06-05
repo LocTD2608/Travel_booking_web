@@ -1,5 +1,5 @@
-require('dotenv').config({ path: 'c:/Booking Travel Web/Backend/.env' });
-const db = require('c:/Booking Travel Web/Backend/src/configs/database.js');
+require('dotenv').config();
+const db = require('./src/configs/database.js');
 
 async function test() {
   const [hotels] = await db.query('SELECT * FROM KHACH_SAN');

@@ -34,7 +34,7 @@ const Header: React.FC = () => {
             <div className="px-4 md:px-10 lg:px-40 py-3 flex items-center justify-between border-b border-gray-100">
                 <Link to="/" className="flex items-center gap-2 cursor-pointer">
                     <span className="material-symbols-outlined text-travel-blue text-3xl">flight_takeoff</span>
-                    <h2 className="text-[#141414] text-2xl font-black tracking-tight">Traveloka</h2>
+                    <h2 className="text-[#141414] text-2xl font-black tracking-tight">Booking Travel</h2>
                 </Link>
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex items-center gap-6 text-sm font-medium">
@@ -84,7 +84,7 @@ const Header: React.FC = () => {
             <div className="relative" onMouseLeave={() => setActiveMenu(null)}>
                 <div className="hidden md:flex justify-center border-b border-gray-100 bg-white">
                     <nav className="flex gap-8 px-4">
-                        <Link to="/" className={getNavClass(isAccomActive)} onMouseEnter={() => setActiveMenu('accommodations')}>
+                        <Link to="/hotels" className={getNavClass(isAccomActive)} onMouseEnter={() => setActiveMenu('accommodations')}>
                             <span className="material-symbols-outlined mb-1 group-hover:-translate-y-0.5 transition-transform">hotel</span>
                             <span className="text-sm font-bold">Accommodations</span>
                         </Link>

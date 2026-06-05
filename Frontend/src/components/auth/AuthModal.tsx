@@ -113,7 +113,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                     <div className="text-center mb-6">
                         <div className="flex items-center justify-center gap-2 mb-2">
                             <span className="material-symbols-outlined text-travel-blue text-3xl">flight_takeoff</span>
-                            <h2 className="text-[#141414] text-2xl font-black tracking-tight">Traveloka</h2>
+                            <h2 className="text-[#141414] text-2xl font-black tracking-tight">Booking Travel</h2>
                         </div>
                         <h3 className="text-xl font-bold text-gray-900">
                             {view === "login" && "Đăng nhập tài khoản"}

@@ -133,11 +133,11 @@ const AdminLayout: React.FC = () => {
               flexShrink: 0,
             }}
           >
-            <span style={{ color: '#fff', fontSize: 16, fontWeight: 800 }}>V</span>
+            <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: 20 }}>flight_takeoff</span>
           </div>
           {!collapsed && (
             <Text style={{ color: '#fff', fontWeight: 700, fontSize: 17, letterSpacing: '-0.3px' }}>
-              VinaTravel
+              Booking Travel
             </Text>
           )}
         </div>

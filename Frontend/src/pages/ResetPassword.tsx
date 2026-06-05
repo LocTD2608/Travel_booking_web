@@ -63,7 +63,7 @@ const ResetPassword = () => {
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center gap-2 mb-4">
                         <span className="material-symbols-outlined text-travel-blue text-4xl">flight_takeoff</span>
-                        <h2 className="text-[#141414] text-3xl font-black tracking-tight">Traveloka</h2>
+                        <h2 className="text-[#141414] text-3xl font-black tracking-tight">Booking Travel</h2>
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900">Đặt lại mật khẩu</h3>
                     <p className="text-sm text-gray-600 mt-2">Nhập mật khẩu mới cho tài khoản của bạn</p>

@@ -9,23 +9,23 @@ import styles from './HomePage.module.css';
 
 const faqData = [
     {
-        q: 'How to book a hotel on Traveloka?',
+        q: 'How to book a hotel on Booking Travel?',
         a: 'Simply use the hotel search tool at the top of the page by entering your destination, check-in and check-out dates, number of rooms, and number of guests. After clicking "Search Hotels", you can use filters to narrow down results by price, star rating, amenities, and more.'
     },
     {
-        q: 'How do I get the best hotel deals on Traveloka?',
-        a: 'Use the sorting options or the price range filter to find hotels that fit your budget. For extra savings, browse our latest promo codes and special campaigns. If you are a new Traveloka user, you can also get exclusive discounts on your first booking using the code TVLKBANMOI.'
+        q: 'How do I get the best hotel deals on Booking Travel?',
+        a: 'Use the sorting options or the price range filter to find hotels that fit your budget. For extra savings, browse our latest promo codes and special campaigns. If you are a new Booking Travel user, you can also get exclusive discounts on your first booking using the code BKTVLNEW.'
     },
     {
-        q: 'How many hotels are listed on Traveloka?',
-        a: 'Traveloka lists more than 1,000,000+ accommodations globally, including luxury hotels, villas, apartments, resorts, and unique homestays.'
+        q: 'How many hotels are listed on Booking Travel?',
+        a: 'Booking Travel lists more than 1,000,000+ accommodations globally, including luxury hotels, villas, apartments, resorts, and unique homestays.'
     },
     {
-        q: 'Where in the world can I book a hotel with Traveloka?',
+        q: 'Where in the world can I book a hotel with Booking Travel?',
         a: 'Anywhere! We help you secure accommodations globally. Popular international destinations include Bali, Jakarta, Bangkok, Phuket, Singapore, Kuala Lumpur, Tokyo, Seoul, as well as major Australian cities like Sydney, Melbourne, Brisbane, and Perth.'
     },
     {
-        q: 'What types of accommodation are available on Traveloka?',
+        q: 'What types of accommodation are available on Booking Travel?',
         a: 'Whatever your travel style, we have it. Choose from a wide range of hotels, hostels, villas, resorts, apartments, guest houses, glamping, and cozy homestays.'
     },
     {
@@ -33,19 +33,19 @@ const faqData = [
         a: 'Need a last-minute room or planning a local staycation? Simply visit our "Hotels Near Me" page to instantly discover and book the top-rated accommodations located in your immediate vicinity.'
     },
     {
-        q: 'Can I change or cancel my hotel booking on Traveloka?',
+        q: 'Can I change or cancel my hotel booking on Booking Travel?',
         a: 'Hotels that support rescheduling or free cancellation are clearly marked during booking, along with their deadlines. If your booking is eligible for a refund, the amount will be returned to your original payment method.'
     },
     {
-        q: 'How do I contact Traveloka customer support?',
-        a: 'You can easily reach our customer care team through the Traveloka Help Center. If your question is not resolved, you can submit a support request. Depending on your location, phone support or live chat may also be available.'
+        q: 'How do I contact Booking Travel customer support?',
+        a: 'You can easily reach our customer care team through the Booking Travel Help Center. If your question is not resolved, you can submit a support request. Depending on your location, phone support or live chat may also be available.'
     },
     {
-        q: 'What payment methods are supported on Traveloka?',
+        q: 'What payment methods are supported on Booking Travel?',
         a: 'We support a variety of safe, convenient payment methods including major credit/debit cards (Visa, Mastercard, JCB), popular e-wallets (MoMo, VNPay), and secure local bank transfers.'
     },
     {
-        q: 'What major hotel chains are available on Traveloka?',
+        q: 'What major hotel chains are available on Booking Travel?',
         a: 'We list all your favorite leading international and local hotel chains including Marriott, Hilton, Accor, Wyndham, Best Western, and InterContinental. High-end boutique and artistic hotels are also available.'
     }
 ];
@@ -335,7 +335,7 @@ export const HomePage: React.FC = () => {
                     <div className={styles.sectionHeader}>
                         <div>
                             <h3>Frequently Asked Questions</h3>
-                            <p>Get answers to your common questions about hotel bookings and travel services on Traveloka</p>
+                            <p>Get answers to your common questions about hotel bookings and travel services on Booking Travel</p>
                         </div>
                     </div>
                     <div className={styles.faqList}>
@@ -366,9 +366,9 @@ export const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Why Book With Traveloka */}
+                {/* Why Book With Booking Travel */}
                 <section className={styles.featuresSection}>
-                    <h3>Why Book With Traveloka?</h3>
+                    <h3>Why Book With Booking Travel?</h3>
                     <div className={styles.featuresGrid}>
                         {features.map((feature, index) => (
                             <div key={index} className={styles.featureCard}>
