@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Slider, DatePicker } from 'antd';
 const { RangePicker } = DatePicker;
 import { useSearchParams } from 'react-router-dom';
+import { ALL_DESTINATIONS } from '../../utils/destinations';
 
 const SearchResults: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -25,7 +26,9 @@ const SearchResults: React.FC = () => {
                     <div className="flex-1 max-w-4xl border border-gray-300 rounded-lg p-3 flex shadow-sm bg-white gap-3 items-center">
                         <input type="text" list="destination-options" placeholder="Destination" className="flex-1 h-11 px-4 outline-none rounded-md bg-gray-50 border border-transparent focus:border-travel-blue focus:bg-white transition-all shadow-inner text-[15px] placeholder:text-gray-400 placeholder:font-medium" value={searchState.destination} onChange={(e) => setSearchState({...searchState, destination: e.target.value})} />
                         <datalist id="destination-options">
-                            {/* Danh sách trống để sau này map() từ database */}
+                            {ALL_DESTINATIONS.map(dest => (
+                                <option key={dest.detail} value={dest.detail} />
+                            ))}
                         </datalist>
 
                         <RangePicker 

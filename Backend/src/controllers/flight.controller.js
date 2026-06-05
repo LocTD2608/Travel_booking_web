@@ -56,6 +56,7 @@ exports.getFlightSeats = async (req, res) => {
     });
     res.json({ success: true, data: seats });
   } catch (err) {
+    console.error("Error in getFlightSeats:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 };

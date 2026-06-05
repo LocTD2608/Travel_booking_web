@@ -297,18 +297,6 @@ const Hotels: React.FC = () => {
                             <option value="price_desc">Giá: Cao đến Thấp</option>
                             <option value="rating_desc">Đánh giá cao nhất</option>
                         </select>
-
-                        <div className="flex bg-white border border-gray-200 rounded-lg overflow-hidden ml-auto shadow-sm">
-                            <button className="px-3 py-2 flex items-center justify-center hover:bg-gray-50 border-r border-gray-200 text-travel-blue">
-                                <span className="material-symbols-outlined text-[22px]">format_list_bulleted</span>
-                            </button>
-                            <button className="px-3 py-2 flex items-center justify-center hover:bg-gray-50 text-gray-400">
-                                <span className="material-symbols-outlined text-[20px]">grid_view</span>
-                            </button>
-                            <button className="px-3 py-2 flex items-center justify-center hover:bg-gray-50 border-l border-gray-200 text-gray-400">
-                                <span className="material-symbols-outlined text-[20px]">map</span>
-                            </button>
-                        </div>
                     </div>
 
                     {/* Check if no results */}

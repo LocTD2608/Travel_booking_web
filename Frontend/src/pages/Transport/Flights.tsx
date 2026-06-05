@@ -51,13 +51,25 @@ const Flights: React.FC = () => {
         setIsFlightModalOpen(true);
     };
 
+    // Parse passenger count from search parameters
+    const getPassengerCount = () => {
+        const passengersStr = searchState.passengers;
+        const match = passengersStr.match(/^(\d+)/);
+        return match ? parseInt(match[1]) : 1;
+    };
+    const passengerCount = getPassengerCount();
+
     const handleConfirmFlight = (finalData: any) => {
         setIsFlightModalOpen(false);
+        const seatsText = finalData.isAutoAssigned 
+            ? `${passengerCount} Seats (Auto-assigned)`
+            : `${finalData.outbound.seats.length} Seats (${finalData.outbound.seats.map((s: any) => s.id).join(', ')})`;
+            
         const params = new URLSearchParams({
             type: 'flight',
             name: `${finalData.outbound.flight.airline} ${finalData.outbound.flight.flightNumber}`,
             price: String(finalData.grandTotal),
-            detail2: `${finalData.outbound.seats.length} Seats` + (finalData.isRoundTrip ? ` & Return ${finalData.return.flight.flightNumber}` : ''),
+            detail2: seatsText + (finalData.isRoundTrip ? ` & Return ${finalData.return.flight.flightNumber}` : ''),
             detail3: `${finalData.outbound.flight.from} → ${finalData.outbound.flight.to}`,
             detail4: `${finalData.outbound.flight.departureTime} – ${finalData.outbound.flight.arrivalTime}`,
         });
@@ -335,6 +347,7 @@ const Flights: React.FC = () => {
                 onClose={() => setIsFlightModalOpen(false)} 
                 outboundFlight={selectedFlight}
                 onConfirm={handleConfirmFlight}
+                passengerCount={passengerCount}
             />
         </>
     );

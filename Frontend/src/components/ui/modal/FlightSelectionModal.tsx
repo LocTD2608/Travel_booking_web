@@ -7,6 +7,7 @@ interface FlightSelectionModalProps {
     onClose: () => void;
     onConfirm: (selectedData: any) => void;
     outboundFlight: FlightCardProps | null;
+    passengerCount?: number;
 }
 
 interface Seat {
@@ -27,9 +28,10 @@ const MOCK_RETURN_FLIGHT = {
     basePrice: 1200000
 };
 
-const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onClose, onConfirm, outboundFlight }) => {
+const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onClose, onConfirm, outboundFlight, passengerCount = 1 }) => {
     const [isRoundTrip, setIsRoundTrip] = useState(false);
     const [activeTab, setActiveTab] = useState<'outbound' | 'return'>('outbound');
+    const [selectionMode, setSelectionMode] = useState<'ask' | 'choose' | 'auto'>('ask');
     
     // State for Seats from API
     const [seatData, setSeatData] = useState<any[]>([]);
@@ -48,6 +50,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
             setIsRoundTrip(false);
             setActiveTab('outbound');
             setSelectedSeats({ outbound: [], return: [] });
+            setSelectionMode('ask');
             loadSeats(outboundFlight.id.toString());
         }
     }, [isOpen, outboundFlight]);
@@ -57,8 +60,62 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
         setError(null);
         try {
             const res = await fetchFlightSeats(flightId);
-            const seats = res.data || [];
-            setSeatData(seats);
+            const rawSeats = res.data || [];
+            
+            // Synthesize a full cabin seat layout for rows 1 to 10 to make it look like a real plane
+            const generatedSeats: any[] = [];
+            
+            for (let row = 1; row <= 10; row++) {
+                let seatClass = 'eco';
+                let priceAddition = 0;
+                let cols = ['A', 'B', 'C', 'D', 'E', 'F'];
+                
+                if (row <= 2) {
+                    seatClass = 'business';
+                    priceAddition = 500000;
+                    cols = ['A', 'C', 'D', 'F'];
+                } else if (row <= 4) {
+                    seatClass = 'premium';
+                    priceAddition = 200000;
+                    cols = ['A', 'B', 'C', 'D', 'E', 'F'];
+                } else {
+                    seatClass = 'eco';
+                    priceAddition = 0;
+                    cols = ['A', 'B', 'C', 'D', 'E', 'F'];
+                }
+                
+                // Check if DB has any seat status for column A of this row
+                const dbSeatA = rawSeats.find((s: any) => {
+                    const match = s.SoGhe.match(/^([A-Z])(\d+)$/);
+                    return match && parseInt(match[2]) === row;
+                });
+                
+                const rowAIsOccupied = dbSeatA && dbSeatA.TrangThaiGhe !== 'TRONG';
+                
+                cols.forEach(col => {
+                    const seatId = `${row}${col}`;
+                    
+                    // Determine occupied status
+                    let status = 'TRONG';
+                    if (col === 'A') {
+                        status = rowAIsOccupied ? 'DA_DAT' : 'TRONG';
+                    } else {
+                        // Pseudo-random occupancy based on row, column code, and flightId
+                        const hash = (row * 7 + col.charCodeAt(0) * 13 + parseInt(flightId || '0') * 3) % 100;
+                        status = hash < 40 ? 'DA_DAT' : 'TRONG'; // ~40% seats occupied
+                    }
+                    
+                    generatedSeats.push({
+                        id: seatId,
+                        SoGhe: seatId,
+                        HangGhe: seatClass,
+                        GiaPhuPhi: priceAddition,
+                        TrangThaiGhe: status
+                    });
+                });
+            }
+
+            setSeatData(generatedSeats);
             
             // Build groups (business, premium, eco)
             const grouped = [
@@ -67,7 +124,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                 { id: 'eco', name: 'Economy Class', bg: 'bg-[#F2F4F4]', borderColor: 'border-[#BDC3C7]', items: [] as any[] }
             ];
 
-            seats.forEach((seat: any) => {
+            generatedSeats.forEach((seat: any) => {
                 const classId = seat.HangGhe ? seat.HangGhe.toLowerCase().trim() : '';
                 const group = grouped.find(g => g.id === classId);
                 if (group) {
@@ -90,16 +147,17 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                 // Convert rowMap to sorted array
                 (group as any).rows = Object.keys(rowMap).sort((a,b) => parseInt(a) - parseInt(b)).map(rStr => {
                     const rowNum = parseInt(rStr);
-                    // Determine config based on class to insert 'space'
                     const rawSeats = rowMap[rowNum].sort();
                     let config: string[] = [];
                     
                     if (group.id === 'business') {
-                        // Usually A,C - space - D,F
-                        config = ['A', 'C', 'space', 'D', 'F'].map(c => c === 'space' ? 'space' : (rawSeats.find(s => s.endsWith(c)) ? c : 'space'));
+                        config = ['A', 'C', 'space', 'D', 'F'].map(c => 
+                            c === 'space' ? 'space' : (rawSeats.find(s => s.endsWith(c)) ? c : 'space')
+                        );
                     } else {
-                        // Usually A,B,C - space - D,E,F
-                        config = ['A', 'B', 'C', 'space', 'D', 'E', 'F'].map(c => c === 'space' ? 'space' : (rawSeats.find(s => s.endsWith(c)) ? c : 'space'));
+                        config = ['A', 'B', 'C', 'space', 'D', 'E', 'F'].map(c => 
+                            c === 'space' ? 'space' : (rawSeats.find(s => s.endsWith(c)) ? c : 'space')
+                        );
                     }
                     
                     return { row: rowNum, classId: group.id, config };
@@ -150,6 +208,11 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                 // Deselect
                 return { ...prev, [activeTab]: currentSeats.filter(s => s.id !== seatId) };
             } else {
+                // Limit selection to passengerCount
+                if (currentSeats.length >= passengerCount) {
+                    alert(`Bạn đã chọn đủ số lượng ghế cho ${passengerCount} hành khách.`);
+                    return prev;
+                }
                 // Select
                 return { ...prev, [activeTab]: [...currentSeats, newSeat] };
             }
@@ -171,24 +234,34 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
     };
 
     // --- PRICING CALCULATION ---
+    const pCount = passengerCount;
     const outboundBasePrice = outboundFlight.price;
-    const outboundTotal = selectedSeats.outbound.reduce((sum, seat) => sum + outboundBasePrice + seat.priceAddition, 0);
+    const outboundBase = pCount * outboundBasePrice;
+    const outboundSurcharges = selectionMode === 'auto' 
+        ? 0 
+        : selectedSeats.outbound.reduce((sum, seat) => sum + seat.priceAddition, 0);
+    const outboundTotal = outboundBase + outboundSurcharges;
 
     const returnBasePrice = MOCK_RETURN_FLIGHT.basePrice;
-    const returnTotal = isRoundTrip 
-        ? selectedSeats.return.reduce((sum, seat) => sum + returnBasePrice + seat.priceAddition, 0)
+    const returnBase = isRoundTrip ? (pCount * returnBasePrice) : 0;
+    const returnSurcharges = (isRoundTrip && selectionMode !== 'auto')
+        ? selectedSeats.return.reduce((sum, seat) => sum + seat.priceAddition, 0)
         : 0;
+    const returnTotal = returnBase + returnSurcharges;
 
     const grandTotal = outboundTotal + returnTotal;
 
-    const canContinue = isRoundTrip 
-        ? (selectedSeats.outbound.length > 0 && selectedSeats.return.length > 0)
-        : selectedSeats.outbound.length > 0;
+    const canContinue = selectionMode === 'auto' 
+        ? true 
+        : (isRoundTrip 
+            ? (selectedSeats.outbound.length === pCount && selectedSeats.return.length === pCount)
+            : selectedSeats.outbound.length === pCount);
 
     const handleConfirmClick = () => {
         if (!canContinue) return;
         const finalData = {
             isRoundTrip,
+            isAutoAssigned: selectionMode === 'auto',
             outbound: {
                 flight: outboundFlight,
                 seats: selectedSeats.outbound,
@@ -221,9 +294,9 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                     
                     {/* Header & Tabs */}
                     <div className="p-6 pb-0 border-b border-gray-200 shrink-0">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Seat Map</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Sơ đồ ghế ngồi</h2>
 
-                        {isRoundTrip && (
+                        {isRoundTrip && selectionMode === 'choose' && (
                             <div className="flex gap-4">
                                 <button 
                                     onClick={() => setActiveTab('outbound')}
@@ -245,80 +318,155 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                         )}
                     </div>
 
-                    {/* Scrollable Content Area - DIRECTLY SEATMAP */}
+                    {/* Scrollable Content Area */}
                     <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center custom-scrollbar bg-gray-50 relative">
                         
-                        {error ? (
-                            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm text-gray-500 px-4 my-10">
-                                <span className="material-symbols-outlined text-red-500 text-5xl mb-4">error</span>
-                                <p className="font-bold text-gray-800 text-lg mb-2">Không thể tải sơ đồ ghế</p>
-                                <p className="text-sm text-gray-500 mb-6">{error}</p>
-                                <button
-                                    onClick={() => loadSeats(outboundFlight?.id?.toString() || '')}
-                                    className="bg-travel-blue hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all duration-150"
+                        {selectionMode === 'ask' && (
+                            <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-2xl mx-auto">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">Phương thức chọn chỗ ngồi</h3>
+                                <p className="text-sm text-gray-500 mb-8 text-center">
+                                    Vui lòng chọn phương thức sắp xếp chỗ ngồi cho {passengerCount} hành khách trên chuyến đi này.
+                                </p>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-4">
+                                    {/* Option A: Select seats yourself */}
+                                    <button 
+                                        type="button"
+                                        onClick={() => setSelectionMode('choose')}
+                                        className="flex flex-col items-center p-6 bg-white border-2 border-gray-200 rounded-2xl hover:border-travel-blue hover:shadow-lg transition-all text-center focus:outline-none cursor-pointer"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                                            <span className="material-symbols-outlined text-[28px] text-travel-blue">airline_seat_recline_extra</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-gray-800 mb-2">Tự chọn ghế ngồi</span>
+                                        <span className="text-xs text-gray-500 leading-relaxed">
+                                            Chọn chỗ ngồi ưa thích (cạnh cửa sổ, lối đi hoặc hàng ghế trước). Có phí phụ thu tùy thuộc loại ghế.
+                                        </span>
+                                    </button>
+
+                                    {/* Option B: Airline auto-assigns */}
+                                    <button 
+                                        type="button"
+                                        onClick={() => setSelectionMode('auto')}
+                                        className="flex flex-col items-center p-6 bg-white border-2 border-gray-200 rounded-2xl hover:border-green-500 hover:shadow-lg transition-all text-center focus:outline-none cursor-pointer"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-4">
+                                            <span className="material-symbols-outlined text-[28px] text-green-500">casino</span>
+                                        </div>
+                                        <span className="text-lg font-bold text-gray-800 mb-2">Hãng bay tự xếp chỗ</span>
+                                        <span className="text-xs text-gray-500 leading-relaxed">
+                                            Hãng hàng không sẽ tự động chọn ghế trống ngẫu nhiên khi bạn làm thủ tục check-in. Hoàn toàn miễn phí.
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {selectionMode === 'auto' && (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto p-6">
+                                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-6">
+                                    <span className="material-symbols-outlined text-green-600 text-4xl">check_circle</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-850 mb-2">Đã chọn Tự động gán ghế</h3>
+                                <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                                    Hệ thống sẽ tự động gán chỗ ngồi ngẫu nhiên cho bạn khi làm thủ tục check-in. Lựa chọn này là miễn phí và không làm phát sinh phụ phí.
+                                </p>
+                                <button 
+                                    onClick={() => setSelectionMode('choose')}
+                                    className="text-travel-blue hover:text-blue-700 font-bold text-sm flex items-center gap-1.5 transition-colors border border-travel-blue/30 px-4 py-2 rounded-xl bg-white hover:bg-blue-50"
                                 >
-                                    Thử lại
+                                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                                    Thay đổi sang tự chọn ghế ngồi
                                 </button>
                             </div>
-                        ) : isLoading ? (
-                            <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
-                                <span className="material-symbols-outlined animate-spin text-4xl mb-4 text-travel-blue">progress_activity</span>
-                                <p className="font-semibold">Loading seat map...</p>
-                            </div>
-                        ) : (
+                        )}
+
+                        {selectionMode === 'choose' && (
                             <>
-                                {/* Legend */}
-                                <div className="w-full max-w-[400px] flex justify-center gap-6 text-xs font-bold text-gray-600 mb-8 bg-white py-3 px-6 rounded-full shadow-sm border border-gray-100 sticky top-0 z-20">
-                                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-white border border-gray-300"></div> Available</div>
-                                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-green-500 border border-green-600"></div> Selected</div>
-                                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-[#d1d5db] border border-gray-400"></div> Occupied</div>
-                                </div>
+                                <button
+                                    onClick={() => {
+                                        setSelectionMode('ask');
+                                        setSelectedSeats({ outbound: [], return: [] });
+                                    }}
+                                    className="mb-6 mr-auto flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm cursor-pointer"
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+                                    Quay lại chọn phương thức khác
+                                </button>
 
-                                {/* Aircraft Body */}
-                                <div className="bg-white border border-gray-300 rounded-[80px] p-2 pb-16 relative w-[420px] shadow-sm">
-                                    {/* Cockpit curve */}
-                                    <div className="w-full h-[60px] rounded-t-[80px] border-b border-gray-200 opacity-50 mb-4 bg-gray-100 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-gray-300 text-3xl">flight</span>
+                                {error ? (
+                                    <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm text-gray-500 px-4 my-10">
+                                        <span className="material-symbols-outlined text-red-500 text-5xl mb-4">error</span>
+                                        <p className="font-bold text-gray-800 text-lg mb-2">Không thể tải sơ đồ ghế</p>
+                                        <p className="text-sm text-gray-500 mb-6">{error}</p>
+                                        <button
+                                            onClick={() => loadSeats(outboundFlight?.id?.toString() || '')}
+                                            className="bg-travel-blue hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all duration-150"
+                                        >
+                                            Thử lại
+                                        </button>
                                     </div>
-                                    
-                                    <div className="flex flex-col gap-6 px-4">
-                                        {zones.map((zone: any) => (
-                                            <div key={zone.id} className={`${zone.bg} ${zone.borderColor} border-2 rounded-3xl p-6 relative`}>
-                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full text-xs font-bold text-gray-700 shadow-sm border border-gray-200 whitespace-nowrap">
-                                                    {zone.name}
-                                                </div>
-                                                
-                                                <div className="flex flex-col gap-3 mt-2">
-                                                    {zone.rows.map((rowData: any) => (
-                                                        <div key={rowData.row} className="flex justify-center items-center gap-2 relative">
-                                                            {/* Left side row number */}
-                                                            <div className="w-6 text-[11px] text-gray-500 font-bold text-right absolute -left-7">{rowData.row}</div>
-                                                            
-                                                            {rowData.config.map((seatCol: string, idx: number) => {
-                                                                if (seatCol === 'space') {
-                                                                    return <div key={`space-${idx}`} className="w-8 flex justify-center items-center"><div className="w-px h-full bg-gray-200/50"></div></div>; // Aisle
-                                                                }
-                                                                const seatId = `${rowData.row}${seatCol}`;
-                                                                return (
-                                                                    <button
-                                                                        key={seatId}
-                                                                        onClick={() => toggleSeat(seatId, rowData.classId)}
-                                                                        className={`w-11 h-11 rounded-[10px] flex items-center justify-center text-[13px] font-bold border transition-all duration-150 ${getSeatStyle(seatId)} relative group`}
-                                                                    >
-                                                                        {seatId}
-                                                                    </button>
-                                                                );
-                                                            })}
+                                ) : isLoading ? (
+                                    <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
+                                        <span className="material-symbols-outlined animate-spin text-4xl mb-4 text-travel-blue">progress_activity</span>
+                                        <p className="font-semibold">Loading seat map...</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* Legend */}
+                                        <div className="w-full max-w-[400px] flex justify-center gap-6 text-xs font-bold text-gray-600 mb-8 bg-white py-3 px-6 rounded-full shadow-sm border border-gray-100 sticky top-0 z-20">
+                                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-white border border-gray-300"></div> Available</div>
+                                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-green-500 border border-green-600"></div> Selected</div>
+                                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-[#d1d5db] border border-gray-400"></div> Occupied</div>
+                                        </div>
 
-                                                            {/* Right side row number */}
-                                                            <div className="w-6 text-[11px] text-gray-500 font-bold text-left absolute -right-7">{rowData.row}</div>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                        {/* Aircraft Body */}
+                                        <div className="bg-white border border-gray-300 rounded-[80px] p-2 pb-16 relative w-[420px] shadow-sm">
+                                            {/* Cockpit curve */}
+                                            <div className="w-full h-[60px] rounded-t-[80px] border-b border-gray-200 opacity-50 mb-4 bg-gray-100 flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-gray-300 text-3xl">flight</span>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                            
+                                            <div className="flex flex-col gap-6 px-4">
+                                                {zones.map((zone: any) => (
+                                                    <div key={zone.id} className={`${zone.bg} ${zone.borderColor} border-2 rounded-3xl p-6 relative`}>
+                                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full text-xs font-bold text-gray-700 shadow-sm border border-gray-200 whitespace-nowrap">
+                                                            {zone.name}
+                                                        </div>
+                                                        
+                                                        <div className="flex flex-col gap-3 mt-2">
+                                                            {zone.rows.map((rowData: any) => (
+                                                                <div key={rowData.row} className="flex justify-center items-center gap-2 relative">
+                                                                    {/* Left side row number */}
+                                                                    <div className="w-6 text-[11px] text-gray-500 font-bold text-right absolute -left-7">{rowData.row}</div>
+                                                                    
+                                                                    {rowData.config.map((seatCol: string, idx: number) => {
+                                                                        if (seatCol === 'space') {
+                                                                            return <div key={`space-${idx}`} className="w-8 flex justify-center items-center"><div className="w-px h-full bg-gray-200/50"></div></div>; // Aisle
+                                                                        }
+                                                                        const seatId = `${rowData.row}${seatCol}`;
+                                                                        return (
+                                                                            <button
+                                                                                key={seatId}
+                                                                                onClick={() => toggleSeat(seatId, rowData.classId)}
+                                                                                className={`w-11 h-11 rounded-[10px] flex items-center justify-center text-[13px] font-bold border transition-all duration-150 ${getSeatStyle(seatId)} relative group cursor-pointer`}
+                                                                            >
+                                                                                {seatId}
+                                                                            </button>
+                                                                        );
+                                                                    })}
+
+                                                                    {/* Right side row number */}
+                                                                    <div className="w-6 text-[11px] text-gray-500 font-bold text-left absolute -right-7">{rowData.row}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </>
                         )}
                     </div>
@@ -346,7 +494,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                     {/* Summary List */}
                     <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         <h3 className="font-bold text-gray-800 mb-4 uppercase tracking-wider text-sm flex justify-between items-center">
-                            Booking Summary
+                            Chi tiết đặt chỗ
                         </h3>
                         
                         {/* Outbound Summary */}
@@ -363,14 +511,19 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                             </div>
                             
                             {/* Selected Seats for Outbound */}
-                            {selectedSeats.outbound.length === 0 ? (
-                                <div className="text-sm text-red-500 font-medium italic mt-2">No seats selected</div>
+                            {selectionMode === 'auto' ? (
+                                <div className="text-xs font-bold text-green-600 bg-green-50 p-2 rounded-lg border border-green-100 flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[16px]">shuffle</span>
+                                    Ghế tự sắp xếp (Miễn phí)
+                                </div>
+                            ) : selectedSeats.outbound.length === 0 ? (
+                                <div className="text-sm text-red-500 font-medium italic mt-2">Chưa chọn ghế</div>
                             ) : (
                                 <div className="mt-3 flex flex-col gap-2">
                                     {selectedSeats.outbound.map((s, idx) => (
                                         <div key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
                                             <div>
-                                                <div className="text-sm font-bold text-gray-800">Seat {s.id}</div>
+                                                <div className="text-sm font-bold text-gray-800">Ghế {s.id}</div>
                                                 <div className="text-[10px] uppercase font-bold text-gray-500">{s.className}</div>
                                             </div>
                                             <div className="text-sm font-semibold text-gray-700">
@@ -397,14 +550,19 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                 </div>
                                 
                                 {/* Selected Seats for Return */}
-                                {selectedSeats.return.length === 0 ? (
-                                    <div className="text-sm text-red-500 font-medium italic mt-2">No seats selected</div>
+                                {selectionMode === 'auto' ? (
+                                    <div className="text-xs font-bold text-green-600 bg-green-50 p-2 rounded-lg border border-green-100 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[16px]">shuffle</span>
+                                        Ghế tự sắp xếp (Miễn phí)
+                                    </div>
+                                ) : selectedSeats.return.length === 0 ? (
+                                    <div className="text-sm text-red-500 font-medium italic mt-2">Chưa chọn ghế</div>
                                 ) : (
                                     <div className="mt-3 flex flex-col gap-2">
                                         {selectedSeats.return.map((s, idx) => (
                                             <div key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
                                                 <div>
-                                                    <div className="text-sm font-bold text-gray-800">Seat {s.id}</div>
+                                                    <div className="text-sm font-bold text-gray-800">Ghế {s.id}</div>
                                                     <div className="text-[10px] uppercase font-bold text-gray-500">{s.className}</div>
                                                 </div>
                                                 <div className="text-sm font-semibold text-gray-700">
@@ -421,21 +579,34 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                     {/* Bottom Action */}
                     <div className="pt-4 border-t border-gray-200 mt-4 shrink-0 bg-[#f5f7fa]">
                         <div className="flex flex-col mb-4">
-                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Amount</span>
+                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng tiền thanh toán</span>
                             <span className="text-[28px] leading-none font-black text-travel-blue">{grandTotal.toLocaleString()} <span className="text-lg">VND</span></span>
                         </div>
-                        <button 
-                            onClick={handleConfirmClick}
-                            disabled={!canContinue}
-                            className={`w-full font-bold py-4 rounded-xl transition-all shadow-md flex justify-center items-center gap-2 ${
-                                canContinue 
-                                ? 'bg-travel-blue hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-0.5' 
-                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            }`}
-                        >
-                            {canContinue ? 'Continue to Payment' : 'Select Seats to Continue'}
-                            <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
-                        </button>
+                        
+                        {selectionMode === 'ask' ? (
+                            <div className="text-center text-xs font-semibold text-gray-400 py-3.5 bg-gray-100 border border-gray-200 rounded-xl">
+                                Vui lòng chọn phương thức xếp chỗ bên trái
+                            </div>
+                        ) : (
+                            <button 
+                                onClick={handleConfirmClick}
+                                disabled={!canContinue}
+                                className={`w-full font-bold py-4 rounded-xl transition-all shadow-md flex justify-center items-center gap-2 cursor-pointer ${
+                                    canContinue 
+                                    ? 'bg-travel-blue hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-0.5' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                            >
+                                {selectionMode === 'auto' 
+                                    ? 'Tiếp tục thanh toán' 
+                                    : (canContinue 
+                                        ? 'Xác nhận ghế & Tiếp tục' 
+                                        : `Chọn đủ ${passengerCount} ghế (${selectedSeats.outbound.length}/${passengerCount})`
+                                    )
+                                }
+                                <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                            </button>
+                        )}
                     </div>
 
                 </div>
