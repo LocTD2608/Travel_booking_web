@@ -62,7 +62,7 @@ const Flights: React.FC = () => {
     const handleConfirmFlight = (finalData: any) => {
         setIsFlightModalOpen(false);
         const seatsText = finalData.isAutoAssigned 
-            ? `${passengerCount} Seats (Auto-assigned)`
+            ? `${passengerCount} Seats (Auto-assigned: ${finalData.outbound.seats.map((s: any) => s.id).join(', ')})`
             : `${finalData.outbound.seats.length} Seats (${finalData.outbound.seats.map((s: any) => s.id).join(', ')})`;
             
         const params = new URLSearchParams({

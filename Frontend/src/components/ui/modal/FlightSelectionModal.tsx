@@ -181,7 +181,39 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
         if (!val) {
             setActiveTab('outbound');
             setSelectedSeats(prev => ({ ...prev, return: [] }));
+        } else {
+            if (selectionMode === 'auto') {
+                setSelectedSeats(prev => ({
+                    ...prev,
+                    return: prev.outbound
+                }));
+            }
         }
+    };
+
+    const handleSelectAutoAssign = () => {
+        setSelectionMode('auto');
+        
+        // Find available seats in Eco class
+        const availableEco = seatData.filter(s => s.HangGhe === 'eco' && s.TrangThaiGhe === 'TRONG');
+        
+        // If not enough eco seats, just take any available seats
+        const pool = availableEco.length >= passengerCount 
+            ? availableEco 
+            : seatData.filter(s => s.TrangThaiGhe === 'TRONG');
+            
+        // Select the first passengerCount seats
+        const assigned: Seat[] = pool.slice(0, passengerCount).map(s => ({
+            id: s.SoGhe,
+            classId: s.HangGhe,
+            className: s.HangGhe === 'business' ? 'Business' : s.HangGhe === 'premium' ? 'Premium Economy' : 'Economy',
+            priceAddition: 0
+        }));
+        
+        setSelectedSeats({
+            outbound: assigned,
+            return: isRoundTrip ? assigned : []
+        });
     };
 
     // --- SEAT SELECTION LOGIC ---
@@ -347,7 +379,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                     {/* Option B: Airline auto-assigns */}
                                     <button 
                                         type="button"
-                                        onClick={() => setSelectionMode('auto')}
+                                        onClick={handleSelectAutoAssign}
                                         className="flex flex-col items-center p-6 bg-white border-2 border-gray-200 rounded-2xl hover:border-green-500 hover:shadow-lg transition-all text-center focus:outline-none cursor-pointer"
                                     >
                                         <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-4">
@@ -367,12 +399,30 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-6">
                                     <span className="material-symbols-outlined text-green-600 text-4xl">check_circle</span>
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-850 mb-2">Đã chọn Tự động gán ghế</h3>
-                                <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-                                    Hệ thống sẽ tự động gán chỗ ngồi ngẫu nhiên cho bạn khi làm thủ tục check-in. Lựa chọn này là miễn phí và không làm phát sinh phụ phí.
+                                <h3 className="text-xl font-bold text-gray-850 mb-2">Đã tự động gán ghế thành công</h3>
+                                <div className="bg-white border border-gray-200 rounded-xl p-4 w-full mb-6 text-left shadow-sm">
+                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Ghế ngồi của bạn</div>
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="text-sm font-bold text-gray-850 flex justify-between">
+                                            <span>Chiều đi:</span>
+                                            <span className="text-travel-blue font-mono bg-blue-50 px-2 py-0.5 rounded">{selectedSeats.outbound.map(s => s.id).join(', ')}</span>
+                                        </div>
+                                        {isRoundTrip && (
+                                            <div className="text-sm font-bold text-gray-850 flex justify-between">
+                                                <span>Chiều về:</span>
+                                                <span className="text-purple-600 font-mono bg-purple-50 px-2 py-0.5 rounded">{selectedSeats.return.map(s => s.id).join(', ')}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+                                    Lựa chọn tự động xếp chỗ này hoàn toàn miễn phí và không làm phát sinh thêm phụ phí ghế ngồi.
                                 </p>
                                 <button 
-                                    onClick={() => setSelectionMode('choose')}
+                                    onClick={() => {
+                                        setSelectionMode('choose');
+                                        setSelectedSeats({ outbound: [], return: [] });
+                                    }}
                                     className="text-travel-blue hover:text-blue-700 font-bold text-sm flex items-center gap-1.5 transition-colors border border-travel-blue/30 px-4 py-2 rounded-xl bg-white hover:bg-blue-50"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">edit</span>
@@ -512,9 +562,14 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                             
                             {/* Selected Seats for Outbound */}
                             {selectionMode === 'auto' ? (
-                                <div className="text-xs font-bold text-green-600 bg-green-50 p-2 rounded-lg border border-green-100 flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-[16px]">shuffle</span>
-                                    Ghế tự sắp xếp (Miễn phí)
+                                <div className="text-xs font-bold text-green-600 bg-green-50 p-2.5 rounded-lg border border-green-100 flex flex-col gap-1">
+                                    <div className="flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[16px]">shuffle</span>
+                                        Ghế tự sắp xếp (Miễn phí)
+                                    </div>
+                                    <div className="text-gray-500 font-semibold mt-1">
+                                        Ghế: {selectedSeats.outbound.map(s => s.id).join(', ')}
+                                    </div>
                                 </div>
                             ) : selectedSeats.outbound.length === 0 ? (
                                 <div className="text-sm text-red-500 font-medium italic mt-2">Chưa chọn ghế</div>
@@ -551,9 +606,14 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                 
                                 {/* Selected Seats for Return */}
                                 {selectionMode === 'auto' ? (
-                                    <div className="text-xs font-bold text-green-600 bg-green-50 p-2 rounded-lg border border-green-100 flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-[16px]">shuffle</span>
-                                        Ghế tự sắp xếp (Miễn phí)
+                                    <div className="text-xs font-bold text-green-600 bg-green-50 p-2.5 rounded-lg border border-green-100 flex flex-col gap-1">
+                                        <div className="flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[16px]">shuffle</span>
+                                            Ghế tự sắp xếp (Miễn phí)
+                                        </div>
+                                        <div className="text-gray-500 font-semibold mt-1">
+                                            Ghế: {selectedSeats.return.map(s => s.id).join(', ')}
+                                        </div>
                                     </div>
                                 ) : selectedSeats.return.length === 0 ? (
                                     <div className="text-sm text-red-500 font-medium italic mt-2">Chưa chọn ghế</div>
