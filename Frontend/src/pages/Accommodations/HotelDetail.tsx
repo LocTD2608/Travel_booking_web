@@ -280,10 +280,10 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, onSelect }) => (
             <div className="flex flex-col items-end justify-between min-w-[140px]">
                 <div className="text-right">
                     {room.originalPrice && (
-                        <div className="text-xs text-gray-400 line-through">{room.originalPrice.toLocaleString('vi-VN')} VNĐ</div>
+                        <div className="text-xs text-gray-400 line-through">{room.originalPrice.toLocaleString()} VNĐ</div>
                     )}
-                    <div className="text-xl font-black text-gray-900">{room.price.toLocaleString('vi-VN')} <span className="text-sm font-semibold text-gray-500">VNĐ</span></div>
-                    <div className="text-xs text-gray-500">/ night</div>
+                    <div className="text-xl font-black text-gray-900">{room.price.toLocaleString()}</div>
+                    <div className="text-xs text-gray-500">VNĐ / night</div>
                 </div>
                 <div>
                     <div className="text-[11px] text-orange-500 text-right mb-1">
@@ -579,9 +579,9 @@ const HotelDetail: React.FC = () => {
                     <div className="bg-white rounded-xl border border-[#005CE6] shadow-lg p-5 sticky top-24">
                         <div className="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">Starting from</div>
                         <div className="text-3xl font-black text-[#005CE6] mb-1">
-                            {Math.min(...hotel.rooms.map(r => Number(r.price))).toLocaleString('vi-VN')} <span className="text-lg font-bold">VNĐ</span>
+                            {Math.min(...hotel.rooms.map(r => r.price)).toLocaleString()}
                         </div>
-                        <div className="text-sm text-gray-500 mb-4">/ night · incl. taxes</div>
+                        <div className="text-sm text-gray-500 mb-4">VNĐ / night · incl. taxes</div>
 
                         <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-lg mb-4 inline-block">
                             ✓ Best price guaranteed
