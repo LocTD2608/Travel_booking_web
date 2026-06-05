@@ -50,9 +50,9 @@ const searchFlights = async (params) => {
 
   let baseQuery = `
     FROM chuyen_bay cb
-    JOIN TUYEN_DUONG td ON cb.MaTuyenDuong = td.MaTuyenDuong
-    JOIN SAN_BAY sb1 ON td.MaSanBayXuatPhat = sb1.MaSanBay
-    JOIN SAN_BAY sb2 ON td.MaSanBayDich     = sb2.MaSanBay
+    JOIN tuyen_duong td ON cb.MaTuyenDuong = td.MaTuyenDuong
+    JOIN san_bay sb1 ON td.MaSanBayXuatPhat = sb1.MaSanBay
+    JOIN san_bay sb2 ON td.MaSanBayDich     = sb2.MaSanBay
     WHERE 1=1
   `;
 
@@ -151,8 +151,8 @@ const searchHotels = async (params) => {
   } = params;
 
   let baseQuery = `
-    FROM KHACH_SAN ks
-    LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
+    FROM khach_san ks
+    LEFT JOIN loai_phong lp ON ks.MaKS = lp.MaKS
     WHERE 1=1
   `;
 
@@ -181,7 +181,7 @@ const searchHotels = async (params) => {
     baseQuery += `
       AND EXISTS (
         SELECT 1
-        FROM LOAI_PHONG lp2
+        FROM loai_phong lp2
         WHERE lp2.MaKS = ks.MaKS
         AND (
           lp2.SoLuongPhong - (
@@ -244,8 +244,8 @@ const recommendHotels = async (params) => {
       ks.HangSao AS stars,
       MIN(lp.GiaPhong) AS min_price,
       SUM(COALESCE(ttp.SoLuongPhongCoSan, 0)) AS available_rooms
-    FROM KHACH_SAN ks
-    LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
+    FROM khach_san ks
+    LEFT JOIN loai_phong lp ON ks.MaKS = lp.MaKS
     LEFT JOIN TINH_TRANG_PHONG_TRONG ttp ON lp.MaLoaiPhong = ttp.MaLoaiPhong
     WHERE 1=1
   `;
@@ -585,7 +585,7 @@ const checkHotelAvailability = async ({ hotelId, roomId, checkIn, checkOut, gues
           )
         )
       ) AS rooms_left
-    FROM LOAI_PHONG lp
+    FROM loai_phong lp
     WHERE 1=1
   `;
 

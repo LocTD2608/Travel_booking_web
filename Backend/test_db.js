@@ -6,7 +6,7 @@ async function test() {
   console.log("Hotels:", hotels.length);
   console.log("Hotel Addresses:", hotels.map(h => h.DiaChi));
   
-  const [sanbay] = await db.query('SELECT * FROM SAN_BAY');
+  const [sanbay] = await db.query('SELECT * FROM san_bay');
   console.log("Airports:", sanbay);
   
   process.exit();
