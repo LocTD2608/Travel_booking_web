@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, Card, Row, Col, Divider, Spin } from 'antd';
 import styles from './PaymentSuccess.module.css';
 import { bookingApi } from '../../services/bookingApi';
+import { useLanguage } from '../../context';
 
 interface PaymentSuccessState {
     transactionId: string;
@@ -40,9 +41,115 @@ interface PaymentSuccessState {
     };
 }
 
+const translateDynamicValue = (val: string | undefined, language: string): string => {
+    if (!val) return 'N/A';
+    if (language === 'vi') {
+        return val;
+    }
+    
+    const lowerVal = val.toLowerCase().trim();
+    
+    // Room type / seat class / status
+    if (lowerVal === 'tiêu chuẩn' || lowerVal === 'phòng tiêu chuẩn') return 'Standard Room';
+    if (lowerVal === 'phổ thông' || lowerVal === 'hạng phổ thông' || lowerVal === 'economy') return 'Economy Class';
+    if (lowerVal === 'thương gia' || lowerVal === 'hạng thương gia' || lowerVal === 'business') return 'Business Class';
+    if (lowerVal === 'phòng deluxe' || lowerVal === 'deluxe') return 'Deluxe Room';
+    if (lowerVal === 'phòng suite' || lowerVal === 'suite') return 'Suite Room';
+    if (lowerVal === 'khách hàng') return 'Customer';
+    if (lowerVal === 'dịch vụ du lịch') return 'Travel Service';
+    if (lowerVal === 'dịch vụ du lịch trọn gói') return 'All-inclusive Travel Service';
+    
+    // Tour names
+    if (lowerVal.includes('tour city')) return 'City Tour';
+    if (lowerVal.includes('tour ha long 2n1d')) return 'Ha Long Bay Tour 2D1N';
+    if (lowerVal.includes('tour da nang - hoi an')) return 'Da Nang - Hoi An Tour';
+    if (lowerVal.includes('tour phu quoc 3n2d')) return 'Phu Quoc Island Tour 3D2N';
+    if (lowerVal.includes('tour da lat san may')) return 'Da Lat Cloud Hunting Tour';
+    if (lowerVal.includes('tour sapa trekking')) return 'Sapa Trekking Tour';
+    if (lowerVal.includes('tour hue ancient capital')) return 'Hue Ancient Capital Tour';
+    if (lowerVal.includes('tour nha trang island')) return 'Nha Trang Island Tour';
+    if (lowerVal.includes('tour mekong delta')) return 'Mekong Delta Tour';
+    if (lowerVal.includes('tour ba na hills')) return 'Ba Na Hills Tour';
+    if (lowerVal.includes('tour mui ne resort')) return 'Mui Ne Resort Tour';
+    if (lowerVal.includes('tour con dao relax')) return 'Con Dao Relax Tour';
+    if (lowerVal.includes('tour ha giang loop')) return 'Ha Giang Loop Tour';
+    if (lowerVal.includes('tour quy nhon beach')) return 'Quy Nhon Beach Tour';
+    if (lowerVal.includes('tour ninh binh discovery')) return 'Ninh Binh Discovery Tour';
+    if (lowerVal.includes('tour cat ba island')) return 'Cat Ba Island Tour';
+    if (lowerVal.includes('tour resort maldives 5 sao hạng sang')) return 'Luxury 5-Star Maldives Resort Tour';
+    if (lowerVal.includes('dai noi hue')) return 'Hue Imperial Citadel';
+    
+    let translated = val;
+    
+    const replacements: [RegExp, string][] = [
+        [/đưa đón sân bay/gi, 'Airport Transfer'],
+        [/thuê xe tự lái/gi, 'Self-drive Car Rental'],
+        [/nạp tiền điện thoại/gi, 'Mobile Top-up'],
+        [/gói dữ liệu/gi, 'Data Plan'],
+        [/hóa đơn điện/gi, 'Electricity Bill'],
+        [/hà nội/gi, 'Hanoi'],
+        [/hồ chí minh/gi, 'Ho Chi Minh City'],
+        [/đà nẵng/gi, 'Da Nang'],
+        [/nha trang/gi, 'Nha Trang'],
+        [/phú quốc/gi, 'Phu Quoc'],
+        [/huế/gi, 'Hue'],
+        [/đà lạt/gi, 'Da Lat'],
+        [/vũng tàu/gi, 'Vung Tau'],
+        [/hạ long/gi, 'Ha Long'],
+        [/sapa/gi, 'Sapa'],
+        [/phú sĩ/gi, 'Mt. Fuji'],
+        [/nhật bản/gi, 'Japan'],
+        [/chuyến/gi, 'Trip'],
+        [/khứ hồi/gi, 'Round Trip'],
+        [/vé/gi, 'Ticket'],
+        [/cáp treo/gi, 'Cable Car'],
+        [/khách sạn/gi, 'Hotel'],
+        [/biệt thự/gi, 'Villa'],
+        [/căn hộ/gi, 'Apartment'],
+        [/đang xử lý/gi, 'Pending'],
+        [/thành công/gi, 'Success'],
+        [/đã thanh toán/gi, 'Paid'],
+        [/chưa thanh toán/gi, 'Unpaid'],
+        [/đã hủy/gi, 'Canceled'],
+        [/đã hoàn tiền/gi, 'Refunded'],
+        [/trải nghiệm du lịch trọn gói/gi, 'Package tour experience'],
+        [/dịch vụ du lịch trọn gói/gi, 'All-inclusive Travel Service'],
+        [/dịch vụ du lịch/gi, 'Travel Service'],
+        [/khách du lịch/gi, 'Traveler(s)'],
+        [/chọn ngày sau/gi, 'Choose date later'],
+        [/phòng tiêu chuẩn/gi, 'Standard Room'],
+        [/phòng deluxe/gi, 'Deluxe Room'],
+        [/phòng suite/gi, 'Suite Room'],
+        [/tiêu chuẩn/gi, 'Standard'],
+        [/deluxe/gi, 'Deluxe'],
+        [/suite/gi, 'Suite'],
+        [/giường đơn/gi, 'Single Bed'],
+        [/giường đôi/gi, 'Double Bed'],
+        [/hướng biển/gi, 'Ocean View'],
+        [/hướng thành phố/gi, 'City View'],
+        [/hướng vườn/gi, 'Garden View'],
+        [/ăn sáng miễn phí/gi, 'Free Breakfast'],
+        [/không bao gồm ăn sáng/gi, 'Room Only'],
+        [/hạng phổ thông/gi, 'Economy Class'],
+        [/hạng thương gia/gi, 'Business Class'],
+        [/phổ thông/gi, 'Economy'],
+        [/thương gia/gi, 'Business'],
+        [/người lớn/gi, 'adult(s)'],
+        [/trẻ em/gi, 'child(ren)'],
+        [/khách/gi, 'guest(s)']
+    ];
+    
+    for (const [regex, replacement] of replacements) {
+        translated = translated.replace(regex, replacement);
+    }
+    
+    return translated;
+};
+
 const PaymentSuccess: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { t, language } = useLanguage();
     const state = location.state as PaymentSuccessState | null;
 
     const [bookingInfo, setBookingInfo] = React.useState<any>(state?.bookingInfo || null);
@@ -131,7 +238,7 @@ const PaymentSuccess: React.FC = () => {
     }, [state, state?.transactionId]);
 
     const fmt = (n: number) =>
-        new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+        new Intl.NumberFormat(language === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(n);
 
     if (loading) {
         return (
@@ -139,7 +246,7 @@ const PaymentSuccess: React.FC = () => {
                 <Card className={styles.loadingCard}>
                     <div className={styles.loadingContent}>
                         <Spin size="large" />
-                        <p style={{ marginTop: '16px', fontWeight: 'bold', color: '#1f1f1f' }}>Đang tải chi tiết giao dịch...</p>
+                        <p style={{ marginTop: '16px', fontWeight: 'bold', color: '#1f1f1f' }}>{t('payment.success.loadingDetails', 'Đang tải chi tiết giao dịch...')}</p>
                     </div>
                 </Card>
             </div>
@@ -154,10 +261,10 @@ const PaymentSuccess: React.FC = () => {
                         <span className="material-symbols-outlined" style={{ fontSize: '64px', color: '#ff4d4f' }}>
                             error_outline
                         </span>
-                        <h2>{error || "Không có thông tin giao dịch"}</h2>
-                        <p>Vui lòng thử lại hoặc liên hệ với bộ phận hỗ trợ khách hàng của chúng tôi.</p>
+                        <h2>{error || t('payment.success.noTxnInfo', 'Không có thông tin giao dịch')}</h2>
+                        <p>{t('payment.success.errorDesc', 'Vui lòng thử lại hoặc liên hệ với bộ phận hỗ trợ khách hàng của chúng tôi.')}</p>
                         <Button type="primary" size="large" onClick={() => navigate('/')}>
-                            Quay về trang chủ
+                            {t('payment.success.backHome', 'Quay về trang chủ')}
                         </Button>
                     </div>
                 </Card>
@@ -181,20 +288,20 @@ const PaymentSuccess: React.FC = () => {
 
     // Get section title dynamically
     const getTitle = () => {
-        if (type === 'flight') return 'Thông tin chuyến bay';
-        if (type === 'train') return 'Thông tin chuyến tàu';
-        if (type === 'bus') return 'Thông tin chuyến xe';
-        if (type === 'tour') return 'Thông tin hoạt động / Tour';
-        return 'Thông tin đặt phòng';
+        if (type === 'flight') return t('payment.success.titleFlight', 'Thông tin chuyến bay');
+        if (type === 'train') return t('payment.success.titleTrain', 'Thông tin chuyến tàu');
+        if (type === 'bus') return t('payment.success.titleBus', 'Thông tin chuyến xe');
+        if (type === 'tour') return t('payment.success.titleTour', 'Thông tin hoạt động / Tour');
+        return t('payment.success.titleHotel', 'Thông tin đặt phòng');
     };
 
     // Get return button label dynamically
     const getReturnButtonText = () => {
-        if (type === 'flight') return 'Tìm kiếm chuyến bay khác';
-        if (type === 'train') return 'Tìm kiếm chuyến tàu khác';
-        if (type === 'bus') return 'Tìm kiếm xe khách khác';
-        if (type === 'tour') return 'Tìm kiếm hoạt động khác';
-        return 'Tìm kiếm khách sạn khác';
+        if (type === 'flight') return t('payment.success.btnReturnFlight', 'Tìm kiếm chuyến bay khác');
+        if (type === 'train') return t('payment.success.btnReturnTrain', 'Tìm kiếm chuyến tàu khác');
+        if (type === 'bus') return t('payment.success.btnReturnBus', 'Tìm kiếm xe khách khác');
+        if (type === 'tour') return t('payment.success.btnReturnTour', 'Tìm kiếm hoạt động khác');
+        return t('payment.success.btnReturnHotel', 'Tìm kiếm khách sạn khác');
     };
 
     // Get return button path dynamically
@@ -208,23 +315,16 @@ const PaymentSuccess: React.FC = () => {
 
     // Get next steps dynamically
     const getNextSteps = () => {
-        const emailLabel = isAccommodation 
-            ? 'đặt phòng' 
-            : isTransport 
-                ? 'đặt vé di chuyển' 
-                : 'đặt tour/trải nghiệm';
-        const contactLabel = isAccommodation 
-            ? 'khách sạn' 
-            : isTransport 
-                ? 'hãng vận chuyển' 
-                : 'nhà cung cấp dịch vụ';
-
         return (
             <ul>
-                <li>✓ Email xác nhận sẽ được gửi trong vòng 5 phút</li>
-                <li>✓ Vui lòng kiểm tra email để xem chi tiết {emailLabel}</li>
-                <li>✓ Hãy lưu lại mã giao dịch để theo dõi đơn hàng</li>
-                <li>✓ Liên hệ với {contactLabel} trước 24 giờ để hỗ trợ thay đổi hoặc hoàn hủy nếu được phép</li>
+                <li>{t('payment.success.nextStep1', '✓ Email xác nhận sẽ được gửi trong vòng 5 phút')}</li>
+                {isAccommodation && <li>{t('payment.success.nextStep2Hotel', '✓ Vui lòng kiểm tra email để xem chi tiết đặt phòng')}</li>}
+                {isTransport && <li>{t('payment.success.nextStep2Transport', '✓ Vui lòng kiểm tra email để xem chi tiết đặt vé di chuyển')}</li>}
+                {isTour && <li>{t('payment.success.nextStep2Tour', '✓ Vui lòng kiểm tra email để xem chi tiết đặt tour/trải nghiệm')}</li>}
+                <li>{t('payment.success.nextStep3', '✓ Hãy lưu lại mã giao dịch để theo dõi đơn hàng')}</li>
+                {isAccommodation && <li>{t('payment.success.nextStep4Hotel', '✓ Liên hệ với khách sạn trước 24 giờ để hỗ trợ thay đổi hoặc hoàn hủy nếu được phép')}</li>}
+                {isTransport && <li>{t('payment.success.nextStep4Transport', '✓ Liên hệ với hãng vận chuyển trước 24 giờ để hỗ trợ thay đổi hoặc hoàn hủy nếu được phép')}</li>}
+                {isTour && <li>{t('payment.success.nextStep4Tour', '✓ Liên hệ với nhà cung cấp dịch vụ trước 24 giờ để hỗ trợ thay đổi hoặc hoàn hủy nếu được phép')}</li>}
             </ul>
         );
     };
@@ -237,8 +337,8 @@ const PaymentSuccess: React.FC = () => {
                     <div className={styles.checkmark}>
                         <span className="material-symbols-outlined">check_circle</span>
                     </div>
-                    <h1>Thanh toán thành công!</h1>
-                    <p>Đơn hàng của bạn đã được xác nhận. Chúng tôi sẽ gửi email xác nhận tới bạn.</p>
+                    <h1>{t('payment.success.successHeader', 'Thanh toán thành công!')}</h1>
+                    <p>{t('payment.success.successDesc', 'Đơn hàng của bạn đã được xác nhận. Chúng tôi sẽ gửi email xác nhận tới bạn.')}</p>
                 </div>
 
                 {/* Transaction Details */}
@@ -246,36 +346,36 @@ const PaymentSuccess: React.FC = () => {
                     <div className={styles.transactionInfo}>
                         <h3>
                             <span className="material-symbols-outlined">receipt</span>
-                            Chi tiết giao dịch
+                            {t('payment.success.txnDetailsTitle', 'Chi tiết giao dịch')}
                         </h3>
                         <div className={styles.infoGrid}>
                             <div className={styles.infoRow}>
-                                <span>Mã giao dịch:</span>
+                                <span>{t('payment.success.txnIdLabel', 'Mã giao dịch:')}</span>
                                 <span className={styles.highlight}>{state?.transactionId}</span>
                             </div>
                             {customerInfo && (
                                 <>
                                     <div className={styles.infoRow}>
-                                        <span>Tên khách hàng:</span>
-                                        <span>{customerInfo.fullName}</span>
+                                        <span>{t('payment.success.customerNameLabel', 'Tên khách hàng:')}</span>
+                                        <span>{translateDynamicValue(customerInfo.fullName, language)}</span>
                                     </div>
                                     <div className={styles.infoRow}>
-                                        <span>Email:</span>
+                                        <span>{t('payment.success.emailLabel', 'Email:')}</span>
                                         <span>{customerInfo.email}</span>
                                     </div>
                                     <div className={styles.infoRow}>
-                                        <span>Số điện thoại:</span>
+                                        <span>{t('payment.success.phoneLabel', 'Số điện thoại:')}</span>
                                         <span>{customerInfo.phone}</span>
                                     </div>
                                 </>
                             )}
                             <div className={styles.infoRow}>
-                                <span>Ngày thanh toán:</span>
-                                <span>{new Date().toLocaleDateString('vi-VN')}</span>
+                                <span>{t('payment.success.paymentDateLabel', 'Ngày thanh toán:')}</span>
+                                <span>{new Date().toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US')}</span>
                             </div>
                         </div>
                     </div>
-
+ 
                     {bookingInfo && (
                         <>
                             <Divider />
@@ -289,107 +389,107 @@ const PaymentSuccess: React.FC = () => {
                                         <>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Khách sạn / Căn hộ:</strong>
-                                                    <p>{bookingInfo.name}</p>
-                                                    <strong>Địa chỉ:</strong>
-                                                    <p>{bookingInfo.detail1 || 'N/A'}</p>
+                                                    <strong>{t('payment.success.hotelLabel', 'Khách sạn / Căn hộ:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.name, language)}</p>
+                                                    <strong>{t('payment.success.addressLabel', 'Địa chỉ:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.detail1 || 'N/A', language)}</p>
                                                 </div>
                                             </Col>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Loại phòng:</strong>
-                                                    <p>{bookingInfo.detail2 || 'Tiêu chuẩn'}</p>
-                                                    <strong>Giá phòng:</strong>
-                                                    <p>{fmt(bookingInfo.price)}/đêm</p>
+                                                    <strong>{t('payment.success.roomTypeLabel', 'Loại phòng:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.detail2 || 'Tiêu chuẩn', language)}</p>
+                                                    <strong>{t('payment.success.roomPriceLabel', 'Giá phòng:')}</strong>
+                                                    <p>{fmt(bookingInfo.price)}{t('payment.success.perNight', '/đêm')}</p>
                                                 </div>
                                             </Col>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Nhận phòng:</strong>
-                                                    <p>{bookingInfo.dates?.checkIn ? new Date(bookingInfo.dates.checkIn).toLocaleDateString('vi-VN') : 'N/A'}</p>
-                                                    <strong>Trả phòng:</strong>
-                                                    <p>{bookingInfo.dates?.checkOut ? new Date(bookingInfo.dates.checkOut).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                                                    <strong>{t('checkout.checkin', 'Nhận phòng')}:</strong>
+                                                    <p>{bookingInfo.dates?.checkIn ? new Date(bookingInfo.dates.checkIn).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US') : 'N/A'}</p>
+                                                    <strong>{t('checkout.checkout', 'Trả phòng')}:</strong>
+                                                    <p>{bookingInfo.dates?.checkOut ? new Date(bookingInfo.dates.checkOut).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US') : 'N/A'}</p>
                                                 </div>
                                             </Col>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Số đêm nghỉ:</strong>
-                                                    <p>{bookingInfo.nights} đêm</p>
-                                                    <strong>Tổng tiền:</strong>
+                                                    <strong>{t('payment.success.roomNightsLabel', 'Số đêm nghỉ:')}</strong>
+                                                    <p>{bookingInfo.nights} {t('payment.success.nights', 'đêm')}</p>
+                                                    <strong>{t('payment.success.totalPriceLabel', 'Tổng tiền:')}</strong>
                                                     <p className={styles.totalPrice}>{fmt(bookingInfo.totalPrice)}</p>
                                                 </div>
                                             </Col>
                                         </>
                                     )}
-
+ 
                                     {isTransport && (
                                         <>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Hãng vận chuyển:</strong>
-                                                    <p>{bookingInfo.name}</p>
-                                                    <strong>Tuyến đường:</strong>
-                                                    <p>{bookingInfo.detail3 || 'N/A'}</p>
+                                                    <strong>{t('payment.success.providerLabel', 'Hãng vận chuyển:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.name, language)}</p>
+                                                    <strong>{t('payment.success.routeLabel', 'Tuyến đường:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.detail3 || 'N/A', language)}</p>
                                                 </div>
                                             </Col>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Chi tiết chỗ ngồi:</strong>
-                                                    <p>{bookingInfo.detail2 || 'Tiêu chuẩn'}</p>
-                                                    <strong>Đơn giá:</strong>
+                                                    <strong>{t('payment.success.seatsLabel', 'Chi tiết chỗ ngồi:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.detail2 || 'Tiêu chuẩn', language)}</p>
+                                                    <strong>{t('payment.success.unitPriceLabel', 'Đơn giá:')}</strong>
                                                     <p>{fmt(bookingInfo.price)}</p>
                                                 </div>
                                             </Col>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Ngày đi:</strong>
-                                                    <p>{bookingInfo.dates?.checkIn ? new Date(bookingInfo.dates.checkIn).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN')}</p>
-                                                    <strong>Thời gian khởi hành:</strong>
-                                                    <p>{bookingInfo.detail4 || 'N/A'}</p>
+                                                    <strong>{t('payment.success.departureDateLabel', 'Ngày đi:')}</strong>
+                                                    <p>{bookingInfo.dates?.checkIn ? new Date(bookingInfo.dates.checkIn).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US') : new Date().toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US')}</p>
+                                                    <strong>{t('payment.success.departureTimeLabel', 'Thời gian khởi hành:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.detail4 || 'N/A', language)}</p>
                                                 </div>
                                             </Col>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Tình trạng:</strong>
-                                                    <p className="text-green-600 font-bold" style={{ fontSize: '15px' }}>✓ Đã xác nhận vé</p>
-                                                    <strong>Tổng tiền thanh toán:</strong>
+                                                    <strong>{t('payment.success.statusLabel', 'Tình trạng:')}</strong>
+                                                    <p className="text-green-600 font-bold" style={{ fontSize: '15px' }}>{t('payment.success.statusConfirmed', '✓ Đã xác nhận vé')}</p>
+                                                    <strong>{t('payment.success.totalPricePaidLabel', 'Tổng tiền thanh toán:')}</strong>
                                                     <p className={styles.totalPrice}>{fmt(bookingInfo.totalPrice)}</p>
                                                 </div>
                                             </Col>
                                         </>
                                     )}
-
+ 
                                     {isTour && (
                                         <>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Tên Tour / Trải nghiệm:</strong>
-                                                    <p>{bookingInfo.name}</p>
-                                                    <strong>Điểm đón / Địa điểm:</strong>
-                                                    <p>{bookingInfo.detail1 || 'N/A'}</p>
+                                                    <strong>{t('payment.success.tourNameLabel', 'Tên Tour / Trải nghiệm:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.name, language)}</p>
+                                                    <strong>{t('payment.success.tourPickupLabel', 'Điểm đón / Địa điểm:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.detail1 || 'N/A', language)}</p>
                                                 </div>
                                             </Col>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Loại hình:</strong>
-                                                    <p>{bookingInfo.detail2 || 'Dịch vụ du lịch trọn gói'}</p>
-                                                    <strong>Giá vé / người:</strong>
+                                                    <strong>{t('payment.success.tourTypeLabel', 'Loại hình:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.detail2 || 'Dịch vụ du lịch trọn gói', language)}</p>
+                                                    <strong>{t('payment.success.tourPriceLabel', 'Giá vé / người:')}</strong>
                                                     <p>{fmt(bookingInfo.price)}</p>
                                                 </div>
                                             </Col>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Ngày tham gia:</strong>
-                                                    <p>{bookingInfo.detail4 || (bookingInfo.dates?.checkIn ? new Date(bookingInfo.dates.checkIn).toLocaleDateString('vi-VN') : 'N/A')}</p>
-                                                    <strong>Số lượng khách:</strong>
-                                                    <p>{bookingInfo.detail3 || '1 khách'}</p>
+                                                    <strong>{t('payment.success.tourDateLabel', 'Ngày tham gia:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.detail4, language) || (bookingInfo.dates?.checkIn ? new Date(bookingInfo.dates.checkIn).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US') : 'N/A')}</p>
+                                                    <strong>{t('payment.success.tourGuestsLabel', 'Số lượng khách:')}</strong>
+                                                    <p>{translateDynamicValue(bookingInfo.detail3, language) || `1 ${t('payment.success.guests', 'khách')}`}</p>
                                                 </div>
                                             </Col>
                                             <Col xs={24} sm={12}>
                                                 <div className={styles.bookingDetail}>
-                                                    <strong>Tình trạng vé:</strong>
-                                                    <p className="text-green-600 font-bold" style={{ fontSize: '15px' }}>✓ Đã đăng ký giữ chỗ</p>
-                                                    <strong>Tổng tiền thanh toán:</strong>
+                                                    <strong>{t('payment.success.tourStatusLabel', 'Tình trạng vé:')}</strong>
+                                                    <p className="text-green-600 font-bold" style={{ fontSize: '15px' }}>{t('payment.success.tourStatusConfirmed', '✓ Đã đăng ký giữ chỗ')}</p>
+                                                    <strong>{t('payment.success.totalPricePaidLabel', 'Tổng tiền thanh toán:')}</strong>
                                                     <p className={styles.totalPrice}>{fmt(bookingInfo.totalPrice)}</p>
                                                 </div>
                                             </Col>
@@ -404,7 +504,7 @@ const PaymentSuccess: React.FC = () => {
                     <div className={styles.nextSteps}>
                         <h3>
                             <span className="material-symbols-outlined">info</span>
-                            Bước tiếp theo
+                            {t('payment.success.nextStepsTitle', 'Bước tiếp theo')}
                         </h3>
                         {getNextSteps()}
                     </div>
@@ -419,7 +519,7 @@ const PaymentSuccess: React.FC = () => {
                         className={styles.button}
                     >
                         <span className="material-symbols-outlined">home</span>
-                        Về trang chủ
+                        {t('payment.success.backHome', 'Về trang chủ')}
                     </Button>
                     <Button
                         size="large"
@@ -435,11 +535,11 @@ const PaymentSuccess: React.FC = () => {
                 <Card className={styles.supportCard}>
                     <h3>
                         <span className="material-symbols-outlined">support_agent</span>
-                        Cần hỗ trợ?
+                        {t('payment.success.needSupport', 'Cần hỗ trợ?')}
                     </h3>
-                    <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với bộ phận chăm sóc khách hàng của chúng tôi.</p>
+                    <p>{t('payment.success.supportDesc', 'Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với bộ phận chăm sóc khách hàng của chúng tôi.')}</p>
                     <p>
-                        <strong>Hotline:</strong> 1900-1234 | <strong>Email:</strong> support@bookingtravelweb.com
+                        <strong>{t('payment.success.hotline', 'Hotline:')}</strong> 1900-1234 | <strong>{t('payment.success.email', 'Email:')}</strong> support@bookingtravelweb.com
                     </p>
                 </Card>
             </div>

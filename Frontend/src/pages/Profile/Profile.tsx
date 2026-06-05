@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { userApi, type UserProfile } from '../../services/userApi';
 import { bookingApi, type BookingDetails } from '../../services/bookingApi';
 import { cancellationApi } from '../../services/cancellationApi';
 import { fetchHotels } from '../../services/searchApi';
+import { useLanguage } from '../../context';
 import {
     Pagination, Spin, Card, Tag, Typography, Divider, Button, Modal, Form, Input,
     message, Switch, Radio
@@ -32,10 +33,116 @@ interface PriceAlert {
     targetPrice: number;
 }
 
+const translateDynamicValue = (val: string | undefined, language: string): string => {
+    if (!val) return 'N/A';
+    if (language === 'vi') {
+        return val;
+    }
+    
+    const lowerVal = val.toLowerCase().trim();
+    
+    // Room type / seat class / status
+    if (lowerVal === 'tiêu chuẩn' || lowerVal === 'phòng tiêu chuẩn') return 'Standard Room';
+    if (lowerVal === 'phổ thông' || lowerVal === 'hạng phổ thông' || lowerVal === 'economy') return 'Economy Class';
+    if (lowerVal === 'thương gia' || lowerVal === 'hạng thương gia' || lowerVal === 'business') return 'Business Class';
+    if (lowerVal === 'phòng deluxe' || lowerVal === 'deluxe') return 'Deluxe Room';
+    if (lowerVal === 'phòng suite' || lowerVal === 'suite') return 'Suite Room';
+    if (lowerVal === 'khách hàng') return 'Customer';
+    if (lowerVal === 'dịch vụ du lịch') return 'Travel Service';
+    if (lowerVal === 'dịch vụ du lịch trọn gói') return 'All-inclusive Travel Service';
+    
+    // Tour names
+    if (lowerVal.includes('tour city')) return 'City Tour';
+    if (lowerVal.includes('tour ha long 2n1d')) return 'Ha Long Bay Tour 2D1N';
+    if (lowerVal.includes('tour da nang - hoi an')) return 'Da Nang - Hoi An Tour';
+    if (lowerVal.includes('tour phu quoc 3n2d')) return 'Phu Quoc Island Tour 3D2N';
+    if (lowerVal.includes('tour da lat san may')) return 'Da Lat Cloud Hunting Tour';
+    if (lowerVal.includes('tour sapa trekking')) return 'Sapa Trekking Tour';
+    if (lowerVal.includes('tour hue ancient capital')) return 'Hue Ancient Capital Tour';
+    if (lowerVal.includes('tour nha trang island')) return 'Nha Trang Island Tour';
+    if (lowerVal.includes('tour mekong delta')) return 'Mekong Delta Tour';
+    if (lowerVal.includes('tour ba na hills')) return 'Ba Na Hills Tour';
+    if (lowerVal.includes('tour mui ne resort')) return 'Mui Ne Resort Tour';
+    if (lowerVal.includes('tour con dao relax')) return 'Con Dao Relax Tour';
+    if (lowerVal.includes('tour ha giang loop')) return 'Ha Giang Loop Tour';
+    if (lowerVal.includes('tour quy nhon beach')) return 'Quy Nhon Beach Tour';
+    if (lowerVal.includes('tour ninh binh discovery')) return 'Ninh Binh Discovery Tour';
+    if (lowerVal.includes('tour cat ba island')) return 'Cat Ba Island Tour';
+    if (lowerVal.includes('tour resort maldives 5 sao hạng sang')) return 'Luxury 5-Star Maldives Resort Tour';
+    if (lowerVal.includes('dai noi hue')) return 'Hue Imperial Citadel';
+    
+    let translated = val;
+    
+    const replacements: [RegExp, string][] = [
+        [/đưa đón sân bay/gi, 'Airport Transfer'],
+        [/thuê xe tự lái/gi, 'Self-drive Car Rental'],
+        [/nạp tiền điện thoại/gi, 'Mobile Top-up'],
+        [/gói dữ liệu/gi, 'Data Plan'],
+        [/hóa đơn điện/gi, 'Electricity Bill'],
+        [/hà nội/gi, 'Hanoi'],
+        [/hồ chí minh/gi, 'Ho Chi Minh City'],
+        [/đà nẵng/gi, 'Da Nang'],
+        [/nha trang/gi, 'Nha Trang'],
+        [/phú quốc/gi, 'Phu Quoc'],
+        [/huế/gi, 'Hue'],
+        [/đà lạt/gi, 'Da Lat'],
+        [/vũng tàu/gi, 'Vung Tau'],
+        [/hạ long/gi, 'Ha Long'],
+        [/sapa/gi, 'Sapa'],
+        [/phú sĩ/gi, 'Mt. Fuji'],
+        [/nhật bản/gi, 'Japan'],
+        [/chuyến/gi, 'Trip'],
+        [/khứ hồi/gi, 'Round Trip'],
+        [/vé/gi, 'Ticket'],
+        [/cáp treo/gi, 'Cable Car'],
+        [/khách sạn/gi, 'Hotel'],
+        [/biệt thự/gi, 'Villa'],
+        [/căn hộ/gi, 'Apartment'],
+        [/đang xử lý/gi, 'Pending'],
+        [/thành công/gi, 'Success'],
+        [/đã thanh toán/gi, 'Paid'],
+        [/chưa thanh toán/gi, 'Unpaid'],
+        [/đã hủy/gi, 'Canceled'],
+        [/đã hoàn tiền/gi, 'Refunded'],
+        [/trải nghiệm du lịch trọn gói/gi, 'Package tour experience'],
+        [/dịch vụ du lịch trọn gói/gi, 'All-inclusive Travel Service'],
+        [/dịch vụ du lịch/gi, 'Travel Service'],
+        [/khách du lịch/gi, 'Traveler(s)'],
+        [/chọn ngày sau/gi, 'Choose date later'],
+        [/phòng tiêu chuẩn/gi, 'Standard Room'],
+        [/phòng deluxe/gi, 'Deluxe Room'],
+        [/phòng suite/gi, 'Suite Room'],
+        [/tiêu chuẩn/gi, 'Standard'],
+        [/deluxe/gi, 'Deluxe'],
+        [/suite/gi, 'Suite'],
+        [/giường đơn/gi, 'Single Bed'],
+        [/giường đôi/gi, 'Double Bed'],
+        [/hướng biển/gi, 'Ocean View'],
+        [/hướng thành phố/gi, 'City View'],
+        [/hướng vườn/gi, 'Garden View'],
+        [/ăn sáng miễn phí/gi, 'Free Breakfast'],
+        [/không bao gồm ăn sáng/gi, 'Room Only'],
+        [/hạng phổ thông/gi, 'Economy Class'],
+        [/hạng thương gia/gi, 'Business Class'],
+        [/phổ thông/gi, 'Economy'],
+        [/thương gia/gi, 'Business'],
+        [/người lớn/gi, 'adult(s)'],
+        [/trẻ em/gi, 'child(ren)'],
+        [/khách/gi, 'guest(s)']
+    ];
+    
+    for (const [regex, replacement] of replacements) {
+        translated = translated.replace(regex, replacement);
+    }
+    
+    return translated;
+};
+
 const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
     const { user, logout, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const { t, language } = useLanguage();
 
     // Determine initial tab from route or query params
     const getInitialTab = () => {
@@ -123,12 +230,12 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                     CCCD: data.CCCD || '',
                 });
             } catch (err: any) {
-                message.error('Không thể tải profile: ' + err.message);
+                message.error(t('profile.loadFail', 'Không thể tải profile: ') + err.message);
             }
         };
 
         fetchProfile();
-    }, [isAuthenticated, user, form]);
+    }, [isAuthenticated, user, form, t]);
 
     // Fetch Bookings when active tab is bookings or transactions
     useEffect(() => {
@@ -199,7 +306,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
             setBookings(response.data || []);
             setTotalItems(response.totalItems || 0);
         } catch (err: any) {
-            message.error(err.message || 'Không thể tải lịch sử đặt vé');
+            message.error(t('profile.loadHistoryFail', 'Không thể tải lịch sử đặt vé'));
         } finally {
             setLoadingBookings(false);
         }
@@ -211,7 +318,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
             const data = await cancellationApi.getUserCancellations();
             setRefunds(data || []);
         } catch (err: any) {
-            message.error(err.message || 'Không thể tải lịch sử hoàn tiền');
+            message.error(t('profile.loadRefundFail', 'Không thể tải lịch sử hoàn tiền'));
         } finally {
             setLoadingRefunds(false);
         }
@@ -241,12 +348,12 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
         setIsSaving(true);
         try {
             await userApi.updateProfile(user.id, values);
-            message.success('Cập nhật profile thành công!');
+            message.success(t('profile.updateSuccess', 'Cập nhật profile thành công!'));
             // Reload user details
             const data = await userApi.getProfile(user.id);
             setProfile(data);
         } catch (err: any) {
-            message.error(err.message || 'Cập nhật thất bại');
+            message.error(t('profile.updateFail', 'Cập nhật thất bại'));
         } finally {
             setIsSaving(false);
         }
@@ -294,7 +401,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
         
         // Close modal and show message instantly
         handleCancelModalClose();
-        message.success('Gửi yêu cầu hủy thành công! Vui lòng chờ phản hồi của quản trị viên.');
+        message.success(t('profile.cancelRequestSuccess', 'Gửi yêu cầu hủy thành công! Vui lòng chờ phản hồi của quản trị viên.'));
 
         try {
             // 2. Perform API call in background
@@ -302,7 +409,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
             // 3. Re-fetch in background to sync with server
             fetchBookings(currentPage);
         } catch (err: any) {
-            message.error(err.message || 'Không thể gửi yêu cầu hủy');
+            message.error(t('profile.cancelRequestFail', 'Không thể gửi yêu cầu hủy'));
             // Rollback on error
             setBookings(prev => prev.map(item => 
                 String(item.booking.MaBooking) === String(selectedBookingId) 
@@ -325,7 +432,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
         const updated = [...passengers, newPass];
         setPassengers(updated);
         localStorage.setItem('saved_passengers', JSON.stringify(updated));
-        message.success('Đã thêm hành khách thành công!');
+        message.success(t('profile.passengerAddSuccess', 'Đã thêm hành khách thành công!'));
         setIsPassengerModalOpen(false);
         passengerForm.resetFields();
     };
@@ -334,7 +441,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
         const updated = passengers.filter(p => p.id !== id);
         setPassengers(updated);
         localStorage.setItem('saved_passengers', JSON.stringify(updated));
-        message.success('Đã xóa thông tin hành khách.');
+        message.success(t('profile.passengerDeleteSuccess', 'Đã xóa thông tin hành khách.'));
     };
 
     // Price Alerts CRUD
@@ -349,7 +456,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
         const updated = [...alerts, newAlert];
         setAlerts(updated);
         localStorage.setItem('price_alerts', JSON.stringify(updated));
-        message.success('Đã tạo thông báo giá vé thành công!');
+        message.success(t('profile.alertAddSuccess', 'Đã tạo thông báo giá vé thành công!'));
         setIsAlertModalOpen(false);
         alertForm.resetFields();
     };
@@ -358,7 +465,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
         const updated = alerts.filter(a => a.id !== id);
         setAlerts(updated);
         localStorage.setItem('price_alerts', JSON.stringify(updated));
-        message.success('Đã xóa thông báo giá vé.');
+        message.success(t('profile.alertDeleteSuccess', 'Đã xóa thông báo giá vé.'));
     };
 
     // Save Notifications Preferences
@@ -366,7 +473,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
         localStorage.setItem('notif_promo', String(notifPromo));
         localStorage.setItem('notif_booking', String(notifBooking));
         localStorage.setItem('notif_news', String(notifNews));
-        message.success('Đã lưu cấu hình cài đặt thông báo!');
+        message.success(t('profile.notifSaveSuccess', 'Đã lưu cấu hình cài đặt thông báo!'));
     };
 
     const handleConfirmLogout = () => {
@@ -412,10 +519,10 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
         return (
             <div className="max-w-4xl mx-auto px-4 py-20 text-center">
                 <span className="material-symbols-outlined text-gray-300 text-[80px] mb-4">lock</span>
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">Bạn cần đăng nhập</h2>
-                <p className="text-gray-600 mb-8 max-w-md mx-auto">Vui lòng đăng nhập tài khoản của bạn để truy cập trang quản lý thông tin và lịch sử đặt chỗ.</p>
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">{t('profile.needLogin', 'Bạn cần đăng nhập')}</h2>
+                <p className="text-gray-600 mb-8 max-w-md mx-auto">{t('profile.needLoginDesc', 'Vui lòng đăng nhập tài khoản của bạn để truy cập trang quản lý thông tin và lịch sử đặt chỗ.')}</p>
                 <Link to="/" className="rounded-2xl bg-travel-blue px-8 py-3 text-white font-bold hover:bg-blue-700 transition-all hover-lift">
-                    Quay về Trang chủ
+                    {t('profile.backHome', 'Quay về Trang chủ')}
                 </Link>
             </div>
         );
@@ -423,18 +530,18 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
 
     // Sidebar items mapping
     const sidebarMenuItems = [
-        { key: 'bookings', label: 'Đặt chỗ của tôi', icon: 'receipt_long' },
-        { key: 'transactions', label: 'Danh sách giao dịch', icon: 'account_balance_wallet' },
-        { key: 'refunds', label: 'Refunds', icon: 'assignment_return' },
-        { key: 'price-alerts', label: 'Thông báo giá vé máy bay', icon: 'campaign' },
-        { key: 'saved-passengers', label: 'Thông tin hành khách đã lưu', icon: 'group' },
-        { key: 'notifications', label: 'Cài đặt thông báo', icon: 'notifications_active' },
-        { key: 'profile', label: 'Tài khoản', icon: 'manage_accounts' },
-        { key: 'logout', label: 'Đăng xuất', icon: 'logout', className: 'text-red-500 hover:bg-red-50/50' }
+        { key: 'bookings', label: t('profile.tabBookings', 'Đặt chỗ của tôi'), icon: 'receipt_long' },
+        { key: 'transactions', label: t('profile.tabTransactions', 'Danh sách giao dịch'), icon: 'account_balance_wallet' },
+        { key: 'refunds', label: t('profile.tabRefunds', 'Refunds'), icon: 'assignment_return' },
+        { key: 'price-alerts', label: t('profile.tabAlerts', 'Thông báo giá vé máy bay'), icon: 'campaign' },
+        { key: 'saved-passengers', label: t('profile.tabPassengers', 'Thông tin hành khách đã lưu'), icon: 'group' },
+        { key: 'notifications', label: t('profile.tabNotifications', 'Cài đặt thông báo'), icon: 'notifications_active' },
+        { key: 'profile', label: t('profile.tabProfile', 'Tài khoản'), icon: 'manage_accounts' },
+        { key: 'logout', label: t('profile.tabLogout', 'Đăng xuất'), icon: 'logout', className: 'text-red-500 hover:bg-red-50/50' }
     ];
 
     return (
-        <div className="bg-[#f8fafc] min-h-screen py-12 font-['Inter',sans-serif]">
+        <div className="bg-[#f8fafc] min-h-screen py-12 font-sans">
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                     
@@ -449,11 +556,11 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                 </div>
                                 <div className="overflow-hidden">
                                     <h4 className="font-extrabold text-gray-800 text-base truncate">
-                                        {profile?.Ho ? `${profile.Ho} ${profile.Ten}` : user?.Ten || 'Khách hàng'}
+                                        {profile?.Ho ? `${profile.Ho} ${profile.Ten}` : user?.Ten || t('profile.customer', 'Khách hàng')}
                                     </h4>
                                     <p className="text-xs text-gray-400 mt-0.5 truncate flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[12px]">verified</span>
-                                        {profile?.Email || user?.Email || 'Email verified'}
+                                        {t('profile.emailVerified', 'Đã xác minh email')}
                                     </p>
                                 </div>
                             </div>
@@ -463,8 +570,8 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                 <div className="flex items-center gap-3">
                                     <span className="material-symbols-outlined text-yellow-300 text-[20px]">stars</span>
                                     <div>
-                                        <div className="text-[11px] font-bold uppercase tracking-wider text-amber-100">Bronze Priority</div>
-                                        <div className="text-[12px] font-semibold text-white/95">Bạn là thành viên Bronze</div>
+                                        <div className="text-[11px] font-bold uppercase tracking-wider text-amber-100">{t('profile.bronze', 'Bronze Priority')}</div>
+                                        <div className="text-[12px] font-semibold text-white/95">{t('profile.memberBronze', 'Bạn là thành viên Bronze')}</div>
                                     </div>
                                 </div>
                                 <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
@@ -474,9 +581,9 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                             <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-yellow-500 text-[20px]">monetization_on</span>
-                                    <span className="text-xs font-semibold text-gray-600">Traveloka Points</span>
+                                    <span className="text-xs font-semibold text-gray-600">{t('profile.points', 'Traveloka Points')}</span>
                                 </div>
-                                <span className="text-sm font-bold text-gray-800">0 Điểm</span>
+                                <span className="text-sm font-bold text-gray-800">0 {t('profile.pointsUnit', 'Điểm')}</span>
                             </div>
                         </div>
 
@@ -514,8 +621,8 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                         {activeTab === 'bookings' && (
                             <div>
                                 <div className="border-b border-gray-100 pb-4 mb-6">
-                                    <h2 className="text-xl font-extrabold text-gray-800">Vé điện tử & phiếu thanh toán hiện hành</h2>
-                                    <p className="text-sm text-gray-500 mt-1">Danh sách các dịch vụ bạn đã thanh toán và đặt vé thành công.</p>
+                                    <h2 className="text-xl font-extrabold text-gray-800">{t('profile.activeBookings', 'Vé điện tử & phiếu thanh toán hiện hành')}</h2>
+                                    <p className="text-sm text-gray-500 mt-1">{t('profile.activeBookingsDesc', 'Danh sách các dịch vụ bạn đã thanh toán và đặt vé thành công.')}</p>
                                 </div>
 
                                 {loadingBookings ? (
@@ -527,9 +634,9 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                         <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center text-travel-blue mb-4">
                                             <span className="material-symbols-outlined text-[44px]">sentiment_sleepy</span>
                                         </div>
-                                        <h4 className="text-base font-extrabold text-gray-800 mb-1">Không tìm thấy đặt chỗ</h4>
+                                        <h4 className="text-base font-extrabold text-gray-800 mb-1">{t('profile.noBooking', 'Không tìm thấy đặt chỗ')}</h4>
                                         <p className="text-xs text-gray-400 max-w-sm leading-relaxed">
-                                            Mọi chỗ bạn đặt sẽ được hiển thị tại đây. Hiện bạn chưa có bất kỳ đặt chỗ nào, hãy đặt trên trang chủ ngay!
+                                            {t('profile.noBookingDesc', 'Mọi chỗ bạn đặt sẽ được hiển thị tại đây. Hiện bạn chưa có bất kỳ đặt chỗ nào, hãy đặt trên trang chủ ngay!')}
                                         </p>
                                     </div>
                                 ) : (
@@ -538,12 +645,17 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                             <Card key={index} className="rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div>
-                                                        <Text strong className="text-[15px]">Mã đặt chỗ: #{item.booking.MaBooking}</Text>
+                                                        <Text strong className="text-[15px]">{t('profile.bookingCodeLabel', 'Mã đặt chỗ: #{code}').replace('{code}', String(item.booking.MaBooking))}</Text>
                                                         <br />
-                                                        <Text type="secondary" className="text-xs">Ngày đặt: {new Date(item.booking.ThoiDiemDat).toLocaleString('vi-VN')}</Text>
+                                                        <Text type="secondary" className="text-xs">{t('profile.bookingDate', 'Ngày đặt: {date}').replace('{date}', new Date(item.booking.ThoiDiemDat).toLocaleString(language === 'vi' ? 'vi-VN' : 'en-US'))}</Text>
                                                     </div>
                                                     <Tag color={getStatusColor(item.booking.TrangThaiBooking)} className="text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                                        {item.booking.TrangThaiBooking}
+                                                        {item.booking.TrangThaiBooking === 'Đã thanh toán' ? t('profile.txnSuccess', 'Thành công') : 
+                                                         item.booking.TrangThaiBooking === 'Chưa thanh toán' ? t('profile.statusUnpaid', 'Chưa thanh toán') :
+                                                         item.booking.TrangThaiBooking === 'Đã hủy' ? t('profile.statusCancelled', 'Đã hủy') :
+                                                         item.booking.TrangThaiBooking === 'Đã hoàn tiền' ? t('profile.statusRefunded', 'Đã hoàn tiền') :
+                                                         item.booking.TrangThaiBooking === 'Yêu cầu hủy' ? t('profile.statusCancelRequested', 'Yêu cầu hủy') :
+                                                         item.booking.TrangThaiBooking}
                                                     </Tag>
                                                 </div>
                                                 <Divider className="my-3" />
@@ -560,7 +672,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                                                         <img src={d.HinhAnh} alt={d.TenDichVu} className="w-16 h-16 object-cover rounded-lg shadow-sm" />
                                                                     ) : (
                                                                         <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs shadow-sm">
-                                                                            Không có ảnh
+                                                                            {t('profile.noImage', 'Không có ảnh')}
                                                                         </div>
                                                                     )}
                                                                     <div className="flex-1 min-w-0">
@@ -573,7 +685,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                                                             {extraInfo.detail3 && <span>• {extraInfo.detail3}</span>}
                                                                         </div>
                                                                         <div className="text-xs text-travel-blue font-bold mt-1">
-                                                                            {formatCurrency(d.DonGia)} x {d.SoLuongNguoi} {d.LoaiDoiTuong === 'hotel' ? 'đêm' : 'vé'}
+                                                                            {formatCurrency(d.DonGia)} x {d.SoLuongNguoi} {d.LoaiDoiTuong === 'hotel' ? t('profile.nightUnitShort', 'đêm') : t('profile.ticketUnitShort', 'vé')}
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -581,7 +693,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                                         })}
                                                     </div>
                                                     <div className="text-right min-w-[140px] flex flex-col justify-end self-stretch md:border-l md:border-gray-100 md:pl-6">
-                                                        <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Tổng tiền</span>
+                                                        <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t('profile.total', 'Tổng tiền')}</span>
                                                         <span className="text-xl font-black text-travel-blue mt-0.5">
                                                             {formatCurrency(item.booking.TongTien)}
                                                         </span>
@@ -597,7 +709,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                                             onClick={() => handleOpenCancelModal(item.booking.MaBooking)}
                                                             className="rounded-lg font-bold text-xs"
                                                         >
-                                                            Yêu cầu hủy vé/phòng
+                                                            {t('profile.cancelRequestBtn', 'Yêu cầu hủy vé/phòng')}
                                                         </Button>
                                                     </div>
                                                 )}
@@ -618,7 +730,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
 
                                 {/* Comfy Stays Recommendation Section */}
                                 <div className="border-t border-gray-100 pt-8 mt-8">
-                                    <h3 className="text-lg font-extrabold text-gray-800 mb-4">Comfy stays for your great trip</h3>
+                                    <h3 className="text-lg font-extrabold text-gray-800 mb-4">{t('profile.recoTitle', 'Comfy stays for your great trip')}</h3>
                                     {loadingReco ? (
                                         <div className="flex justify-center py-8"><Spin /></div>
                                     ) : recoHotels.length === 0 ? (
@@ -627,16 +739,16 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                             <div className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition bg-white flex flex-col">
                                                 <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" alt="Bazan Hotel" className="h-44 w-full object-cover" />
                                                 <div className="p-4 flex flex-col flex-1">
-                                                    <span className="text-[10px] text-travel-blue bg-blue-50 px-2 py-0.5 rounded font-bold w-fit mb-2">Phường 3, Đà Lạt</span>
+                                                    <span className="text-[10px] text-travel-blue bg-blue-50 px-2 py-0.5 rounded font-bold w-fit mb-2">{language === 'en' ? 'Ward 3, Da Lat' : 'Phường 3, Đà Lạt'}</span>
                                                     <h4 className="font-extrabold text-sm text-gray-800">Khách sạn Bazan Hotel</h4>
                                                     <div className="flex items-center gap-1 text-xs text-yellow-500 my-1.5">
                                                         <span className="material-symbols-outlined text-[16px]">star</span>
                                                         <span className="material-symbols-outlined text-[16px]">star</span>
                                                         <span className="material-symbols-outlined text-[16px]">star</span>
-                                                        <span className="text-gray-400 font-semibold ml-1">9.0/10 (89 đánh giá)</span>
+                                                        <span className="text-gray-400 font-semibold ml-1">9.0/10 (89 {t('detail.reviews', 'đánh giá')})</span>
                                                     </div>
                                                     <div className="mt-auto pt-2 flex items-end justify-between">
-                                                        <span className="text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded font-bold">Tiết kiệm 42%</span>
+                                                        <span className="text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded font-bold">{t('profile.recoSave', 'Tiết kiệm {pct}%').replace('{pct}', '42')}</span>
                                                         <div className="text-right">
                                                             <div className="text-xs text-gray-400 line-through">457.000 VND</div>
                                                             <div className="text-sm font-extrabold text-orange-500">263.455 VND</div>
@@ -648,16 +760,16 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                             <div className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition bg-white flex flex-col">
                                                 <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80" alt="Hung Nguyen Valley" className="h-44 w-full object-cover" />
                                                 <div className="p-4 flex flex-col flex-1">
-                                                    <span className="text-[10px] text-travel-blue bg-blue-50 px-2 py-0.5 rounded font-bold w-fit mb-2">Phường 8, Đà Lạt</span>
+                                                    <span className="text-[10px] text-travel-blue bg-blue-50 px-2 py-0.5 rounded font-bold w-fit mb-2">{language === 'en' ? 'Ward 8, Da Lat' : 'Phường 8, Đà Lạt'}</span>
                                                     <h4 className="font-extrabold text-sm text-gray-800">Hung Nguyen Valley Da Lat</h4>
                                                     <div className="flex items-center gap-1 text-xs text-yellow-500 my-1.5">
                                                         <span className="material-symbols-outlined text-[16px]">star</span>
                                                         <span className="material-symbols-outlined text-[16px]">star</span>
                                                         <span className="material-symbols-outlined text-[16px]">star</span>
-                                                        <span className="text-gray-400 font-semibold ml-1">9.0/10 (935 đánh giá)</span>
+                                                        <span className="text-gray-400 font-semibold ml-1">9.0/10 (935 {t('detail.reviews', 'đánh giá')})</span>
                                                     </div>
                                                     <div className="mt-auto pt-2 flex items-end justify-between">
-                                                        <span className="text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded font-bold">Tiết kiệm 31%</span>
+                                                        <span className="text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded font-bold">{t('profile.recoSave', 'Tiết kiệm {pct}%').replace('{pct}', '31')}</span>
                                                         <div className="text-right">
                                                             <div className="text-xs text-gray-400 line-through">422.078 VND</div>
                                                             <div className="text-sm font-extrabold text-orange-500">289.410 VND</div>
@@ -680,10 +792,10 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                                             {Array.from({ length: h.stars || 3 }).map((_, i) => (
                                                                 <span key={i} className="material-symbols-outlined text-[16px]">star</span>
                                                             ))}
-                                                            <span className="text-gray-400 font-semibold ml-1">9.0/10 (89 reviews)</span>
+                                                            <span className="text-gray-400 font-semibold ml-1">9.0/10 (89 {t('detail.reviews', 'reviews')})</span>
                                                         </div>
                                                         <div className="mt-auto pt-2 flex items-end justify-between">
-                                                            <span className="text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded font-bold">Giảm 10%</span>
+                                                            <span className="text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded font-bold">{t('profile.recoDiscount', 'Giảm {pct}%').replace('{pct}', '10')}</span>
                                                             <div className="text-right">
                                                                 <div className="text-sm font-extrabold text-orange-500">{formatCurrency(h.min_price)}</div>
                                                             </div>
@@ -701,33 +813,33 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                         {activeTab === 'transactions' && (
                             <div>
                                 <div className="border-b border-gray-100 pb-4 mb-6">
-                                    <h2 className="text-xl font-extrabold text-gray-800">Danh sách giao dịch</h2>
-                                    <p className="text-sm text-gray-500 mt-1">Lịch sử thanh toán và tình trạng tài chính cho các đặt đơn dịch vụ của bạn.</p>
+                                    <h2 className="text-xl font-extrabold text-gray-800">{t('profile.txnList', 'Danh sách giao dịch')}</h2>
+                                    <p className="text-sm text-gray-500 mt-1">{t('profile.txnListDesc', 'Lịch sử thanh toán và tình trạng tài chính cho các đặt đơn dịch vụ của bạn.')}</p>
                                 </div>
 
                                 {loadingBookings ? (
                                     <div className="flex justify-center py-24"><Spin size="large" /></div>
                                 ) : bookings.length === 0 ? (
-                                    <div className="text-center py-16 text-gray-400">Bạn chưa phát sinh giao dịch nào trên hệ thống.</div>
+                                    <div className="text-center py-16 text-gray-400">{t('profile.txnsEmpty', 'Bạn chưa phát sinh giao dịch nào trên hệ thống.')}</div>
                                 ) : (
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left border-collapse">
                                             <thead>
                                                 <tr className="bg-gray-50 text-gray-400 text-[11px] font-bold uppercase tracking-wider border-b border-gray-100">
-                                                    <th className="py-3 px-4">Mã giao dịch</th>
-                                                    <th className="py-3 px-4">Thời điểm</th>
-                                                    <th className="py-3 px-4">Số tiền</th>
-                                                    <th className="py-3 px-4">Hình thức</th>
-                                                    <th className="py-3 px-4 text-right">Trạng thái</th>
+                                                    <th className="py-3 px-4">{t('profile.txnCode', 'Mã giao dịch')}</th>
+                                                    <th className="py-3 px-4">{t('profile.txnTime', 'Thời điểm')}</th>
+                                                    <th className="py-3 px-4">{t('profile.txnAmount', 'Số tiền')}</th>
+                                                    <th className="py-3 px-4">{t('profile.txnMethod', 'Hình thức')}</th>
+                                                    <th className="py-3 px-4 text-right">{t('profile.txnStatus', 'Trạng thái')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100 text-sm">
                                                 {bookings.map((item) => (
                                                     <tr key={item.booking.MaBooking} className="hover:bg-gray-50/50">
                                                         <td className="py-4 px-4 font-bold text-gray-800">TXN{item.booking.MaBooking}</td>
-                                                        <td className="py-4 px-4 text-xs text-gray-400">{new Date(item.booking.ThoiDiemDat).toLocaleString('vi-VN')}</td>
+                                                        <td className="py-4 px-4 text-xs text-gray-400">{new Date(item.booking.ThoiDiemDat).toLocaleString(language === 'vi' ? 'vi-VN' : 'en-US')}</td>
                                                         <td className="py-4 px-4 font-bold text-gray-800">{formatCurrency(item.booking.TongTien)}</td>
-                                                        <td className="py-4 px-4 text-gray-500">Ví điện tử / Thẻ quốc tế</td>
+                                                        <td className="py-4 px-4 text-gray-500">{t('profile.txnMethodDesc', 'Ví điện tử / Thẻ quốc tế')}</td>
                                                         <td className="py-4 px-4 text-right">
                                                             <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${
                                                                 item.booking.TrangThaiBooking === 'Đã hoàn tiền' ? 'bg-blue-50 text-blue-600' :
@@ -735,7 +847,12 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                                                 item.booking.TrangThaiBooking === 'Yêu cầu hủy' ? 'bg-purple-50 text-purple-600' :
                                                                 item.booking.TrangThaiBooking === 'Chưa thanh toán' ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'
                                                             }`}>
-                                                                {item.booking.TrangThaiBooking === 'Đã thanh toán' ? 'Thành công' : item.booking.TrangThaiBooking}
+                                                                {item.booking.TrangThaiBooking === 'Đã thanh toán' ? t('profile.txnSuccess', 'Thành công') : 
+                                                                 item.booking.TrangThaiBooking === 'Chưa thanh toán' ? t('profile.statusUnpaid', 'Chưa thanh toán') :
+                                                                 item.booking.TrangThaiBooking === 'Đã hủy' ? t('profile.statusCancelled', 'Đã hủy') :
+                                                                 item.booking.TrangThaiBooking === 'Đã hoàn tiền' ? t('profile.statusRefunded', 'Đã hoàn tiền') :
+                                                                 item.booking.TrangThaiBooking === 'Yêu cầu hủy' ? t('profile.statusCancelRequested', 'Yêu cầu hủy') :
+                                                                 item.booking.TrangThaiBooking}
                                                             </span>
                                                         </td>
                                                     </tr>
@@ -751,34 +868,34 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                         {activeTab === 'refunds' && (
                             <div>
                                 <div className="border-b border-gray-100 pb-4 mb-6">
-                                    <h2 className="text-xl font-extrabold text-gray-800">Lịch sử hoàn tiền</h2>
-                                    <p className="text-sm text-gray-500 mt-1">Theo dõi tiến độ duyệt và giải ngân của các yêu cầu hủy đặt vé/phòng của bạn.</p>
+                                    <h2 className="text-xl font-extrabold text-gray-800">{t('profile.tabRefunds', 'Refunds')}</h2>
+                                    <p className="text-sm text-gray-500 mt-1">{t('profile.refundListDesc', 'Theo dõi tiến trình hoàn tiền cho các đơn hàng đã yêu cầu hủy.')}</p>
                                 </div>
 
                                 {loadingRefunds ? (
                                     <div className="flex justify-center py-24"><Spin size="large" /></div>
                                 ) : refunds.length === 0 ? (
-                                    <div className="text-center py-16 text-gray-400">Bạn chưa có yêu cầu hủy/hoàn tiền nào.</div>
+                                    <div className="text-center py-16 text-gray-400">{t('profile.refundsEmpty', 'Bạn chưa có yêu cầu hủy/hoàn tiền nào.')}</div>
                                 ) : (
                                     <div className="space-y-4">
                                         {refunds.map((ref) => (
                                             <div key={ref.id} className="border border-gray-200 rounded-2xl p-5 bg-white shadow-sm flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
                                                 <div className="space-y-1">
                                                     <div className="flex items-center gap-3">
-                                                        <span className="font-extrabold text-sm text-gray-800">Yêu cầu #{ref.id}</span>
+                                                        <span className="font-extrabold text-sm text-gray-800">{t('profile.refundId', 'Mã hoàn tiền')} #{ref.id}</span>
                                                         <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                                                             ref.status === 'approved' ? 'bg-green-50 text-green-600' :
                                                             ref.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
                                                         }`}>
-                                                            {ref.status === 'approved' ? 'Chấp thuận hoàn tiền' :
-                                                             ref.status === 'rejected' ? 'Bị từ chối' : 'Đang xử lý'}
+                                                            {ref.status === 'approved' ? t('profile.refundStatusApproved', 'Chấp thuận hoàn tiền') :
+                                                             ref.status === 'rejected' ? t('profile.refundStatusRejected', 'Bị từ chối') : t('profile.refundStatusPending', 'Đang xử lý')}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-gray-500">Mã Booking: #{ref.bookingId} • Chặng/Dịch vụ: <strong>{ref.bookingDetail}</strong></p>
-                                                    <p className="text-xs text-gray-400 italic">"Lý do: {ref.reason}"</p>
+                                                    <p className="text-xs text-gray-500">{t('booking.bookingId', 'Mã Booking')}: #{ref.bookingId} • {t('booking.propertyService', 'Dịch vụ / Sản phẩm')}: <strong>{translateDynamicValue(ref.bookingDetail, language)}</strong></p>
+                                                    <p className="text-xs text-gray-400 italic">"{t('profile.refundReason', 'Lý do hủy')}: {translateDynamicValue(ref.reason, language)}"</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span className="text-[10px] text-gray-400 block font-semibold uppercase">Yêu cầu vào lúc</span>
+                                                    <span className="text-[10px] text-gray-400 block font-semibold uppercase">{t('profile.refundRequestedAt', 'Yêu cầu vào lúc')}</span>
                                                     <span className="text-xs text-gray-800 font-medium">{ref.requestedAt}</span>
                                                 </div>
                                             </div>
@@ -793,8 +910,8 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                             <div>
                                 <div className="border-b border-gray-100 pb-4 mb-6 flex justify-between items-center flex-wrap gap-3">
                                     <div>
-                                        <h2 className="text-xl font-extrabold text-gray-800">Thông báo giá vé máy bay</h2>
-                                        <p className="text-sm text-gray-500 mt-1">Chúng tôi sẽ thông báo khi hành trình đạt mức giá mong muốn.</p>
+                                        <h2 className="text-xl font-extrabold text-gray-800">{t('profile.alertsTitle', 'Thông báo giá vé máy bay')}</h2>
+                                        <p className="text-sm text-gray-500 mt-1">{t('profile.alertsDesc', 'Chúng tôi sẽ gửi email thông báo khi vé máy bay chặng dưới đây giảm xuống dưới mức giá mục tiêu của bạn.')}</p>
                                     </div>
                                     <Button
                                         type="primary"
@@ -802,12 +919,12 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                         onClick={() => setIsAlertModalOpen(true)}
                                     >
                                         <span className="material-symbols-outlined text-[16px]">campaign</span>
-                                        Tạo thông báo mới
+                                        {t('profile.alertAddBtn', 'Tạo thông báo mới')}
                                     </Button>
                                 </div>
 
                                 {alerts.length === 0 ? (
-                                    <div className="text-center py-16 text-gray-400">Bạn chưa tạo thông báo giá vé nào.</div>
+                                    <div className="text-center py-16 text-gray-400">{t('profile.alertsEmpty', 'Bạn chưa tạo thông báo giá vé nào.')}</div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {alerts.map((al) => (
@@ -818,7 +935,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                                         <span className="material-symbols-outlined text-gray-400 text-[16px]">arrow_forward</span>
                                                         <span className="font-extrabold text-sm text-gray-800">{al.destination}</span>
                                                     </div>
-                                                    <p className="text-xs text-gray-400">{al.ticketType} • Giá mong muốn dưới:</p>
+                                                    <p className="text-xs text-gray-400">{al.ticketType === 'Một chiều' ? t('profile.oneWay', 'Một chiều') : t('profile.roundTrip', 'Khứ hồi')} • {t('profile.alertPriceLabel', 'Giá mong muốn dưới:')}</p>
                                                     <p className="text-base font-extrabold text-orange-500">{formatCurrency(al.targetPrice)}</p>
                                                 </div>
                                                 <button
@@ -839,8 +956,8 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                             <div>
                                 <div className="border-b border-gray-100 pb-4 mb-6 flex justify-between items-center flex-wrap gap-3">
                                     <div>
-                                        <h2 className="text-xl font-extrabold text-gray-800">Thông tin hành khách đã lưu</h2>
-                                        <p className="text-sm text-gray-500 mt-1">Lưu thông tin để điền nhanh hơn khi đặt vé máy bay/khách sạn lần sau.</p>
+                                        <h2 className="text-xl font-extrabold text-gray-800">{t('profile.passengersTitle', 'Thông tin hành khách đã lưu')}</h2>
+                                        <p className="text-sm text-gray-500 mt-1">{t('profile.passengersDesc', 'Lưu thông tin hành khách thường xuyên đi cùng để đặt vé nhanh hơn trong các lần tiếp theo.')}</p>
                                     </div>
                                     <Button
                                         type="primary"
@@ -848,12 +965,12 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                         onClick={() => setIsPassengerModalOpen(true)}
                                     >
                                         <span className="material-symbols-outlined text-[16px]">person_add</span>
-                                        Thêm hành khách
+                                        {t('profile.passengerAddBtn', 'Thêm hành khách')}
                                     </Button>
                                 </div>
 
                                 {passengers.length === 0 ? (
-                                    <div className="text-center py-16 text-gray-400">Chưa có thông tin hành khách nào được lưu.</div>
+                                    <div className="text-center py-16 text-gray-400">{t('profile.passengersEmpty', 'Chưa có thông tin hành khách nào được lưu.')}</div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {passengers.map((p) => (
@@ -863,9 +980,9 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                                         <span className="material-symbols-outlined text-gray-400 text-[18px]">person</span>
                                                         {p.fullName}
                                                     </h4>
-                                                    <p className="text-xs text-gray-400">Giới tính: <strong>{p.gender}</strong></p>
-                                                    <p className="text-xs text-gray-400">Ngày sinh: <strong>{p.birthDate}</strong></p>
-                                                    <p className="text-xs text-gray-400">CCCD/CMND: <strong>{p.idNumber || 'Chưa cập nhật'}</strong></p>
+                                                    <p className="text-xs text-gray-400">{t('profile.passGender', 'Giới tính')}: <strong>{p.gender === 'Nam' ? t('profile.passMale', 'Nam') : t('profile.passFemale', 'Nữ')}</strong></p>
+                                                    <p className="text-xs text-gray-400">{t('profile.passDob', 'Ngày sinh')}: <strong>{p.birthDate}</strong></p>
+                                                    <p className="text-xs text-gray-400">{t('profile.passId', 'Số CCCD / Hộ chiếu')}: <strong>{p.idNumber || t('profile.notUpdated', 'Chưa cập nhật')}</strong></p>
                                                 </div>
                                                 <button
                                                     onClick={() => handleDeletePassenger(p.id)}
@@ -884,31 +1001,31 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                         {activeTab === 'notifications' && (
                             <div>
                                 <div className="border-b border-gray-100 pb-4 mb-6">
-                                    <h2 className="text-xl font-extrabold text-gray-800">Cài đặt thông báo</h2>
-                                    <p className="text-sm text-gray-500 mt-1">Tùy chọn cách thức và nội dung thông báo từ chúng tôi đến bạn.</p>
+                                    <h2 className="text-xl font-extrabold text-gray-800">{t('profile.tabNotifications', 'Cài đặt thông báo')}</h2>
+                                    <p className="text-sm text-gray-500 mt-1">{t('profile.notifDesc', 'Chọn các loại thông tin bạn muốn nhận qua Email và thông báo đẩy.')}</p>
                                 </div>
 
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                         <div>
-                                            <h4 className="font-extrabold text-sm text-gray-800">Khuyến mãi & ưu đãi đặc biệt</h4>
-                                            <p className="text-xs text-gray-400 mt-0.5">Nhận các thông tin giảm giá vé máy bay, phòng khách sạn hàng tuần.</p>
+                                            <h4 className="font-extrabold text-sm text-gray-800">{t('profile.notifPromo', 'Thông tin khuyến mãi & Ưu đãi đặc quyền')}</h4>
+                                            <p className="text-xs text-gray-400 mt-0.5">{t('profile.notifPromoDesc', 'Nhận các thông tin giảm giá vé máy bay, phòng khách sạn hàng tuần.')}</p>
                                         </div>
                                         <Switch checked={notifPromo} onChange={(checked) => setNotifPromo(checked)} />
                                     </div>
 
                                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                         <div>
-                                            <h4 className="font-extrabold text-sm text-gray-800">Cập nhật đơn hàng & booking</h4>
-                                            <p className="text-xs text-gray-400 mt-0.5">Nhận thông báo cập nhật về vé điện tử, lịch bay, hoặc hoàn tiền.</p>
+                                            <h4 className="font-extrabold text-sm text-gray-800">{t('profile.notifBooking', 'Cập nhật tình trạng đặt phòng & Chuyến bay')}</h4>
+                                            <p className="text-xs text-gray-400 mt-0.5">{t('profile.notifBookingDesc', 'Nhận thông báo cập nhật về vé điện tử, lịch bay, hoặc hoàn tiền.')}</p>
                                         </div>
                                         <Switch checked={notifBooking} onChange={(checked) => setNotifBooking(checked)} />
                                     </div>
 
                                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                         <div>
-                                            <h4 className="font-extrabold text-sm text-gray-800">Bản tin Traveloka du lịch</h4>
-                                            <p className="text-xs text-gray-400 mt-0.5">Cập nhật cẩm nang du lịch và xu hướng điểm đến nổi tiếng.</p>
+                                            <h4 className="font-extrabold text-sm text-gray-800">{t('profile.notifNews', 'Bản tin xu hướng du lịch & Điểm đến mới')}</h4>
+                                            <p className="text-xs text-gray-400 mt-0.5">{t('profile.notifNewsDesc', 'Cập nhật cẩm nang du lịch và xu hướng điểm đến nổi tiếng.')}</p>
                                         </div>
                                         <Switch checked={notifNews} onChange={(checked) => setNotifNews(checked)} />
                                     </div>
@@ -919,7 +1036,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                             className="rounded-lg font-bold bg-travel-blue"
                                             onClick={handleSaveNotifSettings}
                                         >
-                                            Lưu cấu hình cài đặt
+                                            {t('profile.notifSaveBtn', 'Lưu cài đặt thông báo')}
                                         </Button>
                                     </div>
                                 </div>
@@ -930,8 +1047,8 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                         {activeTab === 'profile' && (
                             <div>
                                 <div className="border-b border-gray-100 pb-4 mb-6">
-                                    <h2 className="text-xl font-extrabold text-gray-800">Tài khoản & Thông tin cá nhân</h2>
-                                    <p className="text-sm text-gray-500 mt-1">Cập nhật hồ sơ thông tin cá nhân của bạn để nhận dịch vụ tốt nhất.</p>
+                                    <h2 className="text-xl font-extrabold text-gray-800">{t('profile.accountTitle', 'Thông tin tài khoản')}</h2>
+                                    <p className="text-sm text-gray-500 mt-1">{t('profile.accountDesc', 'Cập nhật thông tin cá nhân của bạn. Thông tin này sẽ được sử dụng để tự động điền khi đặt vé.')}</p>
                                 </div>
 
                                 <Form
@@ -943,14 +1060,14 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <Form.Item
                                             name="Ho"
-                                            label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">Họ</span>}
+                                            label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">{t('profile.accLastName', 'Họ')}</span>}
                                         >
                                             <Input className="rounded-xl px-4 py-2.5 border-gray-200" />
                                         </Form.Item>
                                         <Form.Item
                                             name="Ten"
-                                            label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">Tên</span>}
-                                            rules={[{ required: true, message: 'Tên không được bỏ trống' }]}
+                                            label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">{t('profile.accFirstName', 'Tên')}</span>}
+                                            rules={[{ required: true, message: t('profile.accFirstNameRequired', 'Tên không được bỏ trống') }]}
                                         >
                                             <Input className="rounded-xl px-4 py-2.5 border-gray-200" />
                                         </Form.Item>
@@ -959,14 +1076,14 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <Form.Item
                                             name="Email"
-                                            label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">Email</span>}
-                                            rules={[{ type: 'email', message: 'Định dạng email không hợp lệ' }]}
+                                            label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">{t('auth.email', 'Email')}</span>}
+                                            rules={[{ type: 'email', message: t('checkout.errorEmail', 'Email không hợp lệ') }]}
                                         >
                                             <Input className="rounded-xl px-4 py-2.5 border-gray-200" />
                                         </Form.Item>
                                         <Form.Item
                                             name="SDT"
-                                            label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">Số điện thoại</span>}
+                                            label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">{t('profile.accPhone', 'Số điện thoại')}</span>}
                                         >
                                             <Input className="rounded-xl px-4 py-2.5 border-gray-200" />
                                         </Form.Item>
@@ -974,7 +1091,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
 
                                     <Form.Item
                                         name="CCCD"
-                                        label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">Số CCCD / CMND / Hộ chiếu</span>}
+                                        label={<span className="font-bold text-gray-700 text-xs uppercase tracking-wider">{t('profile.accIdNumber', 'Số CCCD/Hộ chiếu')}</span>}
                                     >
                                         <Input className="rounded-xl px-4 py-2.5 border-gray-200" />
                                     </Form.Item>
@@ -985,29 +1102,29 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                                         loading={isSaving}
                                         className="rounded-xl bg-travel-blue h-11 font-bold text-sm w-full mt-2"
                                     >
-                                        Lưu thay đổi hồ sơ
+                                        {t('profile.accSaveBtn', 'Cập nhật tài khoản')}
                                     </Button>
                                 </Form>
 
                                 {profile && (
                                     <div className="mt-8 rounded-2xl border border-gray-100 bg-gray-50/50 p-5">
-                                        <h3 className="text-sm font-extrabold text-gray-700 mb-3 uppercase tracking-wider">Thông tin hệ thống</h3>
+                                        <h3 className="text-sm font-extrabold text-gray-700 mb-3 uppercase tracking-wider">{t('profile.sysInfo', 'Thông tin hệ thống')}</h3>
                                         <div className="grid gap-3 grid-cols-2 text-xs">
                                             <div>
-                                                <p className="text-gray-400 font-semibold">Mã thành viên</p>
+                                                <p className="text-gray-400 font-semibold">{t('profile.memberCode', 'Mã thành viên')}</p>
                                                 <p className="font-bold text-gray-800 mt-0.5">#{profile.UserID}</p>
                                             </div>
                                             <div>
-                                                <p className="text-gray-400 font-semibold">Cấp bậc</p>
+                                                <p className="text-gray-400 font-semibold">{t('profile.roleRank', 'Cấp bậc')}</p>
                                                 <p className="font-bold text-gray-800 mt-0.5">{profile.Role || 'USER'}</p>
                                             </div>
                                             <div>
-                                                <p className="text-gray-400 font-semibold">Tình trạng</p>
+                                                <p className="text-gray-400 font-semibold">{t('profile.statusLabel', 'Tình trạng')}</p>
                                                 <p className="font-bold text-green-600 mt-0.5">{profile.TrangThai || 'ACTIVE'}</p>
                                             </div>
                                             <div>
-                                                <p className="text-gray-400 font-semibold">Xác minh danh tính</p>
-                                                <p className="font-bold text-gray-800 mt-0.5">{profile.TinhTrangXacMinh || 'Chưa xác minh'}</p>
+                                                <p className="text-gray-400 font-semibold">{t('profile.idVerification', 'Xác minh danh tính')}</p>
+                                                <p className="font-bold text-gray-800 mt-0.5">{profile.TinhTrangXacMinh || t('profile.unverified', 'Chưa xác minh')}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -1020,7 +1137,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
 
             {/* MODAL: CANCELLATION REQUEST REASON */}
             <Modal
-                title={<span className="text-base font-extrabold text-gray-800">Yêu cầu hủy vé / phòng</span>}
+                title={<span className="text-base font-extrabold text-gray-800">{t('profile.cancelModalTitle', 'Yêu cầu hủy đặt chỗ')}</span>}
                 open={isCancelModalOpen}
                 onCancel={handleCancelModalClose}
                 footer={null}
@@ -1035,18 +1152,18 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                 >
                     <Form.Item
                         name="reason"
-                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">Lý do yêu cầu hủy</span>}
-                        rules={[{ required: true, message: 'Vui lòng nhập lý do hủy chi tiết' }]}
+                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">{t('profile.cancelModalReasonLabel', 'Lý do hủy đặt chỗ *')}</span>}
+                        rules={[{ required: true, message: t('profile.cancelModalReasonRequired', 'Vui lòng nhập lý do hủy chi tiết') }]}
                     >
                         <Input.TextArea
                             rows={4}
-                            placeholder="Vui lòng nêu rõ lý do hủy chuyến bay hoặc phòng khách sạn..."
+                            placeholder={t('profile.cancelModalReasonPlaceholder', 'Vui lòng nhập lý do chi tiết để chúng tôi xử lý hoàn tiền...')}
                             className="rounded-xl border-gray-200"
                         />
                     </Form.Item>
                     <div className="flex justify-end gap-3 mt-5">
                         <Button onClick={handleCancelModalClose} className="rounded-lg font-bold text-xs">
-                            Quay lại
+                            {t('flight.back', 'Quay lại')}
                         </Button>
                         <Button
                             type="primary"
@@ -1054,7 +1171,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                             danger
                             className="rounded-lg font-bold text-xs bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600"
                         >
-                            Gửi yêu cầu hủy
+                            {t('profile.cancelModalConfirm', 'Xác nhận yêu cầu hủy')}
                         </Button>
                     </div>
                 </Form>
@@ -1062,7 +1179,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
 
             {/* MODAL: ADD SAVED PASSENGER */}
             <Modal
-                title={<span className="text-base font-extrabold text-gray-800">Thêm hồ sơ hành khách mới</span>}
+                title={<span className="text-base font-extrabold text-gray-800">{t('profile.passModalTitle', 'Thêm hồ sơ hành khách mới')}</span>}
                 open={isPassengerModalOpen}
                 onCancel={() => setIsPassengerModalOpen(false)}
                 footer={null}
@@ -1077,28 +1194,28 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                 >
                     <Form.Item
                         name="fullName"
-                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">Họ và Tên</span>}
-                        rules={[{ required: true, message: 'Vui lòng nhập tên hành khách' }]}
+                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">{t('booking.fullName', 'Họ và Tên')}</span>}
+                        rules={[{ required: true, message: t('profile.passModalNameRequired', 'Vui lòng nhập tên hành khách') }]}
                     >
-                        <Input placeholder="Ví dụ: NGUYEN VAN AN" className="rounded-xl border-gray-200 uppercase" />
+                        <Input placeholder={t('profile.passModalNamePlaceholder', 'Ví dụ: NGUYEN VAN AN')} className="rounded-xl border-gray-200 uppercase" />
                     </Form.Item>
 
                     <div className="grid grid-cols-2 gap-4">
                         <Form.Item
                             name="gender"
-                            label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">Giới tính</span>}
+                            label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">{t('profile.passGender', 'Giới tính')}</span>}
                             initialValue="Nam"
                         >
                             <Radio.Group className="w-full">
-                                <Radio value="Nam">Nam</Radio>
-                                <Radio value="Nữ">Nữ</Radio>
+                                <Radio value="Nam">{t('profile.passMale', 'Nam')}</Radio>
+                                <Radio value="Nữ">{t('profile.passFemale', 'Nữ')}</Radio>
                             </Radio.Group>
                         </Form.Item>
 
                         <Form.Item
                             name="birthDate"
-                            label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">Ngày sinh</span>}
-                            rules={[{ required: true, message: 'Vui lòng chọn ngày sinh' }]}
+                            label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">{t('profile.passDob', 'Ngày sinh')}</span>}
+                            rules={[{ required: true, message: t('profile.passModalDobRequired', 'Vui lòng chọn ngày sinh') }]}
                         >
                             <input type="date" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-travel-blue focus:outline-none" />
                         </Form.Item>
@@ -1106,22 +1223,22 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
 
                     <Form.Item
                         name="idNumber"
-                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">Số CCCD / CMND / Hộ chiếu</span>}
-                        rules={[{ required: true, message: 'Vui lòng nhập số định danh cá nhân' }]}
+                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">{t('profile.accIdNumber', 'Số CCCD/Hộ chiếu')}</span>}
+                        rules={[{ required: true, message: t('profile.passModalIdRequired', 'Vui lòng nhập số định danh cá nhân') }]}
                     >
-                        <Input placeholder="Nhập số định danh" className="rounded-xl border-gray-200" />
+                        <Input placeholder={t('profile.passModalIdPlaceholder', 'Passport or ID number')} className="rounded-xl border-gray-200" />
                     </Form.Item>
 
                     <div className="flex justify-end gap-3 mt-6">
                         <Button onClick={() => setIsPassengerModalOpen(false)} className="rounded-lg font-bold text-xs">
-                            Hủy bỏ
+                            {t('booking.cancel', 'Hủy bỏ')}
                         </Button>
                         <Button
                             type="primary"
                             htmlType="submit"
                             className="rounded-lg font-bold text-xs bg-travel-blue"
                         >
-                            Lưu thông tin
+                            {t('profile.passModalSubmit', 'Lưu thông tin')}
                         </Button>
                     </div>
                 </Form>
@@ -1129,7 +1246,7 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
 
             {/* MODAL: CREATE FLIGHT PRICE ALERT */}
             <Modal
-                title={<span className="text-base font-extrabold text-gray-800">Tạo thông báo giá vé máy bay</span>}
+                title={<span className="text-base font-extrabold text-gray-800">{t('profile.alertModalTitle', 'Tạo thông báo giá vé máy bay')}</span>}
                 open={isAlertModalOpen}
                 onCancel={() => setIsAlertModalOpen(false)}
                 footer={null}
@@ -1145,50 +1262,50 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
                     <div className="grid grid-cols-2 gap-4">
                         <Form.Item
                             name="origin"
-                            label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">Khởi hành</span>}
-                            rules={[{ required: true, message: 'Nhập điểm đi' }]}
+                            label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">{t('booking.departure', 'Khởi hành')}</span>}
+                            rules={[{ required: true, message: t('profile.alertModalOriginRequired', 'Nhập điểm đi') }]}
                         >
-                            <Input placeholder="Ví dụ: TP HCM (SGN)" className="rounded-xl border-gray-200" />
+                            <Input placeholder={t('profile.alertModalOriginPlaceholder', 'e.g. SGN')} className="rounded-xl border-gray-200" />
                         </Form.Item>
 
                         <Form.Item
                             name="destination"
-                            label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">Điểm đến</span>}
-                            rules={[{ required: true, message: 'Nhập điểm đến' }]}
+                            label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">{t('search.destination', 'Điểm đến')}</span>}
+                            rules={[{ required: true, message: t('profile.alertModalDestRequired', 'Nhập điểm đến') }]}
                         >
-                            <Input placeholder="Ví dụ: Hà Nội (HAN)" className="rounded-xl border-gray-200" />
+                            <Input placeholder={t('profile.alertModalDestPlaceholder', 'e.g. HAN')} className="rounded-xl border-gray-200" />
                         </Form.Item>
                     </div>
 
                     <Form.Item
                         name="ticketType"
-                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">Loại vé</span>}
+                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">{t('profile.alertType', 'Loại vé')}</span>}
                         initialValue="Một chiều"
                     >
                         <Radio.Group>
-                            <Radio value="Một chiều">Một chiều</Radio>
-                            <Radio value="Khứ hồi">Khứ hồi</Radio>
+                            <Radio value="Một chiều">{t('profile.oneWay', 'Một chiều')}</Radio>
+                            <Radio value="Khứ hồi">{t('profile.roundTrip', 'Khứ hồi')}</Radio>
                         </Radio.Group>
                     </Form.Item>
 
                     <Form.Item
                         name="targetPrice"
-                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">Mức giá mong muốn (VND)</span>}
-                        rules={[{ required: true, message: 'Vui lòng nhập mức giá tối đa' }]}
+                        label={<span className="font-bold text-xs text-gray-700 uppercase tracking-wider">{t('profile.alertPrice', 'Mức giá mong muốn (VND)')}</span>}
+                        rules={[{ required: true, message: t('profile.alertModalPriceRequired', 'Vui lòng nhập mức giá tối đa') }]}
                     >
-                        <Input type="number" placeholder="Ví dụ: 1500000" className="rounded-xl border-gray-200" />
+                        <Input type="number" placeholder={t('profile.alertModalPricePlaceholder', 'e.g. 1500000')} className="rounded-xl border-gray-200" />
                     </Form.Item>
 
                     <div className="flex justify-end gap-3 mt-6">
                         <Button onClick={() => setIsAlertModalOpen(false)} className="rounded-lg font-bold text-xs">
-                            Hủy bỏ
+                            {t('booking.cancel', 'Hủy bỏ')}
                         </Button>
                         <Button
                             type="primary"
                             htmlType="submit"
                             className="rounded-lg font-bold text-xs bg-travel-blue"
                         >
-                            Kích hoạt theo dõi
+                            {t('profile.alertModalSubmit', 'Kích hoạt theo dõi')}
                         </Button>
                     </div>
                 </Form>
@@ -1196,17 +1313,17 @@ const Profile: React.FC<ProfileProps> = ({ defaultTab }) => {
 
             {/* MODAL: CONFIRM LOGOUT */}
             <Modal
-                title={<span className="font-extrabold text-gray-800 text-base">Xác nhận đăng xuất</span>}
+                title={<span className="font-extrabold text-gray-800 text-base">{t('header.logoutTitle', 'Xác nhận đăng xuất')}</span>}
                 open={isLogoutConfirmOpen}
                 onCancel={() => setIsLogoutConfirmOpen(false)}
                 onOk={handleConfirmLogout}
-                okText="Đăng xuất"
-                cancelText="Quay lại"
+                okText={t('header.logOut', 'Đăng xuất')}
+                cancelText={t('header.cancel', 'Quay lại')}
                 okButtonProps={{ danger: true, className: 'rounded-lg font-bold text-xs' }}
                 cancelButtonProps={{ className: 'rounded-lg font-bold text-xs' }}
                 className="rounded-2xl"
             >
-                <p className="text-sm text-gray-500 mt-2">Bạn có chắc chắn muốn đăng xuất khỏi hệ thống Traveloka không?</p>
+                <p className="text-sm text-gray-500 mt-2">{t('header.logoutConfirm', 'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không?')}</p>
             </Modal>
         </div>
     );

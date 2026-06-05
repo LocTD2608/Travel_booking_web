@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { fetchRecommendations, fetchHotels } from '../../../services/searchApi';
 import styles from './Recommended.module.css';
 
+import { useLanguage } from '../../../context';
+
 interface RecommendedItem {
     id: string;
     title: string;
@@ -52,6 +54,7 @@ const formatCurrency = (amount: number) => {
 };
 
 export const Recommended: React.FC = () => {
+    const { t } = useLanguage();
     const [type, setType] = useState<'hotels' | 'flights'>('hotels');
     const [items, setItems] = useState<RecommendedItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -101,7 +104,9 @@ export const Recommended: React.FC = () => {
                             const destinationName = item.to_name || 'Da Nang';
                             return {
                                 id: item.MaChuyenBay.toString(),
-                                title: `Flight to ${destinationName} (${item.HangBay})`,
+                                title: t('recommended.flightTo', 'Flight to {destination} ({airline})')
+                                    .replace('{destination}', destinationName)
+                                    .replace('{airline}', item.HangBay || 'Direct'),
                                 location: `${item.from_name} ➔ ${item.to_name}`,
                                 image: getCityImage(destinationName),
                                 newPrice,
@@ -118,21 +123,21 @@ export const Recommended: React.FC = () => {
                 }
             } catch (err: any) {
                 console.error('Failed to load recommendations:', err);
-                setError('Could not load recommendation data. Please try again later.');
+                setError(t('recommended.loadFailed', 'Could not load recommendation data. Please try again later.'));
             } finally {
                 setLoading(false);
             }
         };
 
         loadRecommendations();
-    }, [type]);
+    }, [type, t]);
 
     return (
         <section className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h2 className={styles.title}>Recommended For You</h2>
-                    <p className={styles.subtitle}>Discover incredible destinations with the best exclusive deals</p>
+                    <h2 className={styles.title}>{t('recommended.title', 'Recommended For You')}</h2>
+                    <p className={styles.subtitle}>{t('recommended.subtitle', 'Discover incredible destinations with the best exclusive deals')}</p>
                     
                     {/* Tab Switcher */}
                     <div className={styles.tabContainer}>
@@ -141,19 +146,19 @@ export const Recommended: React.FC = () => {
                             className={`${styles.tabBtn} ${type === 'hotels' ? styles.activeTab : ''}`}
                         >
                             <span className="material-symbols-outlined text-[18px]">hotel</span>
-                            Khách sạn nổi bật
+                            {t('recommended.featuredHotels', 'Khách sạn nổi bật')}
                         </button>
                         <button 
                             onClick={() => setType('flights')}
                             className={`${styles.tabBtn} ${type === 'flights' ? styles.activeTab : ''}`}
                         >
                             <span className="material-symbols-outlined text-[18px]">flight</span>
-                            Vé máy bay giá tốt
+                            {t('recommended.cheapFlights', 'Vé máy bay giá tốt')}
                         </button>
                     </div>
                 </div>
                 <Link to={type === 'hotels' ? '/hotels' : '/flights'} className={styles.viewAll}>
-                    View All ➔
+                    {t('recommended.viewAll', 'View All ➔')}
                 </Link>
             </div>
 
@@ -174,13 +179,19 @@ export const Recommended: React.FC = () => {
                     ))}
                 </div>
             ) : items.length === 0 ? (
-                <div className="text-center py-10 text-gray-500 font-semibold">No recommendations found.</div>
+                <div className="text-center py-10 text-gray-500 font-semibold">{t('recommended.noRecommendations', 'No recommendations found.')}</div>
             ) : (
                 <div className={styles.grid}>
                     {items.map((item) => (
                         <Link to={item.linkTo} key={item.id} className={styles.card}>
                             <div className={styles.imageWrapper}>
-                                {item.badge && <div className={styles.badge}>{item.badge}</div>}
+                                {item.badge && (
+                                    <div className={styles.badge}>
+                                        {item.badge === 'Luxury' ? t('recommended.luxury', 'Luxury') :
+                                         item.badge === 'Great Deal' ? t('recommended.greatDeal', 'Great Deal') :
+                                         item.badge}
+                                    </div>
+                                )}
                                 <img src={item.image} alt={item.title} className={styles.image} />
                                 <div className={styles.rating}>
                                     <span className={`material-symbols-outlined ${styles.ratingIcon}`}>star</span>
@@ -199,7 +210,7 @@ export const Recommended: React.FC = () => {
                                         <span className={styles.oldPrice}>{formatCurrency(item.oldPrice)}</span>
                                     )}
                                 </div>
-                                <button className={styles.actionBtn}>Book Now</button>
+                                <button className={styles.actionBtn}>{t('recommended.bookNow', 'Book Now')}</button>
                             </div>
                         </Link>
                     ))}

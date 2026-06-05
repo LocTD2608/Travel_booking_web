@@ -5,7 +5,7 @@ import { ConfigProvider } from 'antd'
 import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext'
-import { NotificationProvider } from './context'
+import { NotificationProvider, LanguageProvider } from './context'
 
 // Đè ghi đè localStorage cho các key auth sang sessionStorage để cách ly session giữa các tab
 const originalGetItem = localStorage.getItem.bind(localStorage);
@@ -40,20 +40,23 @@ localStorage.removeItem = function(key) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <NotificationProvider>
-          <ConfigProvider
-            theme={{
-              token: {
-                colorPrimary: '#1BA0E2',
-                fontFamily: 'Plus Jakarta Sans, sans-serif',
-              },
-            }}
-          >
-            <App />
-          </ConfigProvider>
-        </NotificationProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <ConfigProvider
+              theme={{
+                token: {
+                  colorPrimary: '#1BA0E2',
+                  fontFamily: 'Plus Jakarta Sans, sans-serif',
+                },
+              }}
+            >
+              <App />
+            </ConfigProvider>
+          </NotificationProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   </StrictMode>,
 )
+

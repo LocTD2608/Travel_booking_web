@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, useLanguage } from '../../context';
 import AuthModal from '../../components/auth/AuthModal';
 
 const APARTMENT_DETAILS: Record<string, {
@@ -61,55 +61,108 @@ const APARTMENT_DETAILS: Record<string, {
     },
 };
 
-const UnitCard: React.FC<{ unit: typeof APARTMENT_DETAILS['a1']['units'][0]; onSelect: () => void }> = ({ unit, onSelect }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
-        <div className="w-44 h-36 flex-shrink-0">
-            <img src={unit.image} alt={unit.name} className="w-full h-full object-cover" />
-        </div>
-        <div className="flex-1 p-4 flex gap-4">
-            <div className="flex-1">
-                <h4 className="font-bold text-gray-900 text-base mb-1">{unit.name}</h4>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mb-2">
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">straighten</span>{unit.size} m²</span>
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">bed</span>{unit.bedrooms === 0 ? 'Studio' : `${unit.bedrooms} Bedroom${unit.bedrooms > 1 ? 's' : ''}`}</span>
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">person</span>Max {unit.maxGuests} guests</span>
-                </div>
-                <div className="flex flex-wrap gap-1 mb-2">
-                    {unit.amenities.slice(0, 4).map(a => <span key={a} className="bg-purple-50 text-purple-700 text-[11px] px-2 py-0.5 rounded-full">{a}</span>)}
-                    {unit.amenities.length > 4 && <span className="bg-gray-100 text-gray-500 text-[11px] px-2 py-0.5 rounded-full">+{unit.amenities.length - 4} more</span>}
-                </div>
-                <div className={`text-xs font-semibold ${unit.cancellation === 'FREE CANCELLATION' ? 'text-green-600' : 'text-red-500'}`}>{unit.cancellation}</div>
-                {unit.breakfast && <div className="text-xs text-orange-500 font-semibold mt-0.5">🍳 BREAKFAST INCLUDED</div>}
+const UnitCard: React.FC<{ unit: typeof APARTMENT_DETAILS['a1']['units'][0]; onSelect: () => void }> = ({ unit, onSelect }) => {
+    const { t } = useLanguage();
+
+    const translateFacility = (facilityName: string) => {
+        const text = facilityName.toLowerCase();
+        if (text.includes('private pool')) return t('facility.privatePool', 'Private Pool');
+        if (text.includes('pool')) return t('facility.pool', 'Pool');
+        if (text.includes('wifi')) return t('facility.wifi', 'WiFi');
+        if (text.includes('gym')) return t('facility.gym', 'Gym');
+        if (text.includes('bar')) return t('facility.bar', 'Bar');
+        if (text.includes('beach')) return t('facility.beach', 'Beach Access');
+        if (text.includes('spa')) return t('facility.spa', 'Spa');
+        if (text.includes('restaurant') || text.includes('dining')) return t('facility.restaurant', 'Restaurant');
+        if (text.includes('kitchen')) return t('facility.kitchen', 'Kitchen');
+        if (text.includes('wash')) return t('facility.washer', 'Washing Machine');
+        if (text.includes('city view')) return t('facility.cityView', 'City View');
+        if (text.includes('ocean view')) return t('facility.oceanView', 'Ocean View');
+        if (text.includes('bbq')) return t('facility.bbq', 'BBQ Grill');
+        if (text.includes('mountain view')) return t('facility.mountainView', 'Mountain View');
+        if (text.includes('fireplace')) return t('facility.fireplace', 'Fireplace');
+        return facilityName;
+    };
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-44 h-36 flex-shrink-0">
+                <img src={unit.image} alt={unit.name} className="w-full h-full object-cover" />
             </div>
-            <div className="flex flex-col items-end justify-between min-w-[140px]">
-                <div className="text-right">
-                    {unit.originalPrice && <div className="text-xs text-gray-400 line-through">{unit.originalPrice.toLocaleString()} VNĐ</div>}
-                    <div className="text-xl font-black text-gray-900">{unit.price.toLocaleString()}</div>
-                    <div className="text-xs text-gray-500">VNĐ / night</div>
+            <div className="flex-1 p-4 flex gap-4">
+                <div className="flex-1">
+                    <h4 className="font-bold text-gray-900 text-base mb-1">{unit.name}</h4>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mb-2">
+                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">straighten</span>{unit.size} m²</span>
+                        <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">bed</span>
+                            {unit.bedrooms === 0 ? t('detail.studio', 'Studio') : t('detail.bedroomsCount', '{count} Bedrooms').replace('{count}', String(unit.bedrooms))}
+                        </span>
+                        <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">person</span>
+                            {t('detail.maxGuestsCount', 'Max {count} guests').replace('{count}', String(unit.maxGuests))}
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                        {unit.amenities.slice(0, 4).map(a => <span key={a} className="bg-purple-50 text-purple-700 text-[11px] px-2 py-0.5 rounded-full">{translateFacility(a)}</span>)}
+                        {unit.amenities.length > 4 && <span className="bg-gray-100 text-gray-500 text-[11px] px-2 py-0.5 rounded-full">+{unit.amenities.length - 4} {t('home.more', 'more')}</span>}
+                    </div>
+                    <div className={`text-xs font-semibold ${unit.cancellation === 'FREE CANCELLATION' ? 'text-green-600' : 'text-red-500'}`}>
+                        {unit.cancellation === 'FREE CANCELLATION' ? t('detail.freeCancellation', 'FREE CANCELLATION') : t('detail.nonRefundable', 'Non-refundable')}
+                    </div>
+                    {unit.breakfast && <div className="text-xs text-orange-500 font-semibold mt-0.5">{t('detail.breakfastIncluded', '🍳 BREAKFAST INCLUDED')}</div>}
                 </div>
-                <div>
-                    {unit.available <= 3 && <div className="text-[11px] text-orange-500 text-right mb-1">Only {unit.available} left!</div>}
-                    <button onClick={onSelect} className="bg-purple-600 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-purple-700 transition-colors w-full">Select</button>
+                <div className="flex flex-col items-end justify-between min-w-[140px]">
+                    <div className="text-right">
+                        {unit.originalPrice && <div className="text-xs text-gray-400 line-through">{unit.originalPrice.toLocaleString()} VNĐ</div>}
+                        <div className="text-xl font-black text-gray-900">{unit.price.toLocaleString()}</div>
+                        <div className="text-xs text-gray-500">VNĐ / {t('detail.nightUnit', 'night')}</div>
+                    </div>
+                    <div>
+                        {unit.available <= 3 && <div className="text-[11px] text-orange-500 text-right mb-1">{t('detail.onlyLeft', 'Only {count} left!').replace('{count}', String(unit.available))}</div>}
+                        <button onClick={onSelect} className="bg-purple-600 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-purple-700 transition-colors w-full">{t('detail.chooseRoom', 'Select')}</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const ApartmentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
+    const { t, translateRating } = useLanguage();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [selectedImageIdx, setSelectedImageIdx] = useState(0);
     const [showAllImages, setShowAllImages] = useState(false);
+
+    const translateFacility = (facilityName: string) => {
+        const text = facilityName.toLowerCase();
+        if (text.includes('private pool')) return t('facility.privatePool', 'Private Pool');
+        if (text.includes('pool')) return t('facility.pool', 'Pool');
+        if (text.includes('wifi')) return t('facility.wifi', 'WiFi');
+        if (text.includes('gym')) return t('facility.gym', 'Gym');
+        if (text.includes('bar')) return t('facility.bar', 'Bar');
+        if (text.includes('beach')) return t('facility.beach', 'Beach Access');
+        if (text.includes('spa')) return t('facility.spa', 'Spa');
+        if (text.includes('restaurant') || text.includes('dining')) return t('facility.restaurant', 'Restaurant');
+        if (text.includes('kitchen')) return t('facility.kitchen', 'Kitchen');
+        if (text.includes('wash')) return t('facility.washer', 'Washing Machine');
+        if (text.includes('city view')) return t('facility.cityView', 'City View');
+        if (text.includes('ocean view')) return t('facility.oceanView', 'Ocean View');
+        if (text.includes('bbq')) return t('facility.bbq', 'BBQ Grill');
+        if (text.includes('mountain view')) return t('facility.mountainView', 'Mountain View');
+        if (text.includes('fireplace')) return t('facility.fireplace', 'Fireplace');
+        return facilityName;
+    };
 
     const apt = id ? APARTMENT_DETAILS[id] : null;
     if (!apt) return (
         <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
             <span className="material-symbols-outlined text-6xl mb-4">apartment</span>
-            <p className="font-bold text-xl">Apartment not found</p>
-            <button onClick={() => navigate('/apartments')} className="mt-4 text-purple-600 hover:underline">← Back to Apartments</button>
+            <p className="font-bold text-xl">{t('detail.apartmentNotFound', 'Apartment not found')}</p>
+            <button onClick={() => navigate('/apartments')} className="mt-4 text-purple-600 hover:underline">{t('detail.backToApartments', '← Back to Apartments')}</button>
         </div>
     );
 
@@ -131,20 +184,20 @@ const ApartmentDetail: React.FC = () => {
     };
 
     return (
-        <div className="bg-[#f5f7fa] min-h-screen font-['Plus_Jakarta_Sans']">
+        <div className="bg-[#f5f7fa] min-h-screen font-display">
             <div className="bg-white border-b border-gray-100 py-6">
                 <div className="max-w-[1200px] mx-auto px-4">
                     <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-purple-600 font-semibold text-sm mb-4 hover:opacity-80 transition">
-                        <span className="material-symbols-outlined text-[18px]">arrow_back</span>Back to results
+                        <span className="material-symbols-outlined text-[18px]">arrow_back</span>{t('detail.backToResults', 'Back to results')}
                     </button>
                     <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[420px] rounded-2xl overflow-hidden cursor-pointer" onClick={() => setShowAllImages(true)}>
-                        <div className="col-span-2 row-span-2">
+                        <div className="col-span-2 row-span-2 relative">
                             <img src={apt.images[0]} alt={apt.name} className="w-full h-full object-cover hover:brightness-90 transition-all" />
                         </div>
                         {apt.images.slice(1, 5).map((img, i) => (
                             <div key={i} className="relative overflow-hidden">
                                 <img src={img} alt="" className="w-full h-full object-cover hover:brightness-90 transition-all" />
-                                {i === 3 && apt.images.length > 5 && <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">+{apt.images.length - 5}</div>}
+                                {i === 3 && apt.images.length > 5 && <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">{t('detail.moreImages', '+{count} Photos').replace('{count}', String(apt.images.length - 5))}</div>}
                             </div>
                         ))}
                     </div>
@@ -160,18 +213,23 @@ const ApartmentDetail: React.FC = () => {
                         <div className="flex items-center gap-1 text-sm text-gray-500 mb-4"><span className="material-symbols-outlined text-[16px]">location_on</span>{apt.location}</div>
                         <div className="flex items-center gap-3 mb-4">
                             <span className="bg-purple-600 text-white font-black px-3 py-1.5 rounded-lg text-base">{apt.rating.toFixed(1)}</span>
-                            <div><div className="font-bold text-gray-900">{apt.ratingText}</div><div className="text-sm text-gray-500">Based on {apt.reviews.toLocaleString()} reviews</div></div>
+                            <div>
+                                <div className="font-bold text-gray-900">{translateRating(apt.ratingText)}</div>
+                                <div className="text-sm text-gray-500">
+                                    {t('detail.basedOnReviews', 'Based on {count} reviews').replace('{count}', apt.reviews.toLocaleString())}
+                                </div>
+                            </div>
                         </div>
                         <p className="text-gray-600 text-sm leading-relaxed">{apt.description}</p>
                     </div>
 
                     {/* Facilities */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-                        <h2 className="font-bold text-lg text-gray-900 mb-4">Apartment Facilities</h2>
+                        <h2 className="font-bold text-lg text-gray-900 mb-4">{t('detail.apartmentFacilities', 'Apartment Facilities')}</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">
                             {apt.facilities.map(f => (
                                 <div key={f.name} className="flex items-center gap-2 text-sm text-gray-700">
-                                    <span className="material-symbols-outlined text-[20px] text-purple-600">{f.icon}</span>{f.name}
+                                    <span className="material-symbols-outlined text-[20px] text-purple-600">{f.icon}</span>{translateFacility(f.name)}
                                 </div>
                             ))}
                         </div>
@@ -179,17 +237,17 @@ const ApartmentDetail: React.FC = () => {
 
                     {/* Units */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-                        <h2 className="font-bold text-xl text-gray-900 mb-4">Available Units</h2>
+                        <h2 className="font-bold text-xl text-gray-900 mb-4">{t('detail.availableUnits', 'Available Units')}</h2>
                         {!isAuthenticated && (
                             <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6 flex items-center justify-between gap-4">
                                 <div className="flex items-center gap-3">
                                     <span className="material-symbols-outlined text-purple-600 text-2xl">lock</span>
                                     <div>
-                                        <div className="font-bold text-gray-900 text-sm">Sign in for member rates</div>
-                                        <div className="text-xs text-gray-500">Get up to 30% off on selected apartments.</div>
+                                        <div className="font-bold text-gray-900 text-sm">{t('detail.exclusiveMemberRates', 'Sign in for member rates')}</div>
+                                        <div className="text-xs text-gray-500">{t('detail.exclusiveMemberRatesDesc', 'Get up to 30% off on selected apartments.')}</div>
                                     </div>
                                 </div>
-                                <button onClick={() => setIsAuthModalOpen(true)} className="bg-purple-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-purple-700 transition-colors whitespace-nowrap">Sign In Now</button>
+                                <button onClick={() => setIsAuthModalOpen(true)} className="bg-purple-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-purple-700 transition-colors whitespace-nowrap">{t('detail.signInToBook', 'Sign In Now')}</button>
                             </div>
                         )}
                         <div className="flex flex-col gap-4">{apt.units.map(u => <UnitCard key={u.id} unit={u} onSelect={() => handleSelect(u)} />)}</div>
@@ -198,7 +256,7 @@ const ApartmentDetail: React.FC = () => {
                     {/* Reviews */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-bold text-xl text-gray-900">Guest Reviews</h2>
+                            <h2 className="font-bold text-xl text-gray-900">{t('detail.guestExperiences', 'Guest Reviews')}</h2>
                             <span className="bg-purple-600 text-white font-black px-3 py-1 rounded-lg">{apt.rating.toFixed(1)}</span>
                         </div>
                         <div className="flex flex-col gap-5">
@@ -221,18 +279,18 @@ const ApartmentDetail: React.FC = () => {
                 {/* Sticky Sidebar */}
                 <div className="w-72 flex-shrink-0">
                     <div className="bg-white rounded-xl border border-purple-400 shadow-lg p-5 sticky top-24">
-                        <div className="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">Starting from</div>
+                        <div className="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">{t('detail.startingFrom', 'Starting from')}</div>
                         <div className="text-3xl font-black text-purple-600 mb-1">{Math.min(...apt.units.map(u => u.price)).toLocaleString()}</div>
-                        <div className="text-sm text-gray-500 mb-4">VNĐ / night</div>
+                        <div className="text-sm text-gray-500 mb-4">VNĐ / {t('detail.nightUnit', 'night')}</div>
                         <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
-                            <div className="flex justify-between"><span className="text-gray-500">Check-in</span><span className="font-bold">Dec 01, 2024</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Check-out</span><span className="font-bold">Dec 05, 2024</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Guests</span><span className="font-bold">2 Adults</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">{t('detail.checkinPlaceholder', 'Check-in')}</span><span className="font-bold">Dec 01, 2024</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">{t('detail.checkoutPlaceholder', 'Check-out')}</span><span className="font-bold">Dec 05, 2024</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">{t('search.guests', 'Guests')}</span><span className="font-bold">{t('guests.2adults1room', '2 Adults')}</span></div>
                         </div>
                         <button onClick={() => handleSelect()} className="w-full mt-5 bg-purple-600 text-white py-3 rounded-xl font-bold text-base hover:bg-purple-700 transition-colors">
-                            {isAuthenticated ? 'Select Unit' : 'Sign In to Book'}
+                            {isAuthenticated ? t('detail.selectUnit', 'Select Unit') : t('detail.signInToBook', 'Sign In to Book')}
                         </button>
-                        {!isAuthenticated && <p className="text-center text-xs text-gray-400 mt-2">Sign in to unlock member rates</p>}
+                        {!isAuthenticated && <p className="text-center text-xs text-gray-400 mt-2">{t('detail.signInToUnlock', 'Sign in to unlock member rates')}</p>}
                     </div>
                 </div>
             </div>

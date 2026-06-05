@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
 import { HotelCard, type HotelCardProps } from '../../components/ui/cards/accommodations/HotelCard';
+import { useLanguage } from '../../context';
 import { fetchHotels } from '../../services/searchApi';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 
@@ -18,6 +19,7 @@ const Hotels: React.FC = () => {
     const [searchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const { t, translateGuests } = useLanguage();
 
     const handleSearchClick = (searchData: Record<string, string>) => {
         const params = new URLSearchParams();
@@ -138,24 +140,24 @@ const Hotels: React.FC = () => {
     });
 
     return (
-        <div className="bg-[#f5f7fa] min-h-screen pb-10 font-['Plus_Jakarta_Sans']">
+        <div className="bg-[#f5f7fa] min-h-screen pb-10 font-display">
             {/* Top Search Info Bar */}
             <div className="bg-white border-b border-gray-200 py-4 mb-6 sticky z-30 flex justify-center shadow-sm" style={{ top: '64px' }}>
                 <div className="w-full max-w-[1200px] px-4 flex items-center justify-between">
                     <div className="flex gap-10">
                         <div>
-                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DESTINATION</div>
+                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('search.destination', 'DESTINATION').toUpperCase()}</div>
                             <div className="text-[15px] font-bold text-gray-900">{searchState.destination}</div>
                         </div>
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div>
-                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DATES</div>
+                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('search.dates', 'DATES').toUpperCase()}</div>
                             <div className="text-[15px] font-bold text-gray-900">{searchState.dates}</div>
                         </div>
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div>
-                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">GUESTS</div>
-                            <div className="text-[15px] font-bold text-gray-900">{searchState.guests}</div>
+                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('search.guests', 'GUESTS').toUpperCase()}</div>
+                            <div className="text-[15px] font-bold text-gray-900">{translateGuests(searchState.guests)}</div>
                         </div>
                     </div>
                     <button 
@@ -163,7 +165,7 @@ const Hotels: React.FC = () => {
                         onClick={() => setIsSearchOpen(!isSearchOpen)}
                     >
                         <span className="material-symbols-outlined text-[18px]">{isSearchOpen ? 'close' : 'edit'}</span>
-                        {isSearchOpen ? 'Close' : 'Change Search'}
+                        {isSearchOpen ? t('booking.close', 'Close') : t('booking.changeSearch', 'Change Search')}
                     </button>
                 </div>
             </div>
@@ -183,32 +185,39 @@ const Hotels: React.FC = () => {
                 <div className="w-[280px] flex-shrink-0">
                     <div className="bg-white border text-gray-800 border-gray-200 rounded-xl p-5 mb-4 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-lg">Filters</h3>
-                            <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => { setPriceRange([500000, 5000000]); setSortBy('popularity'); setSelectedStars([]); setSelectedFacilities([]); }}>Reset</button>
+                            <h3 className="font-bold text-lg">{t('search.filters', 'Filters')}</h3>
+                            <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => { setPriceRange([500000, 5000000]); setSortBy('popularity'); setSelectedStars([]); setSelectedFacilities([]); }}>{t('search.reset', 'Reset')}</button>
                         </div>
 
                         {/* Popular Cities */}
                         <div className="mb-6">
-                            <h4 className="font-semibold text-[15px] mb-3">Popular Cities</h4>
-                            {['Da Nang, Vietnam', 'Hanoi, Vietnam', 'Phu Quoc, Vietnam', 'Ho Chi Minh, Vietnam'].map(city => (
-                                <button
-                                    key={city}
-                                    onClick={() => navigate(`/hotels?destination=${encodeURIComponent(city)}`)}
-                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold mb-1.5 transition-all flex items-center justify-between ${
-                                        searchState.destination.toLowerCase().includes(city.split(',')[0].toLowerCase())
-                                            ? 'bg-blue-50 text-travel-blue border border-blue-100'
-                                            : 'text-gray-600 hover:bg-gray-50 border border-transparent'
-                                    }`}
-                                >
-                                    <span>{city}</span>
-                                    <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                                </button>
-                            ))}
+                            <h4 className="font-semibold text-[15px] mb-3">{t('search.popularCities', 'Popular Cities')}</h4>
+                            {['Da Nang, Vietnam', 'Hanoi, Vietnam', 'Phu Quoc, Vietnam', 'Ho Chi Minh, Vietnam'].map(city => {
+                                const cityDisplayName = city.includes('Da Nang') ? t('city.danang', 'Da Nang, Vietnam')
+                                    : city.includes('Hanoi') ? t('city.hanoi', 'Hanoi, Vietnam')
+                                    : city.includes('Phu Quoc') ? t('city.phuquoc', 'Phu Quoc, Vietnam')
+                                    : city.includes('Ho Chi Minh') ? t('city.saigon', 'Ho Chi Minh, Vietnam')
+                                    : city;
+                                return (
+                                    <button
+                                        key={city}
+                                        onClick={() => navigate(`/hotels?destination=${encodeURIComponent(city)}`)}
+                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold mb-1.5 transition-all flex items-center justify-between ${
+                                            searchState.destination.toLowerCase().includes(city.split(',')[0].toLowerCase())
+                                                ? 'bg-blue-50 text-travel-blue border border-blue-100'
+                                                : 'text-gray-600 hover:bg-gray-50 border border-transparent'
+                                        }`}
+                                    >
+                                        <span>{cityDisplayName}</span>
+                                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                    </button>
+                                );
+                            })}
                         </div>
 
                         {/* Price Filter */}
                         <div className="mb-6">
-                            <h4 className="font-semibold text-[15px] mb-4">Price per night</h4>
+                            <h4 className="font-semibold text-[15px] mb-4">{t('search.pricePerNight', 'Price per night')}</h4>
                             <Slider
                                 range
                                 min={0}
@@ -228,7 +237,7 @@ const Hotels: React.FC = () => {
 
                         {/* Star Rating */}
                         <div className="mb-6">
-                            <h4 className="font-semibold text-[15px] mb-3">Star Rating</h4>
+                            <h4 className="font-semibold text-[15px] mb-3">{t('search.starRating', 'Star Rating')}</h4>
                             {[5, 4, 3, 2, 1].map(star => (
                                 <label key={star} className="flex items-center gap-3 mb-2 cursor-pointer group">
                                     <input
@@ -247,12 +256,12 @@ const Hotels: React.FC = () => {
 
                         {/* Amenities */}
                         <div className="mb-2">
-                            <h4 className="font-semibold text-[15px] mb-3">Facilities</h4>
+                            <h4 className="font-semibold text-[15px] mb-3">{t('search.facilities', 'Facilities')}</h4>
                             {[
-                                { name: 'Pool', icon: 'pool' },
-                                { name: 'WiFi', icon: 'wifi' },
-                                { name: 'Restaurant', icon: 'restaurant' },
-                                { name: 'Gym', icon: 'fitness_center' }
+                                { name: 'Pool', displayName: t('amenity.pool', 'Hồ bơi'), icon: 'pool' },
+                                { name: 'WiFi', displayName: t('amenity.wifi', 'WiFi'), icon: 'wifi' },
+                                { name: 'Restaurant', displayName: t('amenity.restaurant', 'Nhà hàng'), icon: 'restaurant' },
+                                { name: 'Gym', displayName: t('amenity.gym', 'Phòng gym'), icon: 'fitness_center' }
                             ].map(amenity => (
                                 <label key={amenity.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
                                     <input
@@ -262,7 +271,7 @@ const Hotels: React.FC = () => {
                                         onChange={() => handleFacilityToggle(amenity.name)}
                                     />
                                     <span className="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-gray-600 transition-colors">{amenity.icon}</span>
-                                    <span className="text-sm font-medium text-gray-600">{amenity.name}</span>
+                                    <span className="text-sm font-medium text-gray-600">{amenity.displayName}</span>
                                 </label>
                             ))}
                         </div>
@@ -272,10 +281,10 @@ const Hotels: React.FC = () => {
                     {!isAuthenticated && (
                         <div className="bg-[#0064D2] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
                             <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_offer</span>
-                            <h4 className="font-bold text-lg mb-2 relative z-10">Unlock Private Deals</h4>
-                            <p className="text-sm text-blue-100 mb-4 relative z-10">Sign in to see prices up to 30% lower on selected hotels.</p>
+                            <h4 className="font-bold text-lg mb-2 relative z-10">{t('hotel.unlockPrivateDeals', 'Unlock Private Deals')}</h4>
+                            <p className="text-sm text-blue-100 mb-4 relative z-10">{t('hotel.signInDesc', 'Sign in to see prices up to 30% lower on selected hotels.')}</p>
                             <button className="bg-white text-[#0064D2] px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 hover-scale transition-all">
-                                Sign In Now
+                                {t('hotel.signInNow', 'Sign In Now')}
                             </button>
                         </div>
                     )}
@@ -286,16 +295,16 @@ const Hotels: React.FC = () => {
 
                     {/* Sort Bar */}
                     <div className="flex items-center gap-3 mb-2">
-                        <span className="font-semibold text-gray-600 text-sm">Sắp xếp theo:</span>
+                        <span className="font-semibold text-gray-600 text-sm">{t('search.sortBy', 'Sắp xếp theo:')}</span>
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
                             className="bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-[15px] font-bold text-gray-900 outline-none cursor-pointer focus:border-travel-blue shadow-sm min-w-[200px]"
                         >
-                            <option value="popularity">Phù hợp nhất</option>
-                            <option value="price_asc">Giá: Thấp đến Cao</option>
-                            <option value="price_desc">Giá: Cao đến Thấp</option>
-                            <option value="rating_desc">Đánh giá cao nhất</option>
+                            <option value="popularity">{t('search.sort.popularity', 'Phù hợp nhất')}</option>
+                            <option value="price_asc">{t('search.sort.priceAsc', 'Giá: Thấp đến Cao')}</option>
+                            <option value="price_desc">{t('search.sort.priceDesc', 'Giá: Cao đến Thấp')}</option>
+                            <option value="rating_desc">{t('search.sort.ratingDesc', 'Đánh giá cao nhất')}</option>
                         </select>
                     </div>
 
@@ -303,13 +312,13 @@ const Hotels: React.FC = () => {
                     {loading ? (
                         <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 rounded-xl text-gray-400 mt-4 h-64 shadow-sm">
                             <div className="w-8 h-8 border-4 border-travel-blue border-t-transparent rounded-full animate-spin mb-4"></div>
-                            <p className="font-bold text-gray-500">Searching hotels...</p>
+                            <p className="font-bold text-gray-500">{t('search.searchingHotels', 'Searching hotels...')}</p>
                         </div>
                     ) : filteredHotels.length === 0 ? (
                         <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 border-dashed rounded-xl text-gray-400 mt-4 h-64">
                             <span className="material-symbols-outlined text-5xl mb-3 text-gray-300">travel_explore</span>
-                            <p className="font-bold text-gray-500">No results to display</p>
-                            <p className="text-sm">Try adjusting your filters.</p>
+                            <p className="font-bold text-gray-500">{t('search.noResults', 'No results to display')}</p>
+                            <p className="text-sm">{t('search.adjustFilters', 'Try adjusting your filters.')}</p>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-4">

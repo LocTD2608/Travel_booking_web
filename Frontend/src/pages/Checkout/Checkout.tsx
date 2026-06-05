@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Modal, Spin } from 'antd';
 import { bookingApi } from '../../services/bookingApi';
 import { createVNPayUrl, redirectToVNPay } from '../../services/paymentApi';
+import { useLanguage } from '../../context';
 import styles from './Checkout.module.css';
 
 interface BookingState {
@@ -46,6 +47,7 @@ const Checkout: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const booking = location.state as BookingState | null;
+    const { t, language } = useLanguage();
 
     const [paymentMethod, setPaymentMethod] = useState('vnpay'); // Default to VNPay for testing
     const [submitted, setSubmitted] = useState(false);
@@ -58,12 +60,22 @@ const Checkout: React.FC = () => {
     });
     const [errors, setErrors] = useState<Partial<typeof form>>({});
 
+    const getMethodLabel = (id: string, defaultLabel: string) => {
+        if (id === 'credit') return t('booking.card', defaultLabel);
+        return t(`booking.${id}`, defaultLabel);
+    };
+
+    const getMethodDesc = (id: string, defaultDesc: string) => {
+        if (id === 'credit') return t('booking.cardDesc', defaultDesc);
+        return t(`booking.${id}Desc`, defaultDesc);
+    };
+
     if (!booking) {
         return (
             <div className={styles.noBooking}>
                 <span className="material-symbols-outlined">shopping_cart_off</span>
-                <p>Không có thông tin đặt phòng</p>
-                <Link to="/hotels">← Quay lại tìm kiếm khách sạn</Link>
+                <p>{t('checkout.noBooking', 'Không có thông tin đặt phòng')}</p>
+                <Link to="/hotels">{t('checkout.backToSearch', '← Quay lại tìm kiếm khách sạn')}</Link>
             </div>
         );
     }
@@ -73,9 +85,9 @@ const Checkout: React.FC = () => {
 
     const validate = () => {
         const e: Partial<typeof form> = {};
-        if (!form.fullName.trim()) e.fullName = 'Vui lòng nhập họ tên';
-        if (!form.email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) e.email = 'Email không hợp lệ';
-        if (!form.phone.match(/^(0|\+84)[0-9]{8,10}$/)) e.phone = 'Số điện thoại không hợp lệ';
+        if (!form.fullName.trim()) e.fullName = t('checkout.errorName', 'Vui lòng nhập họ tên');
+        if (!form.email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) e.email = t('checkout.errorEmail', 'Email không hợp lệ');
+        if (!form.phone.match(/^(0|\+84)[0-9]{8,10}$/)) e.phone = t('checkout.errorPhone', 'Số điện thoại không hợp lệ');
         setErrors(e);
         return Object.keys(e).length === 0;
     };
@@ -86,11 +98,9 @@ const Checkout: React.FC = () => {
         
         setIsProcessing(true);
         try {
-            // Get user ID from localStorage or token
             const userStr = localStorage.getItem('user');
             const userId = userStr ? JSON.parse(userStr).MaNguoiDung || JSON.parse(userStr).id : 1;
 
-            // 1. Create booking in Database
             const createBookingData = {
                 UserID: userId,
                 TongTien: grandTotal,
@@ -112,22 +122,20 @@ const Checkout: React.FC = () => {
             const bookingResult = await bookingApi.createBooking(createBookingData);
             const orderId = bookingResult.MaBooking;
 
-            // 2. Process Payment based on selected method
             if (paymentMethod === 'vnpay') {
                 const vnpayResult = await createVNPayUrl(grandTotal, orderId.toString());
                 if (vnpayResult.success && vnpayResult.paymentUrl) {
                     redirectToVNPay(vnpayResult.paymentUrl);
                 } else {
-                    throw new Error('Không thể tạo URL VNPay');
+                    throw new Error(t('checkout.errorVNPay', 'Không thể tạo URL VNPay'));
                 }
             } else {
-                // For other payment methods (Mock)
                 setSubmitted(true);
                 setIsProcessing(false);
             }
         } catch (error: any) {
             console.error('Checkout error:', error);
-            alert('Có lỗi xảy ra: ' + error.message);
+            alert(t('checkout.errorOccurred', 'Có lỗi xảy ra: ') + error.message);
             setIsProcessing(false);
         }
     };
@@ -135,7 +143,7 @@ const Checkout: React.FC = () => {
     if (isProcessing) {
         return (
             <Modal
-                title="Đang xử lý đặt phòng..."
+                title={t('checkout.processing', 'Đang xử lý đặt phòng...')}
                 visible={true}
                 footer={null}
                 closable={false}
@@ -143,7 +151,7 @@ const Checkout: React.FC = () => {
             >
                 <div style={{ textAlign: 'center', padding: '2rem' }}>
                     <Spin size="large" />
-                    <p style={{ marginTop: '1rem' }}>Vui lòng đợi trong khi chúng tôi chuẩn bị thanh toán...</p>
+                    <p style={{ marginTop: '1rem' }}>{t('checkout.waitMessage', 'Vui lòng đợi trong khi chúng tôi chuẩn bị thanh toán...')}</p>
                 </div>
             </Modal>
         );
@@ -156,17 +164,17 @@ const Checkout: React.FC = () => {
                     <div className={styles.successIcon}>
                         <span className="material-symbols-outlined">check_circle</span>
                     </div>
-                    <h2>Đặt phòng thành công!</h2>
-                    <p>Mã đặt phòng của bạn: <strong>VT-{Math.random().toString(36).slice(2, 8).toUpperCase()}</strong></p>
-                    <p>Thông tin xác nhận sẽ được gửi đến <strong>{form.email}</strong></p>
+                    <h2>{t('checkout.successTitle', 'Đặt phòng thành công!')}</h2>
+                    <p>{t('checkout.bookingCode', 'Mã đặt phòng của bạn: ')}<strong>VT-{Math.random().toString(36).slice(2, 8).toUpperCase()}</strong></p>
+                    <p>{t('checkout.confirmSent', 'Thông tin xác nhận sẽ được gửi đến ')}<strong>{form.email}</strong></p>
                     <div className={styles.successActions}>
                         <button className={styles.btnPrimary} onClick={() => navigate('/')}>
                             <span className="material-symbols-outlined">home</span>
-                            Về trang chủ
+                            {t('booking.backToHome', 'Về trang chủ')}
                         </button>
                         <button className={styles.btnOutline} onClick={() => navigate('/hotels')}>
                             <span className="material-symbols-outlined">hotel</span>
-                            Đặt thêm phòng
+                            {t('checkout.moreHotels', 'Đặt thêm phòng')}
                         </button>
                     </div>
                 </div>
@@ -178,13 +186,13 @@ const Checkout: React.FC = () => {
         <div className={styles.page}>
             {/* Breadcrumb */}
             <div className={styles.breadcrumb}>
-                <Link to="/">Trang chủ</Link>
+                <Link to="/">{t('checkout.breadcrumbHome', 'Trang chủ')}</Link>
                 <span>/</span>
-                <Link to="/hotels">Khách sạn</Link>
+                <Link to="/hotels">{t('checkout.breadcrumbHotels', 'Khách sạn')}</Link>
                 <span>/</span>
                 <Link to={`/hotels/${booking.hotel.id}`}>{booking.hotel.name}</Link>
                 <span>/</span>
-                <span>Thanh toán</span>
+                <span>{t('checkout.breadcrumbPayment', 'Thanh toán')}</span>
             </div>
 
             <div className={styles.checkoutGrid}>
@@ -194,12 +202,12 @@ const Checkout: React.FC = () => {
                     <div className={styles.card}>
                         <h2 className={styles.cardTitle}>
                             <span className="material-symbols-outlined">person</span>
-                            Thông tin khách hàng
+                            {t('checkout.customerInfo', 'Thông tin khách hàng')}
                         </h2>
                         <form className={styles.form} onSubmit={handleSubmit}>
                             <div className={styles.formRow}>
                                 <div className={styles.fieldGroup}>
-                                    <label className={styles.label}>Họ và tên *</label>
+                                    <label className={styles.label}>{t('booking.fullName', 'Họ và tên')} *</label>
                                     <input
                                         type="text"
                                         className={`${styles.input} ${errors.fullName ? styles.inputError : ''}`}
@@ -210,7 +218,7 @@ const Checkout: React.FC = () => {
                                     {errors.fullName && <span className={styles.errorMsg}>{errors.fullName}</span>}
                                 </div>
                                 <div className={styles.fieldGroup}>
-                                    <label className={styles.label}>Số điện thoại *</label>
+                                    <label className={styles.label}>{t('booking.phoneNumber', 'Số điện thoại')} *</label>
                                     <input
                                         type="tel"
                                         className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
@@ -222,7 +230,7 @@ const Checkout: React.FC = () => {
                                 </div>
                             </div>
                             <div className={styles.fieldGroup}>
-                                <label className={styles.label}>Email *</label>
+                                <label className={styles.label}>{t('booking.emailAddress', 'Email')} *</label>
                                 <input
                                     type="email"
                                     className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
@@ -233,11 +241,11 @@ const Checkout: React.FC = () => {
                                 {errors.email && <span className={styles.errorMsg}>{errors.email}</span>}
                             </div>
                             <div className={styles.fieldGroup}>
-                                <label className={styles.label}>Ghi chú (tuỳ chọn)</label>
+                                <label className={styles.label}>{t('checkout.notesLabel', 'Ghi chú (tuỳ chọn)')}</label>
                                 <textarea
                                     className={styles.textarea}
                                     rows={3}
-                                    placeholder="Yêu cầu đặc biệt, giờ nhận phòng dự kiến..."
+                                    placeholder={t('checkout.notesPlaceholder', 'Yêu cầu đặc biệt, giờ nhận phòng dự kiến...')}
                                     value={form.notes}
                                     onChange={e => setForm({ ...form, notes: e.target.value })}
                                 />
@@ -246,7 +254,7 @@ const Checkout: React.FC = () => {
                             {/* Payment Method */}
                             <h2 className={`${styles.cardTitle} ${styles.mt24}`}>
                                 <span className="material-symbols-outlined">payment</span>
-                                Phương thức thanh toán
+                                {t('booking.paymentMethod', 'Phương thức thanh toán')}
                             </h2>
                             <div className={styles.paymentGrid}>
                                 {PAYMENT_METHODS.map(method => (
@@ -264,8 +272,8 @@ const Checkout: React.FC = () => {
                                         />
                                         <span className={styles.paymentIcon}>{method.icon}</span>
                                         <div>
-                                            <p className={styles.paymentLabel}>{method.label}</p>
-                                            <p className={styles.paymentDesc}>{method.desc}</p>
+                                            <p className={styles.paymentLabel}>{getMethodLabel(method.id, method.label)}</p>
+                                            <p className={styles.paymentDesc}>{getMethodDesc(method.id, method.desc)}</p>
                                         </div>
                                         <div className={styles.paymentCheck}>
                                             {paymentMethod === method.id && (
@@ -279,11 +287,11 @@ const Checkout: React.FC = () => {
                             {/* Submit */}
                             <button type="submit" className={styles.submitBtn}>
                                 <span className="material-symbols-outlined">lock</span>
-                                Xác nhận & Thanh toán {fmt(grandTotal)}
+                                {t('booking.complete', 'Xác nhận & Thanh toán')} {fmt(grandTotal)}
                             </button>
                             <p className={styles.secureNote}>
                                 <span className="material-symbols-outlined">verified_user</span>
-                                Giao dịch được bảo vệ bởi mã hóa SSL 256-bit
+                                {t('checkout.secureNote', 'Giao dịch được bảo vệ bởi mã hóa SSL 256-bit')}
                             </p>
                         </form>
                     </div>
@@ -294,7 +302,7 @@ const Checkout: React.FC = () => {
                     <div className={styles.summaryCard}>
                         <h2 className={styles.cardTitle}>
                             <span className="material-symbols-outlined">receipt_long</span>
-                            Chi tiết đặt phòng
+                            {t('flight.detailTitle', 'Chi tiết đặt phòng')}
                         </h2>
 
                         {/* Hotel Info */}
@@ -312,34 +320,34 @@ const Checkout: React.FC = () => {
                         {/* Stay Details */}
                         <div className={styles.summaryRows}>
                             <div className={styles.summaryRow}>
-                                <span>Phòng</span>
+                                <span>{t('checkout.room', 'Phòng')}</span>
                                 <span>{booking.room.name}</span>
                             </div>
                             <div className={styles.summaryRow}>
-                                <span>Nhận phòng</span>
+                                <span>{t('checkout.checkin', 'Nhận phòng')}</span>
                                 <span>{booking.dates.checkIn
-                                    ? new Date(booking.dates.checkIn).toLocaleDateString('vi-VN')
+                                    ? new Date(booking.dates.checkIn).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US')
                                     : '—'
                                 }</span>
                             </div>
                             <div className={styles.summaryRow}>
-                                <span>Trả phòng</span>
+                                <span>{t('checkout.checkout', 'Trả phòng')}</span>
                                 <span>{booking.dates.checkOut
-                                    ? new Date(booking.dates.checkOut).toLocaleDateString('vi-VN')
+                                    ? new Date(booking.dates.checkOut).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US')
                                     : '—'
                                 }</span>
                             </div>
                             <div className={styles.summaryRow}>
-                                <span>Số đêm</span>
-                                <span>{booking.nights} đêm</span>
+                                <span>{t('checkout.nightsCount', 'Số đêm')}</span>
+                                <span>{booking.nights} {booking.nights > 1 ? t('booking.nightsPlural', 'đêm') : t('booking.nights', 'đêm')}</span>
                             </div>
                             <div className={styles.summaryRow}>
-                                <span>Số phòng</span>
-                                <span>{booking.guests.rooms} phòng</span>
+                                <span>{t('checkout.roomsCount', 'Số phòng')}</span>
+                                <span>{booking.guests.rooms} {t('detail.roomUnit', 'phòng')}</span>
                             </div>
                             <div className={styles.summaryRow}>
-                                <span>Số khách</span>
-                                <span>{booking.guests.adults} người lớn{booking.guests.children > 0 ? `, ${booking.guests.children} trẻ em` : ''}</span>
+                                <span>{t('checkout.guestsCount', 'Số khách')}</span>
+                                <span>{booking.guests.adults} {language === 'vi' ? 'người lớn' : 'adult(s)'}{booking.guests.children > 0 ? `, ${booking.guests.children} ${language === 'vi' ? 'trẻ em' : 'child(ren)'}` : ''}</span>
                             </div>
                         </div>
 
@@ -348,26 +356,26 @@ const Checkout: React.FC = () => {
                         {/* Price Breakdown */}
                         <div className={styles.summaryRows}>
                             <div className={styles.summaryRow}>
-                                <span>Giá phòng</span>
-                                <span>{fmt(booking.room.price)} × {booking.nights}đêm × {booking.guests.rooms}phòng</span>
+                                <span>{t('booking.roomRate', 'Giá phòng')}</span>
+                                <span>{fmt(booking.room.price)} × {booking.nights} {booking.nights > 1 ? t('booking.nightsPlural', 'đêm') : t('booking.nights', 'đêm')} × {booking.guests.rooms} {t('detail.roomUnit', 'phòng')}</span>
                             </div>
                             <div className={styles.summaryRow}>
-                                <span>Tạm tính</span>
+                                <span>{t('checkout.subtotal', 'Tạm tính')}</span>
                                 <span>{fmt(booking.totalPrice)}</span>
                             </div>
                             <div className={styles.summaryRow}>
-                                <span>Thuế & phí (8%)</span>
+                                <span>{t('checkout.taxFee', 'Thuế & phí (8%)')}</span>
                                 <span>{fmt(taxAmount)}</span>
                             </div>
                         </div>
 
                         <div className={styles.grandTotal}>
-                            <span>Tổng thanh toán</span>
+                            <span>{t('booking.totalPrice', 'Tổng thanh toán')}</span>
                             <span>{fmt(grandTotal)}</span>
                         </div>
 
                         <div className={styles.priceNote}>
-                            Giá đã bao gồm thuế VAT và phí dịch vụ
+                            {t('checkout.vatNote', 'Giá đã bao gồm thuế VAT và phí dịch vụ')}
                         </div>
                     </div>
 
@@ -375,10 +383,10 @@ const Checkout: React.FC = () => {
                     <div className={`${styles.summaryCard} ${styles.policyCard}`}>
                         <h3 className={styles.policyTitle}>
                             <span className="material-symbols-outlined">policy</span>
-                            Chính sách hủy phòng
+                            {t('checkout.policyTitle', 'Chính sách hủy phòng')}
                         </h3>
                         <p className={styles.policyText}>
-                            Miễn phí hủy phòng trước <strong>24 giờ</strong> so với giờ nhận phòng. Sau thời điểm đó, phí hủy sẽ tương đương <strong>1 đêm đầu tiên</strong>.
+                            {t('checkout.policyText', 'Miễn phí hủy phòng trước 24 giờ so với giờ nhận phòng. Sau thời điểm đó, phí hủy sẽ tương đương 1 đêm đầu tiên.')}
                         </p>
                     </div>
                 </div>

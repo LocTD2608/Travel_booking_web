@@ -3,6 +3,8 @@ import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
 import styles from './HeroSearch.module.css';
 import { filterDestinations, ALL_DESTINATIONS } from '../../../utils/destinations';
+import { useLanguage } from '../../../context';
+
 
 const { RangePicker } = DatePicker;
 
@@ -14,6 +16,7 @@ interface HeroSearchProps {
 }
 
 export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = false, initialTab = 'hotels', hideTabs = false }) => {
+    const { t } = useLanguage();
     const shouldHideTabs = hideTabs || isCompact;
     const [activeTab, setActiveTab] = useState<'hotels' | 'flights' | 'package' | 'experience'>(initialTab);
     const [showSuggestions, setShowSuggestions] = useState<'destination' | 'origin' | null>(null);
@@ -93,12 +96,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                     style={{ maxHeight: '280px', overflowY: 'auto' }}
                 >
                     {/* Domestic Section */}
-                    <div className="px-3 py-2 text-[10px] font-extrabold text-blue-600 border-b border-gray-100 bg-blue-50/50 tracking-wider">PHỔ BIẾN TRONG NƯỚC</div>
+                    <div className="px-3 py-2 text-[10px] font-extrabold text-blue-600 border-b border-gray-100 bg-blue-50/50 tracking-wider">{t('hero.search.popularDomestic', 'PHỔ BIẾN TRONG NƯỚC')}</div>
                     {domestic.map((dest) => (
                         <button
                             key={dest.detail}
                             type="button"
-                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-750 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none cursor-pointer"
+                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-755 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none cursor-pointer"
                             onClick={() => selectSuggestion(field, dest.detail)}
                         >
                             <span className="material-symbols-outlined text-gray-400 text-[18px]">{icon}</span>
@@ -110,12 +113,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                     ))}
 
                     {/* International Section */}
-                    <div className="px-3 py-2 text-[10px] font-extrabold text-orange-600 border-b border-gray-100 border-t bg-orange-50/50 tracking-wider">PHỔ BIẾN QUỐC TẾ</div>
+                    <div className="px-3 py-2 text-[10px] font-extrabold text-orange-600 border-b border-gray-100 border-t bg-orange-50/50 tracking-wider">{t('hero.search.popularInternational', 'PHỔ BIẾN QUỐC TẾ')}</div>
                     {international.map((dest) => (
                         <button
                             key={dest.detail}
                             type="button"
-                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-750 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none cursor-pointer"
+                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-755 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none cursor-pointer"
                             onClick={() => selectSuggestion(field, dest.detail)}
                         >
                             <span className="material-symbols-outlined text-gray-400 text-[18px]">{icon}</span>
@@ -130,7 +133,9 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
         }
 
         const filtered = filterDestinations(query);
-        const title = field === 'destination' ? 'POPULAR DESTINATIONS' : 'POPULAR ORIGINS';
+        const title = field === 'destination' 
+            ? t('hero.search.popularDestinations', 'POPULAR DESTINATIONS') 
+            : t('hero.search.popularOrigins', 'POPULAR ORIGINS');
 
         return (
             <div 
@@ -139,13 +144,13 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
             >
                 <div className="px-3 py-2 text-xs font-bold text-gray-400 border-b border-gray-100 bg-gray-50 tracking-wider">{title}</div>
                 {filtered.length === 0 ? (
-                    <div className="px-4 py-3 text-sm text-gray-500 text-center font-semibold">No destinations found</div>
+                    <div className="px-4 py-3 text-sm text-gray-500 text-center font-semibold">{t('hero.search.noDestinations', 'No destinations found')}</div>
                 ) : (
                     filtered.map((dest) => (
                         <button
                             key={dest.detail}
                             type="button"
-                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-700 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none cursor-pointer"
+                            className="w-full px-4 py-2 hover:bg-blue-50 text-sm text-gray-750 font-semibold flex items-center gap-3 transition-colors text-left border-none outline-none cursor-pointer"
                             onClick={() => selectSuggestion(field, dest.detail)}
                         >
                             <span className="material-symbols-outlined text-gray-400 text-[18px]">{icon}</span>
@@ -170,28 +175,28 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                         onClick={() => setActiveTab('hotels')}
                     >
                         <span className="material-symbols-outlined">hotel</span>
-                        Hotels
+                        {t('hero.tabs.hotels', 'Hotels')}
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'flights' ? styles.active : ''}`}
                         onClick={() => setActiveTab('flights')}
                     >
                         <span className="material-symbols-outlined">flight</span>
-                        Flights
+                        {t('hero.tabs.flights', 'Flights')}
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'package' ? styles.active : ''}`}
                         onClick={() => setActiveTab('package')}
                     >
                         <span className="material-symbols-outlined">luggage</span>
-                        Flight + Hotel
+                        {t('hero.tabs.package', 'Flight + Hotel')}
                     </button>
                     <button
                         className={`${styles.tab} ${activeTab === 'experience' ? styles.active : ''}`}
                         onClick={() => setActiveTab('experience')}
                     >
                         <span className="material-symbols-outlined">attractions</span>
-                        Xperience
+                        {t('hero.tabs.experience', 'Xperience')}
                     </button>
                 </div>
             )}
@@ -201,12 +206,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                 {activeTab === 'hotels' && (
                     <>
                         <div className={styles.inputGroup} style={{ position: 'relative' }}>
-                            <label>City, Destination, or Hotel</label>
+                            <label>{t('hero.hotels.labelDestination', 'City, Destination, or Hotel')}</label>
                             <div className={styles.inputWithIcon}>
                                 <span className="material-symbols-outlined">location_on</span>
                                 <input
                                     type="text"
-                                    placeholder="Where do you want to stay?"
+                                    placeholder={t('hero.hotels.placeholderDestination', 'Where do you want to stay?')}
                                     value={searchParams.destination}
                                     onChange={(e) => setSearchParams({ ...searchParams, destination: e.target.value })}
                                     onFocus={() => handleFocus('destination')}
@@ -217,12 +222,13 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                         </div>
 
                         <div className={styles.inputGroup}>
-                            <label>Check-in - Check-out</label>
+                            <label>{t('hero.hotels.labelDates', 'Check-in - Check-out')}</label>
                             <div className={styles.datePickerWrapper}>
                                 <span className="material-symbols-outlined">calendar_month</span>
                                 <RangePicker
                                     className={styles.rangePicker}
                                     format="YYYY-MM-DD"
+                                    placeholder={[t('search.checkIn', 'Ngày nhận phòng'), t('search.checkOut', 'Ngày trả phòng')]}
                                     onChange={(dates, dateStrings) => {
                                         setSearchParams({
                                             ...searchParams,
@@ -243,7 +249,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
 
                         <div className={styles.inputGroupWithButton}>
                             <div className={styles.inputGroup}>
-                                <label>Guests</label>
+                                <label>{t('hero.hotels.labelGuests', 'Guests')}</label>
                                 <div className={styles.inputWithIcon}>
                                     <span className="material-symbols-outlined">group</span>
                                     <select
@@ -251,12 +257,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                                         onChange={(e) => setSearchParams({ ...searchParams, guests: e.target.value })}
                                         className="cursor-pointer"
                                     >
-                                        <option value="1 Adult, 1 Room">1 Adult, 1 Room</option>
-                                        <option value="2 Adults, 1 Room">2 Adults, 1 Room</option>
-                                        <option value="3 Adults, 1 Room">3 Adults, 1 Room</option>
-                                        <option value="4 Adults, 2 Rooms">4 Adults, 2 Rooms</option>
-                                        <option value="5 Adults, 2 Rooms">5 Adults, 2 Rooms</option>
-                                        <option value="6 Adults, 3 Rooms">6 Adults, 3 Rooms</option>
+                                        <option value="1 Adult, 1 Room">{t('guests.1adult1room', '1 Adult, 1 Room')}</option>
+                                        <option value="2 Adults, 1 Room">{t('guests.2adults1room', '2 Adults, 1 Room')}</option>
+                                        <option value="3 Adults, 1 Room">{t('guests.3adults1room', '3 Adults, 1 Room')}</option>
+                                        <option value="4 Adults, 2 Rooms">{t('guests.4adults2rooms', '4 Adults, 2 Rooms')}</option>
+                                        <option value="5 Adults, 2 Rooms">{t('guests.5adults2rooms', '5 Adults, 2 Rooms')}</option>
+                                        <option value="6 Adults, 3 Rooms">{t('guests.6adults3rooms', '6 Adults, 3 Rooms')}</option>
                                     </select>
                                 </div>
                             </div>
@@ -270,12 +276,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                 {activeTab === 'flights' && (
                     <>
                         <div className={styles.inputGroup} style={{ position: 'relative' }}>
-                            <label>Origin</label>
+                            <label>{t('hero.flights.labelOrigin', 'Origin')}</label>
                             <div className={styles.inputWithIcon}>
                                 <span className="material-symbols-outlined">flight_takeoff</span>
                                 <input
                                     type="text"
-                                    placeholder="Where from?"
+                                    placeholder={t('hero.flights.placeholderOrigin', 'Where from?')}
                                     value={searchParams.origin}
                                     onChange={(e) => setSearchParams({ ...searchParams, origin: e.target.value })}
                                     onFocus={() => handleFocus('origin')}
@@ -286,12 +292,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                         </div>
 
                         <div className={styles.inputGroup} style={{ position: 'relative' }}>
-                            <label>Destination</label>
+                            <label>{t('hero.flights.labelDestination', 'Destination')}</label>
                             <div className={styles.inputWithIcon}>
                                 <span className="material-symbols-outlined">flight_land</span>
                                 <input
                                     type="text"
-                                    placeholder="Where to?"
+                                    placeholder={t('hero.flights.placeholderDestination', 'Where to?')}
                                     value={searchParams.destination}
                                     onChange={(e) => setSearchParams({ ...searchParams, destination: e.target.value })}
                                     onFocus={() => handleFocus('destination')}
@@ -302,12 +308,13 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                         </div>
 
                         <div className={styles.inputGroup}>
-                            <label>Departure - Return Date</label>
+                            <label>{t('hero.flights.labelDates', 'Departure - Return Date')}</label>
                             <div className={styles.datePickerWrapper}>
                                 <span className="material-symbols-outlined">calendar_month</span>
                                 <RangePicker
                                     className={styles.rangePicker}
                                     format="YYYY-MM-DD"
+                                    placeholder={[t('search.startDate', 'Ngày đi'), t('search.endDate', 'Ngày về')]}
                                     onChange={(dates, dateStrings) => {
                                         setSearchParams({
                                             ...searchParams,
@@ -328,7 +335,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
 
                         <div className={styles.inputGroupWithButton}>
                             <div className={styles.inputGroup}>
-                                <label>Passengers</label>
+                                <label>{t('hero.flights.labelPassengers', 'Passengers')}</label>
                                 <div className={styles.inputWithIcon}>
                                     <span className="material-symbols-outlined">airline_seat_recline_normal</span>
                                     <select
@@ -336,11 +343,11 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                                         onChange={(e) => setSearchParams({ ...searchParams, passengers: e.target.value })}
                                         className="cursor-pointer"
                                     >
-                                        <option value="1 Adult, Economy">1 Passenger, Economy</option>
-                                        <option value="2 Passengers, Economy">2 Passengers, Economy</option>
-                                        <option value="3 Passengers, Economy">3 Passengers, Economy</option>
-                                        <option value="4 Passengers, Economy">4 Passengers, Economy</option>
-                                        <option value="5 Passengers, Economy">5 Passengers, Economy</option>
+                                        <option value="1 Adult, Economy">{t('passengers.1passenger', '1 Passenger, Economy')}</option>
+                                        <option value="2 Passengers, Economy">{t('passengers.2passengers', '2 Passengers, Economy')}</option>
+                                        <option value="3 Passengers, Economy">{t('passengers.3passengers', '3 Passengers, Economy')}</option>
+                                        <option value="4 Passengers, Economy">{t('passengers.4passengers', '4 Passengers, Economy')}</option>
+                                        <option value="5 Passengers, Economy">{t('passengers.5passengers', '5 Passengers, Economy')}</option>
                                     </select>
                                 </div>
                             </div>
@@ -354,12 +361,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                 {activeTab === 'package' && (
                     <>
                         <div className={styles.inputGroup} style={{ position: 'relative' }}>
-                            <label>Origin</label>
+                            <label>{t('hero.flights.labelOrigin', 'Origin')}</label>
                             <div className={styles.inputWithIcon}>
                                 <span className="material-symbols-outlined">flight_takeoff</span>
                                 <input
                                     type="text"
-                                    placeholder="Where from?"
+                                    placeholder={t('hero.flights.placeholderOrigin', 'Where from?')}
                                     value={searchParams.origin}
                                     onChange={(e) => setSearchParams({ ...searchParams, origin: e.target.value })}
                                     onFocus={() => handleFocus('origin')}
@@ -370,12 +377,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                         </div>
 
                         <div className={styles.inputGroup} style={{ position: 'relative' }}>
-                            <label>Destination</label>
+                            <label>{t('hero.flights.labelDestination', 'Destination')}</label>
                             <div className={styles.inputWithIcon}>
                                 <span className="material-symbols-outlined">location_on</span>
                                 <input
                                     type="text"
-                                    placeholder="Where to?"
+                                    placeholder={t('hero.flights.placeholderDestination', 'Where to?')}
                                     value={searchParams.destination}
                                     onChange={(e) => setSearchParams({ ...searchParams, destination: e.target.value })}
                                     onFocus={() => handleFocus('destination')}
@@ -386,12 +393,13 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                         </div>
 
                         <div className={styles.inputGroup}>
-                            <label>Departure - Return Date</label>
+                            <label>{t('hero.flights.labelDates', 'Departure - Return Date')}</label>
                             <div className={styles.datePickerWrapper}>
                                 <span className="material-symbols-outlined">calendar_month</span>
                                 <RangePicker
                                     className={styles.rangePicker}
                                     format="YYYY-MM-DD"
+                                    placeholder={[t('search.startDate', 'Ngày đi'), t('search.endDate', 'Ngày về')]}
                                     onChange={(dates, dateStrings) => {
                                         setSearchParams({
                                             ...searchParams,
@@ -412,7 +420,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
 
                         <div className={styles.inputGroupWithButton}>
                             <div className={styles.inputGroup}>
-                                <label>Guests</label>
+                                <label>{t('hero.hotels.labelGuests', 'Guests')}</label>
                                 <div className={styles.inputWithIcon}>
                                     <span className="material-symbols-outlined">group</span>
                                     <select
@@ -420,12 +428,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                                         onChange={(e) => setSearchParams({ ...searchParams, guests: e.target.value })}
                                         className="cursor-pointer"
                                     >
-                                        <option value="1 Adult, 1 Room">1 Adult, 1 Room</option>
-                                        <option value="2 Adults, 1 Room">2 Adults, 1 Room</option>
-                                        <option value="3 Adults, 1 Room">3 Adults, 1 Room</option>
-                                        <option value="4 Adults, 2 Rooms">4 Adults, 2 Rooms</option>
-                                        <option value="5 Adults, 2 Rooms">5 Adults, 2 Rooms</option>
-                                        <option value="6 Adults, 3 Rooms">6 Adults, 3 Rooms</option>
+                                        <option value="1 Adult, 1 Room">{t('guests.1adult1room', '1 Adult, 1 Room')}</option>
+                                        <option value="2 Adults, 1 Room">{t('guests.2adults1room', '2 Adults, 1 Room')}</option>
+                                        <option value="3 Adults, 1 Room">{t('guests.3adults1room', '3 Adults, 1 Room')}</option>
+                                        <option value="4 Adults, 2 Rooms">{t('guests.4adults2rooms', '4 Adults, 2 Rooms')}</option>
+                                        <option value="5 Adults, 2 Rooms">{t('guests.5adults2rooms', '5 Adults, 2 Rooms')}</option>
+                                        <option value="6 Adults, 3 Rooms">{t('guests.6adults3rooms', '6 Adults, 3 Rooms')}</option>
                                     </select>
                                 </div>
                             </div>
@@ -439,12 +447,12 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                 {activeTab === 'experience' && (
                     <>
                         <div className={styles.inputGroup} style={{ flex: 2, position: 'relative' }}>
-                            <label>Destination / Activity</label>
+                            <label>{t('hero.experience.labelDestination', 'Destination / Activity')}</label>
                             <div className={styles.inputWithIcon}>
                                 <span className="material-symbols-outlined">location_on</span>
                                 <input
                                     type="text"
-                                    placeholder="What do you want to do?"
+                                    placeholder={t('hero.experience.placeholderDestination', 'What do you want to do?')}
                                     value={searchParams.destination}
                                     onChange={(e) => setSearchParams({ ...searchParams, destination: e.target.value })}
                                     onFocus={() => handleFocus('destination')}
@@ -456,12 +464,13 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
 
                         <div className={styles.inputGroupWithButton} style={{ flex: 1 }}>
                             <div className={styles.inputGroup}>
-                                <label>Date</label>
+                                <label>{t('hero.experience.labelDate', 'Date')}</label>
                                 <div className={styles.datePickerWrapper}>
                                     <span className="material-symbols-outlined">calendar_month</span>
                                     <DatePicker
                                         className={styles.singleDatePicker}
                                         format="YYYY-MM-DD"
+                                        placeholder={t('search.selectDate', 'Chọn ngày')}
                                         onChange={(date, dateString) => {
                                             setSearchParams({
                                                 ...searchParams,
@@ -486,11 +495,11 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
             <div className={styles.features}>
                 <span>
                     <span className="material-symbols-outlined">check_circle</span>
-                    Pay at Hotel Available
+                    {t('hero.features.payAtHotel', 'Pay at Hotel Available')}
                 </span>
                 <span>
                     <span className="material-symbols-outlined">check_circle</span>
-                    Free Cancellation
+                    {t('hero.features.freeCancellation', 'Free Cancellation')}
                 </span>
             </div>
         </div>
@@ -506,8 +515,8 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
 
             <div className={styles.heroContent}>
                 <div className={styles.heroText}>
-                    <h1>Dream. Explore. Discover.</h1>
-                    <p>Your next great adventure is just a click away.</p>
+                    <h1>{t('hero.title', 'Dream. Explore. Discover.')}</h1>
+                    <p>{t('hero.subtitle', 'Your next great adventure is just a click away.')}</p>
                 </div>
 
                 {searchCardContent}

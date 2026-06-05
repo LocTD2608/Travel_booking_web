@@ -6,8 +6,9 @@ import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../components/auth/AuthModal';
 import GuestSelector from '../../components/ui/GuestSelector/GuestSelector';
 import type { GuestSelection } from '../../types/search';
+import { useLanguage } from '../../context';
 
-// ─── Tour Mock Dataset ────────────────────────────────────────────────────────
+// ─── Tour Mock Dataset (Vietnamese) ───────────────────────────────────────────
 interface TourDetail {
     id: string;
     name: string;
@@ -24,7 +25,7 @@ interface TourDetail {
     reviewList: { author: string; date: string; score: number; text: string; country: string }[];
 }
 
-const TOUR_DETAILS: Record<string, TourDetail> = {
+const TOUR_DETAILS_VI: Record<string, TourDetail> = {
     '1': {
         id: '1',
         name: 'Kỳ nghỉ dưỡng Maldives 4N3Đ - Overwater Villa',
@@ -134,7 +135,118 @@ const TOUR_DETAILS: Record<string, TourDetail> = {
     },
 };
 
-// ─── Default Fallback Dataset ────────────────────────────────────────────────
+// ─── Tour Mock Dataset (English) ──────────────────────────────────────────────
+const TOUR_DETAILS_EN: Record<string, TourDetail> = {
+    '1': {
+        id: '1',
+        name: 'Maldives 4D3N Vacation - Overwater Villa',
+        location: 'Maldives',
+        price: 28500000,
+        rating: 4.9,
+        ratingText: 'Superb',
+        reviews: 942,
+        stars: 5,
+        description: 'Enjoy a slice of paradise at the most luxurious Overwater Villa in Maldives. Immerse yourself in the crystal-clear turquoise waters right below your balcony, savor world-class dining, snorkel in vibrant coral reefs, and enjoy 24/7 butler service.',
+        inclusions: [
+            { name: 'Round-trip Speedboat', icon: 'directions_boat' },
+            { name: 'Luxury Overwater Villa', icon: 'holiday_village' },
+            { name: 'All-Inclusive Dining', icon: 'restaurant' },
+            { name: 'Snorkeling Gear', icon: 'scuba' },
+            { name: 'Free High-Speed WiFi', icon: 'wifi' },
+            { name: '24/7 Private Butler', icon: 'support_agent' },
+        ],
+        images: [
+            'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80',
+        ],
+        itinerary: [
+            { time: 'Day 1', title: 'Airport Pick-up - Overwater Villa Check-in & Sunset Welcome Party', desc: 'Speedboat pick-up from Malé Airport to the resort. Check into your unique overwater villa, explore, and enjoy light cocktails by the beach at sunset.' },
+            { time: 'Day 2', title: 'Dugong Snorkeling & Private Beach BBQ Party', desc: 'Join a guided snorkeling tour to admire pristine coral reefs, sea turtles, and exotic marine life. In the evening, enjoy a fresh seafood BBQ dinner right on the fine sand.' },
+            { time: 'Day 3', title: 'Overwater Spa Treatment, Kayaking & Undersea Restaurant Dinner', desc: 'Relax completely with a 60-minute massage at the professional spa. Experience transparent kayaking and close out the day with a romantic dinner beneath the deep ocean.' },
+            { time: 'Day 4', title: 'Sunrise Yoga, Floating Breakfast & Farewell Paradise', desc: 'Join a relaxing yoga class to welcome the radiant sunrise. Savor a unique Floating Breakfast in your private pool. Speedboat transfers you back to the airport for your flight home.' },
+        ],
+        reviewList: [
+            { author: 'Elena Rodriguez', date: 'October, 2024', score: 10, text: 'Truly magical and unforgettable! Stepping right out of the villa to see schools of fish swimming beneath my feet was one of the best experiences of my life. The customer service was incredibly attentive.', country: 'Spain' },
+            { author: 'Linh Nguyen', date: 'August, 2024', score: 9.8, text: 'Everything from the landscape, rooms to food quality was perfect. Totally worth every penny for a complete getaway in Maldives.', country: 'Vietnam' },
+        ],
+    },
+    '2': {
+        id: '2',
+        name: 'Japan Cherry Blossom Tour - Mt. Fuji Sightseeing',
+        location: 'Tokyo - Kyoto - Mt. Fuji, Japan',
+        price: 24900000,
+        rating: 4.8,
+        ratingText: 'Excellent',
+        reviews: 1420,
+        stars: 5,
+        description: 'Witness the breathtaking beauty of the Land of the Rising Sun during the cherry blossom (Sakura) peak bloom. The journey takes you to explore the modern capital of Tokyo, admire the majestic Mt. Fuji reflecting on the romantic Lake Ashi, and experience the ancient, solemn Kyoto.',
+        inclusions: [
+            { name: 'Shinkansen Bullet Train Ticket', icon: 'train' },
+            { name: '4-Star Standard Hotel', icon: 'hotel' },
+            { name: 'English-speaking Guide', icon: 'badge' },
+            { name: 'All Admission Tickets', icon: 'confirmation_number' },
+            { name: 'Traditional Kaiseki Dinner', icon: 'restaurant' },
+            { name: 'Pocket WiFi Device', icon: 'wifi' },
+        ],
+        images: [
+            'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1490761902450-9a6a6f95e672?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?auto=format&fit=crop&w=600&q=80',
+        ],
+        itinerary: [
+            { time: 'Day 1', title: 'Tokyo Arrival - Shinjuku Night Exploration', desc: 'Guide welcomes you at Narita/Haneda airport, transfer to hotel in downtown Tokyo. Free evening to stroll through Omoide Yokocho food alley and see Shinjuku\'s signature neon lights.' },
+            { time: 'Day 2', title: 'Asakusa Senso-ji Temple, Ueno Park Cherry Blossom & Shibuya Sky', desc: 'Visit the sacred, ancient Asakusa temple. Immerse yourself in the brilliant pink of thousands of cherry trees blooming at Ueno Park. Late afternoon, take in Tokyo panoramic views from Shibuya Sky observatory.' },
+            { time: 'Day 3', title: 'Mt. Fuji Exploration - Lake Ashi Cruise & Traditional Onsen Bathing', desc: 'Travel to Mt. Fuji Station 5 to admire white snow. Board a cruise to take in Lake Ashi scenery. Relax in the evening with a hot Onsen spring bath at a Hakone resort.' },
+            { time: 'Day 4', title: 'Shinkansen Bullet Train Experience - Kyoto: Fushimi Inari & Arashiyama Bamboo Forest', desc: 'Experience the outstanding speed of the Shinkansen bullet train to Kyoto. Visit the Fushimi Inari shrine with thousands of red Torii gates and take a peaceful walk in Arashiyama bamboo forest before the tour ends.' },
+        ],
+        reviewList: [
+            { author: 'Marcus Chen', date: 'October, 2024', score: 9.5, text: 'Excellently organized trip. Cherry blossoms were beautiful and weather at Mt. Fuji was very supportive. Thank you to the guide.', country: 'Singapore' },
+            { author: 'Minh Tran', date: 'September, 2024', score: 10, text: 'Japanese cuisine is amazing, hotel was nice and close to the train station. Very satisfied with service quality!', country: 'Vietnam' },
+        ],
+    },
+    '3': {
+        id: '3',
+        name: 'Explore Bustling Tokyo Capital at Night',
+        location: 'Tokyo, Japan',
+        price: 12500000,
+        rating: 4.7,
+        ratingText: 'Very Good',
+        reviews: 680,
+        stars: 4,
+        description: 'Immerse yourself in Tokyo\'s bustling and fascinating nightlife. Walk through the busiest Shibuya crossing on the planet, wander through narrow Izakaya alleys to enjoy cold beer and aromatic grilled Yakitori skewers, and admire a sparkling, artistic Tokyo from a rooftop bar.',
+        inclusions: [
+            { name: 'Local English-speaking Guide', icon: 'hail' },
+            { name: 'Izakaya Dinner & Drinks', icon: 'local_bar' },
+            { name: 'Night Photography Tour', icon: 'photo_camera' },
+            { name: 'Rooftop Bar Entrance Ticket', icon: 'view_in_ar' },
+            { name: 'Public Transportation Ticket', icon: 'subway' },
+            { name: 'Small Group (Max 8 people)', icon: 'groups' },
+        ],
+        images: [
+            'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1504829857797-ddff28127792?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80',
+        ],
+        itinerary: [
+            { time: '18:00', title: 'Meet at Shibuya - Legendary Crossing Experience', desc: 'Meet local guide at the Hachiko statue. Walk through the busy Shibuya crossing and visit a street-style standing bar (Tachinomi) for your first beer.' },
+            { time: '19:30', title: 'Explore Omoide Yokocho Alley for Traditional Yakitori', desc: 'Transfer to Shinjuku, explore the narrow Omoide Yokocho alley full of Showa era memories. Sit at a cozy grill counter, enjoy delicious skewers and fine sake.' },
+            { time: '21:00', title: 'Stroll around Kabukicho Red-light District & Check-in Golden Gai', desc: 'Walk through the famous Kabukicho entertainment district with giant neon signs. Explore Golden Gai with hundreds of unique mini bars lined side by side.' },
+            { time: '22:30', title: 'Rooftop Bar Night Views & Tour End', desc: 'Experience the sparkling skyline from a luxury rooftop bar. Guide shares night travel tips and concludes the tour beautifully.' },
+        ],
+        reviewList: [
+            { author: 'James Wilson', date: 'October, 2024', score: 10, text: 'Absolutely amazing! I would have never found those cozy back alley restaurants on my own. Super tasty food and very friendly guide.', country: 'Australia' },
+        ],
+    },
+};
+
+// ─── Default Fallback Dataset (Vietnamese) ───────────────────────────────────
 const getFallbackTour = (id: string, name: string, price: number, desc: string, location: string): TourDetail => ({
     id,
     name: name || 'Tour du lịch trải nghiệm',
@@ -169,6 +281,41 @@ const getFallbackTour = (id: string, name: string, price: number, desc: string, 
     ]
 });
 
+// ─── Default Fallback Dataset (English) ───────────────────────────────────────
+const getFallbackTourEn = (id: string, name: string, price: number, desc: string, location: string): TourDetail => ({
+    id,
+    name: name || 'Experiential Tour Packages',
+    location: location || 'Sightseeing Attraction',
+    price,
+    rating: 4.7,
+    ratingText: 'Very Good',
+    reviews: 124,
+    stars: 4,
+    description: desc || 'Explore unique experiences, immerse yourself in nature and wonderful local culture at your travel destination.',
+    inclusions: [
+        { name: 'Air-conditioned tourist shuttle', icon: 'directions_bus' },
+        { name: 'Free bottled mineral water', icon: 'water_drop' },
+        { name: 'Attentive tour guide throughout', icon: 'hail' },
+        { name: 'All sightseeing admission tickets', icon: 'confirmation_number' },
+        { name: 'Lunch included in program', icon: 'restaurant' },
+    ],
+    images: [
+        'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1502791451862-7bd8c1df43a7?auto=format&fit=crop&w=600&q=80',
+    ],
+    itinerary: [
+        { time: 'Morning', title: 'Pick-up, transfer & visit the first location', desc: 'Shuttle bus and tour guide pick you up at the hotel or meeting point. Move to the first attraction, starting the exciting journey.' },
+        { time: 'Noon', title: 'Savor local culinary specialties & rest', desc: 'Enjoy a rich lunch at a traditional restaurant with characteristic local flavors. Free time for photos and relaxation.' },
+        { time: 'Afternoon', title: 'Explore, shop for souvenirs & return to original point', desc: 'Visit the next famous highlight, shop for local specialties. Move back safely to your hotel or meeting point. Say goodbye.' },
+    ],
+    reviewList: [
+        { author: 'Traveler', date: 'October, 2024', score: 9.0, text: 'Very interesting trip, beautiful scenery, and delicious food. Professional and thoughtful service.', country: 'Vietnam' }
+    ]
+});
+
 const fmt = (price: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -177,6 +324,7 @@ const ExperienceDetail: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
+    const { t, language, translateRating } = useLanguage();
 
     // Booking states
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
@@ -192,15 +340,18 @@ const ExperienceDetail: React.FC = () => {
     const urlPickup = searchParams.get('pickup') || '';
 
     const tour = useMemo(() => {
-        if (id && TOUR_DETAILS[id]) {
-            const mockTour = TOUR_DETAILS[id];
+        const detailsSource = language === 'en' ? TOUR_DETAILS_EN : TOUR_DETAILS_VI;
+        const fallbackFn = language === 'en' ? getFallbackTourEn : getFallbackTour;
+
+        if (id && detailsSource[id]) {
+            const mockTour = detailsSource[id];
             // Chỉ sử dụng dữ liệu cứng nếu tên tour trùng khớp (tránh đè ID với database)
             if (!urlName || mockTour.name.toLowerCase().includes(urlName.toLowerCase()) || urlName.toLowerCase().includes(mockTour.name.toLowerCase())) {
                 return mockTour;
             }
         }
-        return getFallbackTour(id || 'default', urlName, urlPrice, urlDesc, urlPickup);
-    }, [id, urlName, urlPrice, urlDesc, urlPickup]);
+        return fallbackFn(id || 'default', urlName, urlPrice, urlDesc, urlPickup);
+    }, [id, urlName, urlPrice, urlDesc, urlPickup, language]);
 
     // Total Calculation
     const totalPeople = guests.adults + guests.children;
@@ -220,9 +371,9 @@ const ExperienceDetail: React.FC = () => {
                 price: String(tour.price),
                 quantity: '1',
                 detail1: tour.location,
-                detail2: 'Trải nghiệm du lịch trọn gói',
-                detail3: '1 Hành khách',
-                detail4: selectedDate ? selectedDate.format('DD/MM/YYYY') : 'Chọn ngày sau',
+                detail2: t('detail.packageTour', 'Trải nghiệm du lịch trọn gói'),
+                detail3: `${totalPeople} ${t('detail.guestUnit', 'Khách du lịch')}`,
+                detail4: selectedDate ? selectedDate.format('DD/MM/YYYY') : t('detail.chooseDateLater', 'Chọn ngày sau'),
             });
             navigate(`/booking?${params.toString()}`);
         }
@@ -244,7 +395,7 @@ const ExperienceDetail: React.FC = () => {
                         className="flex items-center gap-1 text-[#005CE6] font-semibold text-sm mb-4 hover:opacity-80 transition"
                     >
                         <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-                        Quay lại kết quả
+                        {t('detail.backToResults', 'Quay lại kết quả')}
                     </button>
 
                     {/* Image grid */}
@@ -270,7 +421,7 @@ const ExperienceDetail: React.FC = () => {
                                 />
                                 {i === 3 && tour.images.length > 5 && (
                                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">
-                                        +{tour.images.length - 5} Ảnh
+                                        {t('detail.moreImages', '+{count} Ảnh').replace('{count}', String(tour.images.length - 5))}
                                     </div>
                                 )}
                             </div>
@@ -295,7 +446,7 @@ const ExperienceDetail: React.FC = () => {
                         <div className="flex items-center gap-1 text-sm text-gray-500 mb-4">
                             <span className="material-symbols-outlined text-[16px]">location_on</span>
                             {tour.location}
-                            <span className="text-[#005CE6] ml-2 font-semibold cursor-pointer hover:underline">— Xem bản đồ</span>
+                            <span className="text-[#005CE6] ml-2 font-semibold cursor-pointer hover:underline">{t('detail.showMap', '— Xem bản đồ')}</span>
                         </div>
 
                         {/* Rating */}
@@ -304,8 +455,8 @@ const ExperienceDetail: React.FC = () => {
                                 {tour.rating.toFixed(1)}
                             </span>
                             <div>
-                                <div className="font-bold text-gray-900">{tour.ratingText}</div>
-                                <div className="text-sm text-gray-500">Dựa trên {tour.reviews.toLocaleString()} lượt đánh giá</div>
+                                <div className="font-bold text-gray-900">{translateRating(tour.ratingText)}</div>
+                                <div className="text-sm text-gray-500">{t('detail.basedOnReviews', 'Dựa trên {count} lượt đánh giá').replace('{count}', tour.reviews.toLocaleString())}</div>
                             </div>
                         </div>
 
@@ -314,7 +465,7 @@ const ExperienceDetail: React.FC = () => {
 
                     {/* Highlights & Inclusions */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-                        <h2 className="font-bold text-lg text-gray-900 mb-4">Dịch vụ đi kèm & Tiện ích</h2>
+                        <h2 className="font-bold text-lg text-gray-900 mb-4">{t('detail.inclusions', 'Dịch vụ đi kèm & Tiện ích')}</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-4">
                             {tour.inclusions.map(inc => (
                                 <div key={inc.name} className="flex items-center gap-2 text-sm text-gray-700">
@@ -329,7 +480,7 @@ const ExperienceDetail: React.FC = () => {
 
                     {/* Itinerary / Timeline */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-                        <h2 className="font-bold text-lg text-gray-900 mb-6">Lịch trình chi tiết</h2>
+                        <h2 className="font-bold text-lg text-gray-900 mb-6">{t('detail.itinerary', 'Lịch trình chi tiết')}</h2>
                         <div className="relative border-l border-gray-200 ml-3 pl-6 space-y-8">
                             {tour.itinerary.map((step, idx) => (
                                 <div key={idx} className="relative">
@@ -352,9 +503,9 @@ const ExperienceDetail: React.FC = () => {
                     {/* Reviews */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-bold text-xl text-gray-900">Đánh giá thực tế từ khách hàng</h2>
+                            <h2 className="font-bold text-xl text-gray-900">{t('detail.customerReviews', 'Đánh giá thực tế từ khách hàng')}</h2>
                             <div className="flex items-center gap-2">
-                                <span className="text-gray-500 text-sm">{tour.ratingText}</span>
+                                <span className="text-gray-500 text-sm">{translateRating(tour.ratingText)}</span>
                                 <span className="bg-[#005CE6] text-white font-black px-3 py-1 rounded-lg">
                                     {tour.rating.toFixed(1)}
                                 </span>
@@ -388,27 +539,27 @@ const ExperienceDetail: React.FC = () => {
                 {/* Right Sticky Card */}
                 <div className="w-full md:w-80 flex-shrink-0">
                     <div className="bg-white rounded-xl border border-[#005CE6] shadow-lg p-5 sticky top-24">
-                        <div className="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">Giá chỉ từ</div>
+                        <div className="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">{t('detail.priceFrom', 'Giá chỉ từ')}</div>
                         <div className="text-3xl font-black text-[#005CE6] mb-1">
                             {tour.price ? tour.price.toLocaleString() : urlPrice.toLocaleString()}
                         </div>
-                        <div className="text-sm text-gray-500 mb-4">VNĐ / khách · Đã gồm thuế</div>
+                        <div className="text-sm text-gray-500 mb-4">{t('detail.perGuest', 'VNĐ / khách · Đã gồm thuế')}</div>
 
                         <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-lg mb-4 inline-block">
-                            ✓ Cam kết giá tốt nhất
+                            {t('detail.bestPriceCommit', '✓ Cam kết giá tốt nhất')}
                         </div>
 
                         {/* Interactive Picker Details */}
                         <div className="border-t border-gray-100 pt-4 mt-2 space-y-4">
                             {/* Date Picker */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1">Ngày khởi hành</label>
+                                <label className="block text-xs font-semibold text-gray-500 mb-1">{t('detail.departureDate', 'Ngày khởi hành')}</label>
                                 <DatePicker
                                     value={selectedDate}
                                     onChange={(date) => setSelectedDate(date)}
                                     disabledDate={disabledDate}
                                     format="DD/MM/YYYY"
-                                    placeholder="Chọn ngày đi"
+                                    placeholder={t('detail.dateTourPlaceholder', 'Chọn ngày đi')}
                                     style={{ width: '100%' }}
                                     size="large"
                                     className="border-gray-200 rounded-lg hover:border-[#005CE6] focus:border-[#005CE6]"
@@ -417,26 +568,23 @@ const ExperienceDetail: React.FC = () => {
 
                             {/* Guest Selector */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1">Số lượng khách</label>
-                                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 flex items-center gap-2 text-sm text-gray-700 font-bold">
-                                    <span className="material-symbols-outlined text-gray-400 text-[18px]">group</span>
-                                    1 Hành khách
-                                </div>
+                                <label className="block text-xs font-semibold text-gray-500 mb-1">{t('detail.numGuests', 'Số lượng khách')}</label>
+                                <GuestSelector value={guests} onChange={setGuests} simpleMode={true} />
                             </div>
                         </div>
 
                         {/* Cost breakdown */}
                         <div className="mt-4 border-t border-gray-100 pt-4 space-y-2 text-sm text-gray-500">
                             <div className="flex justify-between">
-                                <span>{totalPeople} Khách du lịch</span>
+                                <span>{totalPeople} {t('detail.guestUnit', 'Khách du lịch')}</span>
                                 <span className="font-bold text-gray-800">{fmt(totalPrice)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Thuế & Phí dịch vụ</span>
-                                <span className="font-bold text-green-600">Miễn phí</span>
+                                <span>{t('detail.taxServiceFee', 'Thuế & Phí dịch vụ')}</span>
+                                <span className="font-bold text-green-600">{t('detail.free', 'Miễn phí')}</span>
                             </div>
                             <div className="flex justify-between border-t border-gray-100 pt-2 text-base font-bold text-gray-900">
-                                <span>Tổng cộng:</span>
+                                <span>{t('detail.total', 'Tổng cộng:')}</span>
                                 <span className="text-[#005CE6]">{fmt(totalPrice)}</span>
                             </div>
                         </div>
@@ -446,12 +594,12 @@ const ExperienceDetail: React.FC = () => {
                             className="w-full mt-5 bg-[#005CE6] text-white py-3 rounded-xl font-bold text-base hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2"
                         >
                             <span className="material-symbols-outlined text-[20px]">local_activity</span>
-                            Đặt Ngay
+                            {t('detail.bookNowTour', 'Đặt Ngay')}
                         </button>
 
                         <div className="mt-4 bg-gray-50 rounded-lg p-3 text-xs text-gray-500 flex items-start gap-2">
                             <span className="material-symbols-outlined text-[16px] text-green-500 flex-shrink-0 mt-0.5">verified</span>
-                            <span>Đối tác bảo mật của Booking Travel · Đáng tin cậy cho 3M+ khách du lịch toàn cầu</span>
+                            <span>{t('detail.trustPartnerNote', 'Đối tác bảo mật của Booking Travel · Đáng tin cậy cho 3M+ khách du lịch toàn cầu')}</span>
                         </div>
                     </div>
                 </div>

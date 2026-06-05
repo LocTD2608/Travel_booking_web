@@ -1,51 +1,50 @@
 import React from 'react';
+import { useLanguage } from '../../context';
 import styles from './AboutUs.module.css';
 
 const AboutUs: React.FC = () => {
+    const { t } = useLanguage();
+
     return (
         <div className={styles.container}>
             <div className={styles.hero}>
-                <h1>About Booking Travel</h1>
-                <p>Empowering Discovery, One Journey at a Time</p>
+                <h1>{t('about.title', 'About Booking Travel')}</h1>
+                <p>{t('about.subtitle', 'Empowering Discovery, One Journey at a Time')}</p>
             </div>
 
             <div className={styles.content}>
                 <section className={styles.missionSection}>
-                    <h2>Our Mission</h2>
+                    <h2>{t('about.missionTitle', 'Our Mission')}</h2>
                     <p>
-                        At Booking Travel, we believe that traveling should be an accessible, seamless, and joyous experience for everyone.
-                        Our mission is to empower people to discover and explore the world around them by providing a comprehensive,
-                        easy-to-use platform for all their travel and lifestyle needs.
+                        {t('about.missionText', 'At Booking Travel, we believe that traveling should be an accessible, seamless, and joyous experience for everyone. Our mission is to empower people to discover and explore the world around them by providing a comprehensive, easy-to-use platform for all their travel and lifestyle needs.')}
                     </p>
                 </section>
 
                 <section className={styles.statsSection}>
                     <div className={styles.statBox}>
                         <h3>50M+</h3>
-                        <p>Active Users</p>
+                        <p>{t('about.statUsers', 'Active Users')}</p>
                     </div>
                     <div className={styles.statBox}>
                         <h3>100+</h3>
-                        <p>Airline Partners</p>
+                        <p>{t('about.statPartners', 'Airline Partners')}</p>
                     </div>
                     <div className={styles.statBox}>
                         <h3>1M+</h3>
-                        <p>Acclaimed Accommodations</p>
+                        <p>{t('about.statAccommodations', 'Acclaimed Accommodations')}</p>
                     </div>
                 </section>
 
                 <section className={styles.storySection}>
-                    <h2>Our Story</h2>
+                    <h2>{t('about.storyTitle', 'Our Story')}</h2>
                     <div className={styles.storyGrid}>
                         <div className={styles.storyText}>
                             <p>
-                                Founded in 2012, Booking Travel started as a flight search engine to make it easier for people to find cheaper flights back home.
-                                By 2013, we evolved into a ticket booking application, and we haven't stopped innovating since.
+                                {t('about.storyP1', "Founded in 2012, Booking Travel started as a flight search engine to make it easier for people to find cheaper flights back home. By 2013, we evolved into a ticket booking application, and we haven't stopped innovating since.")}
                             </p>
                             <br />
                             <p>
-                                Today, we are Southeast Asia's leading travel platform. From flights and hotels to trains, buses, car rentals, and even lifestyle
-                                activities like Xperience and spa vouchers, we are here to ensure your journey is planned effortlessly.
+                                {t('about.storyP2', "Today, we are Southeast Asia's leading travel platform. From flights and hotels to trains, buses, car rentals, and even lifestyle activities like Xperience and spa vouchers, we are here to ensure your journey is planned effortlessly.")}
                             </p>
                         </div>
                         <div className={styles.storyImage}>
@@ -55,22 +54,22 @@ const AboutUs: React.FC = () => {
                 </section>
 
                 <section className={styles.valuesSection}>
-                    <h2>Our Core Values</h2>
+                    <h2>{t('about.valuesTitle', 'Our Core Values')}</h2>
                     <div className={styles.valuesGrid}>
                         <div className={styles.valueCard}>
                             <span className="material-symbols-outlined">favorite</span>
-                            <h4>Customer First</h4>
-                            <p>We build our products around our users' needs, ensuring an intuitive and reliable experience.</p>
+                            <h4>{t('about.valueCustomerTitle', 'Customer First')}</h4>
+                            <p>{t('about.valueCustomerText', "We build our products around our users' needs, ensuring an intuitive and reliable experience.")}</p>
                         </div>
                         <div className={styles.valueCard}>
                             <span className="material-symbols-outlined">lightbulb</span>
-                            <h4>Innovation</h4>
-                            <p>We continuously innovate to provide better solutions and more comprehensive choices.</p>
+                            <h4>{t('about.valueInnovationTitle', 'Innovation')}</h4>
+                            <p>{t('about.valueInnovationText', 'We continuously innovate to provide better solutions and more comprehensive choices.')}</p>
                         </div>
                         <div className={styles.valueCard}>
                             <span className="material-symbols-outlined">handshake</span>
-                            <h4>Trust & Security</h4>
-                            <p>Your data and transactions are safe with us. Integrity is the foundation of everything we do.</p>
+                            <h4>{t('about.valueTrustTitle', 'Trust & Security')}</h4>
+                            <p>{t('about.valueTrustText', 'Your data and transactions are safe with us. Integrity is the foundation of everything we do.')}</p>
                         </div>
                     </div>
                 </section>

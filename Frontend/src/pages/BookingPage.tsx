@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context';
 
 import { createVNPayUrl, redirectToVNPay } from '../services/paymentApi';
 
@@ -12,6 +13,7 @@ const BookingPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { isAuthenticated, user, isAdmin } = useAuth();
+    const { t } = useLanguage();
 
     // Redirect if not logged in or if admin
     useEffect(() => {
@@ -85,13 +87,13 @@ const BookingPage: React.FC = () => {
         } else if (form.voucherCode.toUpperCase() === 'SAVE500') {
             setForm(f => ({ ...f, voucherApplied: true, voucherDiscount: 500000 }));
         } else {
-            alert('Invalid voucher code. Try TRAVEL30 or SAVE500');
+            alert(t('booking.invalidVoucher', 'Invalid voucher code. Try TRAVEL30 or SAVE500'));
         }
     };
 
     const handleSubmit = async () => {
-        if (!form.fullName || !form.email) { alert('Vui lòng điền đầy đủ thông tin bắt buộc.'); return; }
-        if (!user) { alert('Bạn cần đăng nhập để đặt vé.'); return; }
+        if (!form.fullName || !form.email) { alert(t('booking.fillRequiredFields', 'Please fill in all required fields.')); return; }
+        if (!user) { alert(t('booking.loginRequired', 'You need to log in to make a booking.')); return; }
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('token');
@@ -184,7 +186,7 @@ const BookingPage: React.FC = () => {
                                 stars: 5,
                             },
                             room: {
-                                name: detail2 || 'Tiêu chuẩn',
+                                name: detail2 || t('booking.standardRoom', 'Standard Room'),
                                 price: price,
                             },
                             dates: {
@@ -201,7 +203,7 @@ const BookingPage: React.FC = () => {
                 });
             }
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Đặt vé thất bại. Vui lòng thử lại.');
+            alert(err instanceof Error ? err.message : t('booking.failedTryAgain', 'Booking failed. Please try again.'));
         } finally {
             setIsSubmitting(false);
         }
@@ -216,18 +218,18 @@ const BookingPage: React.FC = () => {
                     <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
                         <span className="material-symbols-outlined text-5xl text-green-500">check_circle</span>
                     </div>
-                    <h1 className="text-2xl font-black text-gray-900 mb-2">Booking Confirmed!</h1>
-                    <p className="text-gray-500 text-sm mb-6">Your booking has been successfully confirmed. A confirmation email has been sent to <strong>{form.email}</strong>.</p>
+                    <h1 className="text-2xl font-black text-gray-900 mb-2">{t('booking.confirmed', 'Booking Confirmed!')}</h1>
+                    <p className="text-gray-500 text-sm mb-6">{t('booking.confirmationEmailSent', 'Your booking has been successfully confirmed. A confirmation email has been sent to ')}<strong>{form.email}</strong>.</p>
                     <div className="bg-gray-50 rounded-xl p-5 mb-6 text-left border border-gray-100">
-                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Booking Reference</div>
+                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t('booking.reference', 'Booking Reference')}</div>
                         <div className="text-2xl font-black text-[#005CE6] font-mono">{bookingRef}</div>
                         <div className="mt-3 border-t border-gray-200 pt-3 text-sm text-gray-600 space-y-1">
-                            <div className="flex justify-between"><span>Property/Service</span><span className="font-bold">{name}</span></div>
-                            <div className="flex justify-between"><span>Total Paid</span><span className="font-bold">{total.toLocaleString()} VNĐ</span></div>
+                            <div className="flex justify-between"><span>{t('booking.propertyService', 'Property/Service')}</span><span className="font-bold">{name}</span></div>
+                            <div className="flex justify-between"><span>{t('booking.totalPaid', 'Total Paid')}</span><span className="font-bold">{total.toLocaleString()} VNĐ</span></div>
                         </div>
                     </div>
                     <button onClick={() => navigate('/')} className="w-full bg-[#005CE6] text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors">
-                        Back to Home
+                        {t('booking.backToHome', 'Back to Home')}
                     </button>
                 </div>
             </div>
@@ -244,11 +246,11 @@ const BookingPage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                     <span className="material-symbols-outlined text-green-500 text-[18px]">lock</span>
-                    Secure Checkout
+                    {t('booking.secureCheckout', 'Secure Checkout')}
                 </div>
                 <button onClick={() => navigate(-1)} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[18px]">close</span>
-                    Cancel
+                    {t('booking.cancel', 'Cancel')}
                 </button>
             </div>
 
@@ -264,21 +266,21 @@ const BookingPage: React.FC = () => {
                             <div className={`w-8 h-8 rounded-full ${bgClass} flex items-center justify-center`}>
                                 <span className="material-symbols-outlined text-white text-[16px]">contact_page</span>
                             </div>
-                            <h2 className="font-bold text-gray-900 text-lg">Contact Details</h2>
+                            <h2 className="font-bold text-gray-900 text-lg">{t('booking.contactDetails', 'Contact Details')}</h2>
                         </div>
                         <div className="px-6 py-5 grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1">Full Name <span className="text-red-500">*</span></label>
+                                <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.fullName', 'Full Name')} <span className="text-red-500">*</span></label>
                                 <input
                                     type="text"
-                                    placeholder="e.g. Nguyen Van A"
+                                    placeholder={t('booking.namePlaceholder', 'e.g. Nguyen Van A')}
                                     value={form.fullName}
                                     onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))}
                                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#005CE6] transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1">Email Address <span className="text-red-500">*</span></label>
+                                <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.emailAddress', 'Email Address')} <span className="text-red-500">*</span></label>
                                 <input
                                     type="email"
                                     placeholder="email@example.com"
@@ -288,7 +290,7 @@ const BookingPage: React.FC = () => {
                                 />
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-xs font-semibold text-gray-500 mb-1">Phone Number</label>
+                                <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.phoneNumber', 'Phone Number')}</label>
                                 <div className="flex gap-2">
                                     <span className="border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-600 bg-gray-50 whitespace-nowrap">+84</span>
                                     <input
@@ -309,16 +311,16 @@ const BookingPage: React.FC = () => {
                             <div className={`w-8 h-8 rounded-full ${bgClass} flex items-center justify-center`}>
                                 <span className="material-symbols-outlined text-white text-[16px]">person</span>
                             </div>
-                            <h2 className="font-bold text-gray-900 text-lg">{isTransport ? 'Passenger Details' : 'Guest Details'}</h2>
+                            <h2 className="font-bold text-gray-900 text-lg">{isTransport ? t('booking.passengerDetails', 'Passenger Details') : t('booking.guestDetails', 'Guest Details')}</h2>
                         </div>
                         <div className="px-6 py-5">
                             <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3 mb-5 text-sm text-blue-700">
                                 <span className="material-symbols-outlined text-[18px] flex-shrink-0 mt-0.5">info</span>
-                                <span>Please ensure names match passport or ID documents exactly.</span>
+                                <span>{t('booking.nameMatchAlert', 'Please ensure names match passport or ID documents exactly.')}</span>
                             </div>
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Title</label>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.title', 'Title')}</label>
                                     <select
                                         value={form.title}
                                         onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
@@ -331,32 +333,32 @@ const BookingPage: React.FC = () => {
                                     </select>
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Full Name <span className="text-red-500">*</span></label>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.fullName', 'Full Name')} <span className="text-red-500">*</span></label>
                                     <input
                                         type="text"
-                                        placeholder="AS APPEARS ON PASSPORT"
+                                        placeholder={t('booking.asAppearsOnPassport', 'AS APPEARS ON PASSPORT')}
                                         value={form.passengerName}
                                         onChange={e => setForm(f => ({ ...f, passengerName: e.target.value }))}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm uppercase placeholder:normal-case focus:outline-none focus:border-[#005CE6] transition-colors"
                                     />
                                 </div>
                                 <div className="col-span-3">
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Nationality</label>
+                                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.nationality', 'Nationality')}</label>
                                     <select
                                         value={form.nationality}
                                         onChange={e => setForm(f => ({ ...f, nationality: e.target.value }))}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-[#005CE6] bg-white"
                                     >
-                                        <option value="">Select Nationality</option>
-                                        <option value="VN">🇻🇳 Vietnamese</option>
-                                        <option value="US">🇺🇸 American</option>
-                                        <option value="GB">🇬🇧 British</option>
-                                        <option value="JP">🇯🇵 Japanese</option>
-                                        <option value="KR">🇰🇷 Korean</option>
-                                        <option value="SG">🇸🇬 Singaporean</option>
-                                        <option value="AU">🇦🇺 Australian</option>
-                                        <option value="DE">🇩🇪 German</option>
-                                        <option value="FR">🇫🇷 French</option>
+                                        <option value="">{t('booking.selectNationality', 'Select Nationality')}</option>
+                                        <option value="VN">{t('booking.nationality.vn', '🇻🇳 Vietnamese')}</option>
+                                        <option value="US">{t('booking.nationality.us', '🇺🇸 American')}</option>
+                                        <option value="GB">{t('booking.nationality.gb', '🇬🇧 British')}</option>
+                                        <option value="JP">{t('booking.nationality.jp', '🇯🇵 Japanese')}</option>
+                                        <option value="KR">{t('booking.nationality.kr', '🇰🇷 Korean')}</option>
+                                        <option value="SG">{t('booking.nationality.sg', '🇸🇬 Singaporean')}</option>
+                                        <option value="AU">{t('booking.nationality.au', '🇦🇺 Australian')}</option>
+                                        <option value="DE">{t('booking.nationality.de', '🇩🇪 German')}</option>
+                                        <option value="FR">{t('booking.nationality.fr', '🇫🇷 French')}</option>
                                     </select>
                                 </div>
                             </div>
@@ -369,14 +371,14 @@ const BookingPage: React.FC = () => {
                             <div className={`w-8 h-8 rounded-full ${bgClass} flex items-center justify-center`}>
                                 <span className="material-symbols-outlined text-white text-[16px]">credit_card</span>
                             </div>
-                            <h2 className="font-bold text-gray-900 text-lg">Payment Method</h2>
+                            <h2 className="font-bold text-gray-900 text-lg">{t('booking.paymentMethod', 'Payment Method')}</h2>
                         </div>
                         <div className="px-6 py-5 flex flex-col gap-3">
                             {([
-                                { id: 'card', icon: 'credit_card', label: 'Credit or Debit Card', desc: 'Visa, Mastercard, JCB, American Express', color: 'text-[#005CE6]' },
-                                { id: 'momo', icon: 'account_balance_wallet', label: 'MoMo E-Wallet', desc: 'Fast and secure local payment', color: 'text-pink-600' },
-                                { id: 'vnpay', icon: 'account_balance', label: 'VNPay', desc: 'Thanh toán an toàn qua VNPay Sandbox', color: 'text-blue-600' },
-                                { id: 'bank', icon: 'account_balance', label: 'Bank Transfer', desc: 'Direct transfer from local banks', color: 'text-gray-600' },
+                                { id: 'card', icon: 'credit_card', label: t('booking.card', 'Credit or Debit Card'), desc: t('booking.cardDesc', 'Visa, Mastercard, JCB, American Express'), color: 'text-[#005CE6]' },
+                                { id: 'momo', icon: 'account_balance_wallet', label: t('booking.momo', 'MoMo E-Wallet'), desc: t('booking.momoDesc', 'Fast and secure local payment'), color: 'text-pink-600' },
+                                { id: 'vnpay', icon: 'account_balance', label: t('booking.vnpay', 'VNPay'), desc: t('booking.vnpayDesc', 'Thanh toán an toàn qua VNPay Sandbox'), color: 'text-blue-600' },
+                                { id: 'bank', icon: 'account_balance', label: t('booking.bank', 'Bank Transfer'), desc: t('booking.bankDesc', 'Direct transfer from local banks'), color: 'text-gray-600' },
                             ] as { id: PaymentMethod; icon: string; label: string; desc: string; color: string }[]).map(pm => (
                                 <label
                                     key={pm.id}
@@ -401,20 +403,20 @@ const BookingPage: React.FC = () => {
                             {paymentMethod === 'card' && (
                                 <div className="mt-3 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
                                     <div className="col-span-2">
-                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Card Number</label>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.cardNumber', 'Card Number')}</label>
                                         <input type="text" placeholder="1234 5678 9012 3456" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#005CE6]" maxLength={19} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Expiry Date</label>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.expiryDate', 'Expiry Date')}</label>
                                         <input type="text" placeholder="MM / YY" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#005CE6]" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-500 mb-1">CVV</label>
+                                        <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.cvv', 'CVV')}</label>
                                         <input type="text" placeholder="•••" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#005CE6]" maxLength={4} />
                                     </div>
                                     <div className="col-span-2">
-                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Cardholder Name</label>
-                                        <input type="text" placeholder="Name as on card" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#005CE6]" />
+                                        <label className="block text-xs font-semibold text-gray-500 mb-1">{t('booking.cardholderName', 'Cardholder Name')}</label>
+                                        <input type="text" placeholder={t('booking.cardholderPlaceholder', 'Name as on card')} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#005CE6]" />
                                     </div>
                                 </div>
                             )}
@@ -432,19 +434,19 @@ const BookingPage: React.FC = () => {
                                     <div className="flex-1 space-y-2 text-sm text-gray-700">
                                         <div className="font-bold text-pink-600 flex items-center gap-1.5">
                                             <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-                                            Thanh toán qua Ví MoMo / App Ngân hàng
+                                            {t('booking.momoPayInstruction', 'Pay via MoMo Wallet / Banking App')}
                                         </div>
                                         <div className="text-xs text-gray-500 leading-relaxed">
-                                            Vui lòng quét mã QR bằng ứng dụng <strong>MoMo</strong> hoặc bất kỳ <strong>ứng dụng Ngân hàng</strong> nào của bạn để thực hiện chuyển khoản số tiền tự động.
+                                            {t('booking.momoScanDesc', 'Please scan the QR code using your MoMo app or any Banking app to complete the automated transfer.')}
                                         </div>
                                         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-1.5 border-t border-pink-100/50 text-xs">
-                                            <div>Chủ tài khoản:</div>
+                                            <div>{t('booking.accHolder', 'Account Holder')}:</div>
                                             <div className="font-bold text-gray-900">TRỊNH ĐỨC LỘC</div>
-                                            <div>Số điện thoại/TK:</div>
+                                            <div>{t('booking.accNumPhone', 'Phone/Account Number')}:</div>
                                             <div className="font-bold text-gray-900 font-mono">966454800</div>
-                                            <div>Ngân hàng nhận:</div>
+                                            <div>{t('booking.receiveBank', 'Receiving Bank')}:</div>
                                             <div className="font-bold text-gray-900">VIB (Ngân hàng Quốc Tế)</div>
-                                            <div>Số tiền chuyển:</div>
+                                            <div>{t('booking.transferAmount', 'Transfer Amount')}:</div>
                                             <div className="font-bold text-pink-600 text-sm">{total.toLocaleString()} VNĐ</div>
                                         </div>
                                     </div>
@@ -464,19 +466,19 @@ const BookingPage: React.FC = () => {
                                     <div className="flex-1 space-y-2 text-sm text-gray-700">
                                         <div className="font-bold text-[#005CE6] flex items-center gap-1.5">
                                             <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-                                            Thanh toán qua chuyển khoản VietQR
+                                            {t('booking.vietqrPayInstruction', 'Pay via VietQR Transfer')}
                                         </div>
                                         <div className="text-xs text-gray-500 leading-relaxed">
-                                            Quét mã bằng ứng dụng ngân hàng của bạn. Số tiền và nội dung chuyển khoản đã được tạo tự động để hệ thống xác nhận thanh toán nhanh nhất.
+                                            {t('booking.vietqrScanDesc', 'Scan the code with your banking app. Amount and transfer info are auto-generated for the fastest confirmation.')}
                                         </div>
                                         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-1.5 border-t border-blue-100/50 text-xs">
-                                            <div>Ngân hàng nhận:</div>
+                                            <div>{t('booking.receiveBank', 'Receiving Bank')}:</div>
                                             <div className="font-bold text-gray-900">VIB (Ngân hàng Quốc Tế)</div>
-                                            <div>Số tài khoản:</div>
+                                            <div>{t('booking.accNumber', 'Account Number')}:</div>
                                             <div className="font-bold text-gray-900 font-mono">966454800</div>
-                                            <div>Chủ tài khoản:</div>
+                                            <div>{t('booking.accHolder', 'Account Holder')}:</div>
                                             <div className="font-bold text-gray-900">TRỊNH ĐỨC LỘC</div>
-                                            <div>Số tiền:</div>
+                                            <div>{t('booking.transferAmountVietqr', 'Amount')}:</div>
                                             <div className="font-bold text-[#005CE6] text-sm">{total.toLocaleString()} VNĐ</div>
                                         </div>
                                     </div>
@@ -488,9 +490,7 @@ const BookingPage: React.FC = () => {
                     {/* Terms & Submit */}
                     <div className="text-center">
                         <p className="text-xs text-gray-400 mb-4">
-                            By clicking "Complete Booking", you agree to Booking Travel's{' '}
-                            <span className="text-[#005CE6] cursor-pointer hover:underline">Terms of Service</span> and{' '}
-                            <span className="text-[#005CE6] cursor-pointer hover:underline">Privacy Policy</span>.
+                            {t('booking.termsNote', "By clicking \"Complete Booking\", you agree to Booking Travel's Terms of Service and Privacy Policy.")}
                         </p>
                         <button
                             onClick={handleSubmit}
@@ -500,9 +500,9 @@ const BookingPage: React.FC = () => {
                             {isSubmitting ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                    Processing…
+                                    {t('booking.processing', 'Processing…')}
                                 </span>
-                            ) : 'Complete Booking'}
+                            ) : t('booking.complete', 'Complete Booking')}
                         </button>
                     </div>
                 </div>
@@ -517,7 +517,7 @@ const BookingPage: React.FC = () => {
                                 <div className="absolute top-2 left-2">
                                     <span className={`${bgClass} text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1`}>
                                         <span className="material-symbols-outlined text-[14px]">verified</span>
-                                        {isTour ? 'VERIFIED TOUR' : isTransport ? 'VERIFIED TRANSPORT' : 'VERIFIED STAY'}
+                                        {isTour ? t('booking.verifiedTour', 'VERIFIED TOUR') : isTransport ? t('booking.verifiedTransport', 'VERIFIED TRANSPORT') : t('booking.verifiedStay', 'VERIFIED STAY')}
                                     </span>
                                 </div>
                             </div>
@@ -534,19 +534,19 @@ const BookingPage: React.FC = () => {
 
                             {/* Booking details */}
                             <div className="border-t border-gray-100 pt-3 space-y-2">
-                                {detail2 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? 'Class' : isTour ? 'Loại hình' : 'Room Type'}</span><span className="font-semibold text-gray-800">{detail2}</span></div>}
-                                {!isTransport && !isTour && <div className="flex justify-between text-sm"><span className="text-gray-500">Duration</span><span className="font-semibold text-gray-800">{nights} Night{nights !== 1 ? 's' : ''}</span></div>}
-                                {detail3 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? 'Route' : 'Guests'}</span><span className="font-semibold text-gray-800">{detail3}</span></div>}
-                                {detail4 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? 'Departure' : 'Dates'}</span><span className="font-semibold text-gray-800">{detail4}</span></div>}
+                                {detail2 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? t('booking.class', 'Class') : isTour ? t('booking.tourType', 'Tour Type') : t('booking.roomType', 'Room Type')}</span><span className="font-semibold text-gray-800">{detail2}</span></div>}
+                                {!isTransport && !isTour && <div className="flex justify-between text-sm"><span className="text-gray-500">{t('booking.duration', 'Duration')}</span><span className="font-semibold text-gray-800">{nights} {nights === 1 ? t('booking.nights', 'Night') : t('booking.nightsPlural', 'Nights')}</span></div>}
+                                {detail3 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? t('booking.route', 'Route') : t('booking.guests', 'Guests')}</span><span className="font-semibold text-gray-800">{detail3}</span></div>}
+                                {detail4 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? t('booking.departure', 'Departure') : t('booking.dates', 'Dates')}</span><span className="font-semibold text-gray-800">{detail4}</span></div>}
                             </div>
 
                             {/* Voucher */}
                             <div className="mt-4 border-t border-gray-100 pt-4">
-                                <div className="text-xs font-bold text-gray-500 mb-2">Mã giảm giá / Voucher</div>
+                                <div className="text-xs font-bold text-gray-500 mb-2">{t('booking.voucher', 'Voucher')}</div>
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
-                                        placeholder="Enter code"
+                                        placeholder={t('booking.enterVoucherCode', 'Enter code')}
                                         value={form.voucherCode}
                                         onChange={e => setForm(f => ({ ...f, voucherCode: e.target.value, voucherApplied: false }))}
                                         className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#005CE6]"
@@ -557,7 +557,7 @@ const BookingPage: React.FC = () => {
                                         disabled={form.voucherApplied}
                                         className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${form.voucherApplied ? 'bg-green-100 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
                                     >
-                                        {form.voucherApplied ? '✓ Applied' : 'Apply'}
+                                        {form.voucherApplied ? `✓ ${t('booking.applied', 'Applied')}` : t('booking.apply', 'Apply')}
                                     </button>
                                 </div>
                             </div>
@@ -567,21 +567,21 @@ const BookingPage: React.FC = () => {
                                 <div className="flex justify-between text-sm text-gray-500">
                                     <span>
                                         {isTour 
-                                            ? `Giá tour (${quantity} khách)` 
+                                            ? `${t('booking.tourPrice', 'Tour price')} (${quantity} ${t('booking.guests', 'guests').toLowerCase()})` 
                                             : isTransport 
-                                                ? 'Ticket price' 
-                                                : `Room rate (${nights} night${nights !== 1 ? 's' : ''})`
+                                                ? t('booking.ticketPrice', 'Ticket price')
+                                                : `${t('booking.roomRate', 'Room rate')} (${nights} ${nights === 1 ? t('booking.nights', 'Night') : t('booking.nightsPlural', 'Nights')})`
                                         }
                                     </span>
                                     <span>{subtotal.toLocaleString()} VNĐ</span>
                                 </div>
                                 <div className="flex justify-between text-sm text-gray-500">
-                                    <span>Service fee & Tax</span>
+                                    <span>{t('booking.serviceFeeTax', 'Service fee & Tax')}</span>
                                     <span>{serviceFee.toLocaleString()} VNĐ</span>
                                 </div>
                                 {form.voucherApplied && (
                                     <div className="flex justify-between text-sm text-green-600 font-semibold">
-                                        <span>Voucher Discount</span>
+                                        <span>{t('booking.voucherDiscount', 'Voucher Discount')}</span>
                                         <span>- {voucherAmt.toLocaleString()} VNĐ</span>
                                     </div>
                                 )}
@@ -591,9 +591,9 @@ const BookingPage: React.FC = () => {
                             <div className="mt-4 border-t border-gray-200 pt-4">
                                 <div className="flex justify-between items-end">
                                     <div>
-                                        <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">TOTAL PRICE</div>
+                                        <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">{t('booking.totalPrice', 'TOTAL PRICE')}</div>
                                         <div className={`text-2xl font-black ${accentClass}`}>{total.toLocaleString()}</div>
-                                        <div className="text-xs text-gray-400">VNĐ · incl. all taxes and fees</div>
+                                        <div className="text-xs text-gray-400">VNĐ · {t('booking.taxInclNote', 'incl. all taxes and fees')}</div>
                                     </div>
                                 </div>
                             </div>
@@ -601,7 +601,7 @@ const BookingPage: React.FC = () => {
                             {/* Trust badge */}
                             <div className="mt-4 bg-gray-50 rounded-xl p-3 flex items-start gap-2 text-xs text-gray-500">
                                 <span className="material-symbols-outlined text-[16px] text-green-500 flex-shrink-0">verified_user</span>
-                                <span>Trust Protection: Your payment is encrypted and handled through secure global standards.</span>
+                                <span>{t('booking.trustNote', 'Trust Protection: Your payment is encrypted and handled through secure global standards.')}</span>
                             </div>
                         </div>
                     </div>
