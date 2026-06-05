@@ -210,12 +210,11 @@ const ExperienceDetail: React.FC = () => {
             setIsAuthModalOpen(true);
         } else {
             const params = new URLSearchParams({
-                type: 'tour',
+                type: 'hotel', // Using hotel type to match Booking Travel theme styles cleanly in Checkout
                 name: tour.name,
                 image: tour.images[0],
                 price: String(tour.price),
                 nights: '1',
-                quantity: String(totalPeople),
                 detail1: tour.location,
                 detail2: 'Trải nghiệm du lịch trọn gói',
                 detail3: `${guests.adults} Người lớn, ${guests.children} Trẻ em`,

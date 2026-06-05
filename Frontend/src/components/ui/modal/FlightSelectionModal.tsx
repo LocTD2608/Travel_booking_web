@@ -266,7 +266,6 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
     };
 
     // --- PRICING CALCULATION ---
-<<<<<<< HEAD
     const pCount = passengerCount;
     const outboundBasePrice = outboundFlight.price;
     const outboundBase = pCount * outboundBasePrice;
@@ -279,14 +278,6 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
     const returnBase = isRoundTrip ? (pCount * returnBasePrice) : 0;
     const returnSurcharges = (isRoundTrip && selectionMode !== 'auto')
         ? selectedSeats.return.reduce((sum, seat) => sum + seat.priceAddition, 0)
-=======
-    const outboundBasePrice = Number(outboundFlight.price || 0);
-    const outboundTotal = selectedSeats.outbound.reduce((sum, seat) => sum + outboundBasePrice + Number(seat.priceAddition || 0), 0);
-
-    const returnBasePrice = Number(MOCK_RETURN_FLIGHT.basePrice || 0);
-    const returnTotal = isRoundTrip 
-        ? selectedSeats.return.reduce((sum, seat) => sum + returnBasePrice + Number(seat.priceAddition || 0), 0)
->>>>>>> dev
         : 0;
     const returnTotal = returnBase + returnSurcharges;
 
@@ -335,19 +326,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                     
                     {/* Header & Tabs */}
                     <div className="p-6 pb-0 border-b border-gray-200 shrink-0">
-<<<<<<< HEAD
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Sơ đồ ghế ngồi</h2>
-=======
-                        <div className="flex items-center gap-3 mb-6">
-                            <button 
-                                onClick={onClose}
-                                className="flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 p-1.5 rounded-full transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-[24px]">arrow_back</span>
-                            </button>
-                            <h2 className="text-2xl font-bold text-gray-900">Seat Map</h2>
-                        </div>
->>>>>>> dev
 
                         {isRoundTrip && selectionMode === 'choose' && (
                             <div className="flex gap-4">
@@ -603,7 +582,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                                 <div className="text-[10px] uppercase font-bold text-gray-500">{s.className}</div>
                                             </div>
                                             <div className="text-sm font-semibold text-gray-700">
-                                                {(outboundBasePrice + Number(s.priceAddition || 0)).toLocaleString('vi-VN')} <span className="text-xs font-semibold text-gray-500">VNĐ</span>
+                                                {(outboundBasePrice + s.priceAddition).toLocaleString()} ₫
                                             </div>
                                         </div>
                                     ))}
@@ -647,7 +626,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                                     <div className="text-[10px] uppercase font-bold text-gray-500">{s.className}</div>
                                                 </div>
                                                 <div className="text-sm font-semibold text-gray-700">
-                                                    {(returnBasePrice + Number(s.priceAddition || 0)).toLocaleString('vi-VN')} <span className="text-xs font-semibold text-gray-500">VNĐ</span>
+                                                    {(returnBasePrice + s.priceAddition).toLocaleString()} ₫
                                                 </div>
                                             </div>
                                         ))}
