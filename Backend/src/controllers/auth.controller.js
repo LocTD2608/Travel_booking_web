@@ -14,6 +14,22 @@ exports.register = async (req, res) => {
         const SDT = req.body.SDT || req.body.sdt;
         const Password = req.body.Password || req.body.password;
         
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(Email)) {
+            return res.status(400).json({
+                message: "Email không đúng định dạng"
+            });
+        }
+
+        // Validate số điện thoại
+        const phoneRegex = /^0\d{9}$/;
+        if (!phoneRegex.test(SDT)) {
+            return res.status(400).json({
+                message: "Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số"
+            });
+        }
+
         if (!Email) return res.status(400).json({ message: "Email là bắt buộc" });
         const existingUser = await User.findOne({ where: { Email } });
         if (existingUser) return res.status(400).json({ message: "Email đã được sử dụng" });
