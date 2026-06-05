@@ -73,11 +73,11 @@ export const FlightCard: React.FC<{ flight: FlightCardProps; onSelect?: () => vo
             <div className="text-right border-l border-gray-100 pl-6 min-w-[200px]">
                 {flight.originalPrice && (
                     <div className="text-xs text-gray-400 line-through mb-0.5">
-                        {flight.originalPrice.toLocaleString()} VNĐ
+                        {Number(flight.originalPrice).toLocaleString('vi-VN')} VNĐ
                     </div>
                 )}
                 <div className="text-2xl font-black text-[#FF5E1F] mb-0 leading-none">
-                    {flight.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
+                    {Number(flight.price).toLocaleString('vi-VN')} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                 </div>
                 <div className="text-xs text-gray-400 mb-3 mt-1 flex justify-end items-center gap-1">
                     <span className="material-symbols-outlined text-[14px]">work</span>
