@@ -53,22 +53,6 @@ app.get('/', (req, res) => {
   });
 });
 
-//test db
-app.get("/test-db", async (req, res) => {
-  try {
-    await sequelize.authenticate();
-
-    res.json({
-      message: "DB is connected",
-    });
-  } catch (err) {
-    res.status(500).json({
-      message: "DB connection failed",
-      error: err.message,
-    });
-  }
-});
-
 // Catch-all 404 handler
 app.use((req, res) => {
   console.log(`[404] ${req.method} ${req.url}`);
@@ -82,14 +66,9 @@ require("./workers/bookingWorker");
 
 // Database Sync
 const sequelize = require("./configs/database");
-(async () => {
-  try {
-    await sequelize.authenticate();
-    console.log("Database connected successfully");
-  } catch (err) {
-    console.error("Database connection error:", err);
-  }
-})();
+sequelize.authenticate()
+  .then(() => console.log("Database synced successfully"))
+  .catch(err => console.error("Database sync error:", err));
 
 module.exports = app;
 
