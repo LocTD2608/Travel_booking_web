@@ -76,11 +76,11 @@ export const HotelCard: React.FC<{ hotel: HotelCardProps; onClick?: () => void }
                 <div className="text-right flex-shrink-0">
                     {hotel.originalPrice && (
                         <div className="text-xs text-gray-400 line-through mb-0.5 mt-2">
-                            {hotel.originalPrice.toLocaleString()} VNĐ
+                            {hotel.originalPrice.toLocaleString('vi-VN')} VNĐ
                         </div>
                     )}
                     <div className="text-2xl font-black text-gray-900 mb-0">
-                        {hotel.price.toLocaleString()} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
+                        {hotel.price.toLocaleString('vi-VN')} <span className="text-sm font-semibold text-gray-500">VNĐ</span>
                     </div>
                     <div className="text-xs text-gray-400 mb-3">incl. taxes & fees</div>
                     <button className="bg-travel-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors hover-scale" onClick={onClick ? (e) => { e.stopPropagation(); onClick(); } : undefined}>
