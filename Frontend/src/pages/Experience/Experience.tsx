@@ -167,14 +167,15 @@ const Experience: React.FC = () => {
                         <div className="mb-6">
                             <h4 className="font-semibold text-[15px] mb-4">Giá tối đa / Người</h4>
                             <Slider
+                                range={false}
                                 min={500000}
                                 max={30000000}
                                 step={500000}
                                 value={Number(filters.priceMax) || 30000000}
-                                onChange={(val: number) => setFilter({ priceMax: String(val) })}
+                                onChange={(val: number | number[]) => setFilter({ priceMax: String(Array.isArray(val) ? val[0] : val) })}
                                 tooltip={{ formatter: (val) => `${val?.toLocaleString()} VNĐ` }}
-                                trackStyle={[{ backgroundColor: '#7c3aed', height: 4 }]}
-                                handleStyle={[{ borderColor: '#7c3aed', width: 16, height: 16, marginTop: -6 }]}
+                                trackStyle={{ backgroundColor: '#7c3aed', height: 4 }}
+                                handleStyle={{ borderColor: '#7c3aed', width: 16, height: 16, marginTop: -6 }}
                             />
                             <div className="flex justify-between text-xs font-semibold text-gray-400 mt-2">
                                 <span>500.000đ</span>
