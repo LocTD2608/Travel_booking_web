@@ -290,7 +290,7 @@ const Hotels: React.FC = () => {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-[15px] font-bold text-gray-900 outline-none cursor-pointer focus:border-travel-blue shadow-sm min-w-[150px]"
+                            className="bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-[15px] font-bold text-gray-900 outline-none cursor-pointer focus:border-travel-blue shadow-sm min-w-[200px]"
                         >
                             <option value="popularity">Phù hợp nhất</option>
                             <option value="price_asc">Giá: Thấp đến Cao</option>

@@ -247,7 +247,7 @@ const Experience: React.FC = () => {
                         <select
                             value={filters.sortBy ?? 'popular'}
                             onChange={(e) => setFilter({ sortBy: e.target.value })}
-                            className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-[14px] font-bold text-gray-900 outline-none cursor-pointer focus:border-[#7c3aed] shadow-sm min-w-[180px]"
+                            className="bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-[14px] font-bold text-gray-900 outline-none cursor-pointer focus:border-[#7c3aed] shadow-sm min-w-[200px]"
                         >
                             <option value="popular">Phổ biến nhất</option>
                             <option value="price">Giá thấp đến cao</option>
