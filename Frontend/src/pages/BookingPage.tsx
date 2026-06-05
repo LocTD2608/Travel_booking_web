@@ -74,6 +74,10 @@ const BookingPage: React.FC = () => {
         flight: 'border-sky-400', train: 'border-blue-700', bus: 'border-amber-500',
         tour: 'border-[#FF5E1F]',
     };
+    // Fallback colors for unknown types (e.g. bills/top-up)
+    const bgClass = typeBg[type] ?? 'bg-[#005CE6]';
+    const accentClass = accentColor[type] ?? 'text-[#005CE6]';
+    const borderClass = borderColor[type] ?? 'border-[#005CE6]';
 
     const applyVoucher = () => {
         if (form.voucherCode.toUpperCase() === 'TRAVEL30') {
@@ -257,7 +261,7 @@ const BookingPage: React.FC = () => {
                     {/* Step 1: Contact Details */}
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full ${typeBg[type]} flex items-center justify-center`}>
+                            <div className={`w-8 h-8 rounded-full ${bgClass} flex items-center justify-center`}>
                                 <span className="material-symbols-outlined text-white text-[16px]">contact_page</span>
                             </div>
                             <h2 className="font-bold text-gray-900 text-lg">Contact Details</h2>
@@ -302,7 +306,7 @@ const BookingPage: React.FC = () => {
                     {/* Step 2: Guest / Passenger Details */}
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full ${typeBg[type]} flex items-center justify-center`}>
+                            <div className={`w-8 h-8 rounded-full ${bgClass} flex items-center justify-center`}>
                                 <span className="material-symbols-outlined text-white text-[16px]">person</span>
                             </div>
                             <h2 className="font-bold text-gray-900 text-lg">{isTransport ? 'Passenger Details' : 'Guest Details'}</h2>
@@ -362,7 +366,7 @@ const BookingPage: React.FC = () => {
                     {/* Step 3: Payment Method */}
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full ${typeBg[type]} flex items-center justify-center`}>
+                            <div className={`w-8 h-8 rounded-full ${bgClass} flex items-center justify-center`}>
                                 <span className="material-symbols-outlined text-white text-[16px]">credit_card</span>
                             </div>
                             <h2 className="font-bold text-gray-900 text-lg">Payment Method</h2>
@@ -376,7 +380,7 @@ const BookingPage: React.FC = () => {
                             ] as { id: PaymentMethod; icon: string; label: string; desc: string; color: string }[]).map(pm => (
                                 <label
                                     key={pm.id}
-                                    className={`flex items-center gap-4 border-2 rounded-xl px-5 py-4 cursor-pointer transition-all ${paymentMethod === pm.id ? `${borderColor[type]} bg-blue-50/40` : 'border-gray-200 hover:border-gray-300'}`}
+                                    className={`flex items-center gap-4 border-2 rounded-xl px-5 py-4 cursor-pointer transition-all ${paymentMethod === pm.id ? `${borderClass} bg-blue-50/40` : 'border-gray-200 hover:border-gray-300'}`}
                                 >
                                     <span className={`material-symbols-outlined text-2xl ${pm.color}`}>{pm.icon}</span>
                                     <div className="flex-1">
@@ -491,7 +495,7 @@ const BookingPage: React.FC = () => {
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
-                            className={`w-full py-4 rounded-xl font-black text-white text-lg transition-all ${typeBg[type]} hover:opacity-90 disabled:opacity-60 shadow-lg relative overflow-hidden`}
+                            className={`w-full py-4 rounded-xl font-black text-white text-lg transition-all ${bgClass} hover:opacity-90 disabled:opacity-60 shadow-lg relative overflow-hidden`}
                         >
                             {isSubmitting ? (
                                 <span className="flex items-center justify-center gap-2">
@@ -511,7 +515,7 @@ const BookingPage: React.FC = () => {
                             <div className="relative h-36 overflow-hidden">
                                 <img src={image} alt={name} className="w-full h-full object-cover" />
                                 <div className="absolute top-2 left-2">
-                                    <span className={`${typeBg[type]} text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1`}>
+                                    <span className={`${bgClass} text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1`}>
                                         <span className="material-symbols-outlined text-[14px]">verified</span>
                                         {isTour ? 'VERIFIED TOUR' : isTransport ? 'VERIFIED TRANSPORT' : 'VERIFIED STAY'}
                                     </span>
@@ -588,7 +592,7 @@ const BookingPage: React.FC = () => {
                                 <div className="flex justify-between items-end">
                                     <div>
                                         <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">TOTAL PRICE</div>
-                                        <div className={`text-2xl font-black ${accentColor[type]}`}>{total.toLocaleString()}</div>
+                                        <div className={`text-2xl font-black ${accentClass}`}>{total.toLocaleString()}</div>
                                         <div className="text-xs text-gray-400">VNĐ · incl. all taxes and fees</div>
                                     </div>
                                 </div>
