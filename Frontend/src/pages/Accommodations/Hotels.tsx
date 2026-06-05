@@ -84,8 +84,8 @@ const Hotels: React.FC = () => {
                         rating: 8.5,
                         ratingText: 'Tuyệt vời',
                         reviews: Math.floor(Math.random() * 800) + 120,
-                        price: h.min_price,
-                        originalPrice: h.min_price ? Math.round(h.min_price * 1.2 / 50000) * 50000 : null,
+                        price: Number(h.min_price || 0),
+                        originalPrice: h.min_price ? Math.round(Number(h.min_price) * 1.2 / 50000) * 50000 : null,
                         badge: h.stars >= 5 ? 'Lựa chọn hàng đầu' : 'Phổ biến',
                         image: getHotelImage(h.name, h.address),
                         facilities: ['Free WiFi', 'Pool', 'Restaurant', 'Gym'],
@@ -216,13 +216,13 @@ const Hotels: React.FC = () => {
                                 step={100000}
                                 value={priceRange}
                                 onChange={(val: number[]) => setPriceRange(val as [number, number])}
-                                tooltip={{ formatter: (val) => `${val?.toLocaleString()} VNĐ` }}
+                                tooltip={{ formatter: (val) => `${val?.toLocaleString('vi-VN')} VNĐ` }}
                                 trackStyle={[{ backgroundColor: '#005CE6', height: 4 }]}
                                 handleStyle={[{ borderColor: '#005CE6', width: 16, height: 16, marginTop: -6 }, { borderColor: '#005CE6', width: 16, height: 16, marginTop: -6 }]}
                             />
                             <div className="flex justify-between text-xs font-semibold text-gray-400 mt-2">
-                                <span>{priceRange[0].toLocaleString()}đ</span>
-                                <span>{priceRange[1].toLocaleString()}đ</span>
+                                <span>{priceRange[0].toLocaleString('vi-VN')} VNĐ</span>
+                                <span>{priceRange[1].toLocaleString('vi-VN')} VNĐ</span>
                             </div>
                         </div>
 
