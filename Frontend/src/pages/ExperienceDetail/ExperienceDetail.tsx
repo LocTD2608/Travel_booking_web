@@ -214,14 +214,14 @@ const ExperienceDetail: React.FC = () => {
             setIsAuthModalOpen(true);
         } else {
             const params = new URLSearchParams({
-                type: 'hotel', // Using hotel type to match Booking Travel theme styles cleanly in Checkout
+                type: 'tour',
                 name: tour.name,
                 image: tour.images[0],
                 price: String(tour.price),
-                nights: '1',
+                quantity: '1',
                 detail1: tour.location,
                 detail2: 'Trải nghiệm du lịch trọn gói',
-                detail3: `${guests.adults} Người lớn, ${guests.children} Trẻ em`,
+                detail3: '1 Hành khách',
                 detail4: selectedDate ? selectedDate.format('DD/MM/YYYY') : 'Chọn ngày sau',
             });
             navigate(`/booking?${params.toString()}`);
@@ -418,8 +418,9 @@ const ExperienceDetail: React.FC = () => {
                             {/* Guest Selector */}
                             <div>
                                 <label className="block text-xs font-semibold text-gray-500 mb-1">Số lượng khách</label>
-                                <div className="border border-gray-200 rounded-lg p-2 bg-gray-50">
-                                    <GuestSelector value={guests} onChange={setGuests} simpleMode />
+                                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 flex items-center gap-2 text-sm text-gray-700 font-bold">
+                                    <span className="material-symbols-outlined text-gray-400 text-[18px]">group</span>
+                                    1 Hành khách
                                 </div>
                             </div>
                         </div>
