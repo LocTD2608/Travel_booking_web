@@ -126,10 +126,47 @@ const Flights: React.FC = () => {
 
     const [priceRange, setPriceRange] = useState<[number, number]>([500000, 5000000]);
     const [sortBy, setSortBy] = useState('price_asc');
+    const [selectedAirlines, setSelectedAirlines] = useState<string[]>([]);
+    const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+
+    const handleAirlineToggle = (name: string) => {
+        setSelectedAirlines(prev => 
+            prev.includes(name) 
+                ? prev.filter(a => a !== name) 
+                : [...prev, name]
+        );
+    };
+
+    const handleTimeToggle = (name: string) => {
+        setSelectedTimes(prev => 
+            prev.includes(name) 
+                ? prev.filter(t => t !== name) 
+                : [...prev, name]
+        );
+    };
 
     // Filtering & Sorting Logic
     const filteredFlights = flights.filter((flight) => {
-        return flight.price >= priceRange[0] && flight.price <= priceRange[1];
+        const matchesPrice = flight.price >= priceRange[0] && flight.price <= priceRange[1];
+        
+        const matchesAirline = selectedAirlines.length === 0 || selectedAirlines.some(sel => {
+            const flightAirlineLower = flight.airline.toLowerCase();
+            const selLower = sel.toLowerCase();
+            if (selLower.includes('vietnam')) return flightAirlineLower.includes('vietnam');
+            if (selLower.includes('bamboo')) return flightAirlineLower.includes('bamboo');
+            if (selLower.includes('vietjet')) return flightAirlineLower.includes('vietjet') || flightAirlineLower.includes('vj');
+            return flightAirlineLower.includes(selLower);
+        });
+
+        const matchesTime = selectedTimes.length === 0 || selectedTimes.some(timeRange => {
+            const hour = parseInt(flight.departureTime.split(':')[0]);
+            if (timeRange === 'Morning') return hour >= 6 && hour < 12;
+            if (timeRange === 'Afternoon') return hour >= 12 && hour < 18;
+            if (timeRange === 'Evening') return hour >= 18 && hour <= 24;
+            return true;
+        });
+
+        return matchesPrice && matchesAirline && matchesTime;
     }).sort((a, b) => {
         if (sortBy === 'price_asc') return a.price - b.price;
         if (sortBy === 'price_desc') return b.price - a.price;
@@ -200,7 +237,12 @@ const Flights: React.FC = () => {
                                 <h3 className="font-bold text-lg">Filters</h3>
                                 <button
                                     className="text-travel-blue font-semibold text-sm hover:underline"
-                                    onClick={() => { setPriceRange([500000, 5000000]); setSortBy('price_asc'); }}
+                                    onClick={() => {
+                                        setPriceRange([500000, 5000000]);
+                                        setSortBy('price_asc');
+                                        setSelectedAirlines([]);
+                                        setSelectedTimes([]);
+                                    }}
                                 >
                                     Reset
                                 </button>
@@ -260,7 +302,12 @@ const Flights: React.FC = () => {
                                 ].map(airline => (
                                     <label key={airline.name} className="flex justify-between items-center mb-3 cursor-pointer group">
                                         <div className="flex items-center gap-3">
-                                            <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" />
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedAirlines.includes(airline.name)}
+                                                onChange={() => handleAirlineToggle(airline.name)}
+                                                className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                            />
                                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: airline.code }}></div>
                                             <span className="text-sm font-medium text-gray-700">{airline.name}</span>
                                         </div>
@@ -277,7 +324,12 @@ const Flights: React.FC = () => {
                                     { name: 'Evening', icon: 'nightlight', desc: '18:00 - 24:00' },
                                 ].map(time => (
                                     <label key={time.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
-                                        <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" />
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedTimes.includes(time.name)}
+                                            onChange={() => handleTimeToggle(time.name)}
+                                            className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                        />
                                         <span className="material-symbols-outlined text-[20px] text-yellow-500 group-hover:text-yellow-600 transition-colors">{time.icon}</span>
                                         <div>
                                             <div className="text-sm font-medium text-gray-700">{time.name}</div>
