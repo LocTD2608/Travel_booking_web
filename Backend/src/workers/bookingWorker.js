@@ -1,36 +1,42 @@
 const { Worker } = require("bullmq");
 const db = require("../models");
 
-const worker = new Worker(
-  "bookingQueue",
-  async (job) => {
-    const { bookingId } = job.data;
+let worker = null;
 
-    const booking = await db.Booking.findByPk(bookingId);
+if (process.env.REDIS_URL) {
+  worker = new Worker(
+    "bookingQueue",
+    async (job) => {
+      const { bookingId } = job.data;
 
-    if (!booking) return;
+      const booking = await db.Booking.findByPk(bookingId);
 
-    if (booking.TrangThaiBooking === "Chưa thanh toán") {
-      await booking.update({
-        TrangThaiBooking: "Đã hủy",
-      });
+      if (!booking) return;
 
-      console.log("Auto cancelled:", bookingId);
-    }
-  },
-  {
-    connection: {
-      url: process.env.REDIS_URL,
+      if (booking.TrangThaiBooking === "Chưa thanh toán") {
+        await booking.update({
+          TrangThaiBooking: "Đã hủy",
+        });
+
+        console.log("Auto cancelled:", bookingId);
+      }
     },
-  }
-);
+    {
+      connection: {
+        url: process.env.REDIS_URL,
+      },
+    }
+  );
 
-worker.on("completed", (job) => {
-  console.log("Job completed", job.id);
-});
+  worker.on("completed", (job) => {
+    console.log("Job completed", job.id);
+  });
 
-worker.on("failed", (job, err) => {
-  console.log("Job failed", job.id, err.message);
-});
+  worker.on("failed", (job, err) => {
+    console.log("Job failed", job.id, err.message);
+  });
+} else {
+  console.log("⚠️ REDIS_URL not defined. BookingWorker disabled.");
+}
 
 module.exports = worker;

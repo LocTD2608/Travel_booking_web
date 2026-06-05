@@ -115,7 +115,7 @@ exports.getTopDestinations = async (req, res) => {
     // 1. Fetch all ChiTietBooking records to count destination frequencies
     const details = await sequelize.query(
       `
-      SELECT LoaiDoiTuong, TenDichVu, ThongTinThem
+      SELECT LoaiDoiTuong
       FROM chi_tiet_booking
       `,
       {
@@ -146,7 +146,7 @@ exports.getTopDestinations = async (req, res) => {
         }
       }
 
-      const textToSearch = `${locationText} ${item.TenDichVu} ${item.LoaiDoiTuong}`.toLowerCase();
+      const textToSearch = `${locationText} ${item.LoaiDoiTuong || ''}`.toLowerCase();
 
       if (textToSearch.includes('hà nội') || textToSearch.includes('ha noi')) {
         destinationCounts['Ha Noi']++;

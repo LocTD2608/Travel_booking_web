@@ -225,19 +225,6 @@ const Experience: React.FC = () => {
                             ))}
                         </div>
                     </div>
-
-                    {/* Purple Themed Promo Card */}
-                    <div className="bg-[#7c3aed] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
-                        <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_activity</span>
-                        <h4 className="font-bold text-lg mb-2 relative z-10">Tour Siêu Ưu Đãi</h4>
-                        <p className="text-xs text-purple-100 mb-4 relative z-10 leading-relaxed">Đăng nhập tài khoản để nhận thêm mã giảm giá tới 15% khi đặt các gói trải nghiệm đặc biệt hôm nay!</p>
-                        <button 
-                            onClick={() => setIsAuthModalOpen(true)}
-                            className="bg-white text-[#7c3aed] px-4 py-2 rounded-lg font-bold text-xs w-full relative z-10 hover:bg-gray-50 hover-scale transition-all"
-                        >
-                            Đăng Nhập Ngay
-                        </button>
-                    </div>
                 </div>
 
                 {/* Right Column (Results) */}
@@ -282,29 +269,11 @@ const Experience: React.FC = () => {
                             <p className="text-xs mt-1">Vui lòng thay đổi điểm đến hoặc bộ lọc giá tối đa để thử lại.</p>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-4">
-                            {filteredResults.map((item) => (
-                                <ExperienceCard key={item.MaDV} item={item} />
-                            ))}
-
-                            {/* Aligned Pagination Bar */}
-                            <div className="flex justify-center items-center gap-3 mt-8">
-                                <button 
-                                    disabled={currentPage <= 1} 
-                                    onClick={() => setPage(currentPage - 1)}
-                                    className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    ← Trước
-                                </button>
-                                <span className="px-4 py-2 bg-[#7c3aed] text-white rounded-lg text-xs font-bold shadow-sm">
-                                    Trang {currentPage}
-                                </span>
-                                <button 
-                                    onClick={() => setPage(currentPage + 1)}
-                                    className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold bg-white text-gray-600 hover:bg-gray-50 transition-colors"
-                                >
-                                    Sau →
-                                </button>
+                        <div>
+                            <div className="flex flex-col gap-4">
+                                {filteredResults.map((item) => (
+                                    <ExperienceCard key={item.MaDV} item={item} />
+                                ))}
                             </div>
                         </div>
                     )}
