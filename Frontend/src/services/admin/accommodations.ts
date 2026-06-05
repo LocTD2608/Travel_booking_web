@@ -5,6 +5,9 @@ import type { Accommodation, Room } from './typing';
 export const getAccommodations = (params?: Record<string, any>) =>
   request.get('/accommodations', { params });
 
+export const getAccommodationStats = () =>
+  request.get('/accommodations/stats');
+
 export const createAccommodation = (data: Partial<Accommodation>) =>
   request.post('/accommodations', data);
 

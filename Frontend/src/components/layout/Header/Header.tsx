@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import AuthModal from '../../auth/AuthModal';
+import { notification } from 'antd';
+import { cancellationApi } from '../../../services/cancellationApi';
 
 const Header: React.FC = () => {
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -11,6 +13,35 @@ const Header: React.FC = () => {
 
     const { user, logout, isAuthenticated } = useAuth();
     const location = useLocation();
+
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        const checkNotifications = async () => {
+            try {
+                const notifs = await cancellationApi.getNotifications();
+                for (const notif of notifs) {
+                    const isApproved = notif.status === 'approved';
+                    notification[isApproved ? 'success' : 'error']({
+                        message: isApproved ? 'Hoàn tiền thành công!' : 'Yêu cầu hủy bị từ chối',
+                        description: `Yêu cầu hủy đơn đặt chỗ #${notif.bookingId} (${notif.bookingDetail}) đã được ${isApproved ? 'phê duyệt và hoàn tiền thành công!' : 'từ chối bởi quản trị viên.'}`,
+                        duration: 8,
+                    });
+                    // Acknowledge right away
+                    await cancellationApi.acknowledgeNotification(notif.id);
+                }
+            } catch (err) {
+                console.error('Error fetching cancellation notifications:', err);
+            }
+        };
+
+        // Check on mount
+        checkNotifications();
+
+        // Poll every 10 seconds
+        const timer = setInterval(checkNotifications, 10000);
+        return () => clearInterval(timer);
+    }, [isAuthenticated]);
 
     const handleOpenLogin = () => {
         setAuthInitialView('login');
@@ -39,7 +70,7 @@ const Header: React.FC = () => {
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex items-center gap-6 text-sm font-medium">
                         <Link className="hover:text-travel-blue transition-colors" to="/help-center">Help</Link>
-                        <Link className="hover:text-travel-blue transition-colors" to="/booking">My Booking</Link>
+                        <Link className="hover:text-travel-blue transition-colors" to="/profile/booking-history">My Booking</Link>
                         {isAuthenticated && (
                             <Link className="hover:text-travel-blue transition-colors" to="/profile">Profile</Link>
                         )}
@@ -96,10 +127,10 @@ const Header: React.FC = () => {
                             <span className="material-symbols-outlined mb-1 group-hover:-translate-y-0.5 transition-transform">local_activity</span>
                             <span className="text-sm font-bold">Experience</span>
                         </Link>
-                        <a className={getNavClass(activeMenu === 'bills')} href="#" onMouseEnter={() => setActiveMenu('bills')}>
+                        <Link to="/mobile-credit" className={getNavClass(activeMenu === 'bills')} onMouseEnter={() => setActiveMenu('bills')}>
                             <span className="material-symbols-outlined mb-1 group-hover:-translate-y-0.5 transition-transform">credit_card</span>
                             <span className="text-sm font-bold">Bills & Top-up</span>
-                        </a>
+                        </Link>
                     </nav>
                 </div>
 

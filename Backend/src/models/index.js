@@ -20,6 +20,9 @@ const DichVu = require('./DichVu')(sequelize, Sequelize);
 const DV_DU_LICH = require('./DV_DU_LICH')(sequelize, Sequelize);
 
 // ===== QUAN HỆ =====
+Hotel.hasMany(LoaiPhong, { foreignKey: 'MaKS', as: 'rooms' });
+LoaiPhong.belongsTo(Hotel, { foreignKey: 'MaKS' });
+
 ChuyenBay.belongsTo(TuyenDuong, {
     foreignKey: "MaTuyenDuong"
 });

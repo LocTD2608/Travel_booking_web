@@ -103,29 +103,55 @@ const CancellationsPage: React.FC = () => {
     }
   };
 
+  const fetchCancellationsSilent = async () => {
+    try {
+      const res = await getCancellations();
+      const cancellationsData = res.data || res;
+      if (Array.isArray(cancellationsData)) {
+        setData(cancellationsData);
+      }
+    } catch (error) {
+      console.error('Error fetching cancellations silently:', error);
+    }
+  };
+
   React.useEffect(() => {
     fetchCancellations();
   }, []);
 
   const handleApprove = async (id: string) => {
+    // 1. Optimistic UI update
+    setData(prev => prev.map(r => String(r.id).trim() === String(id).trim() ? { ...r, status: 'approved' as const } : r));
+    message.success('Đang thực hiện phê duyệt...');
+
     try {
+      // 2. Call API in background
       await updateCancellationStatus(id, 'approved');
-      setData(prev => prev.map(r => r.id === id ? { ...r, status: 'approved' as const } : r));
-      message.success('Đã xác nhận yêu cầu hủy');
+      message.success('Đã xác nhận yêu cầu hủy thành công!');
+      await fetchCancellationsSilent();
     } catch (error) {
       console.error('Error approving cancellation:', error);
       message.error('Không thể phê duyệt yêu cầu hủy');
+      // Rollback on error by re-fetching
+      await fetchCancellationsSilent();
     }
   };
 
   const handleReject = async (id: string) => {
+    // 1. Optimistic UI update
+    setData(prev => prev.map(r => String(r.id).trim() === String(id).trim() ? { ...r, status: 'rejected' as const } : r));
+    message.warning('Đang thực hiện từ chối...');
+
     try {
+      // 2. Call API in background
       await updateCancellationStatus(id, 'rejected');
-      setData(prev => prev.map(r => r.id === id ? { ...r, status: 'rejected' as const } : r));
-      message.warning('Đã từ chối yêu cầu hủy');
+      message.warning('Đã từ chối yêu cầu hủy thành công!');
+      await fetchCancellationsSilent();
     } catch (error) {
       console.error('Error rejecting cancellation:', error);
       message.error('Không thể từ chối yêu cầu hủy');
+      // Rollback on error by re-fetching
+      await fetchCancellationsSilent();
     }
   };
 

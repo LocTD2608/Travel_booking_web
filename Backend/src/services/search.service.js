@@ -494,7 +494,38 @@ const searchTrains = async ({ from, to, date, priceMax, sortBy }) => {
 };
 
 // ─── EXPERIENCES (dùng bảng DICH_VU + DV_DU_LICH) ───────────────────────────
-const searchExperiences = async ({ destination, priceMax, sortBy }) => {
+// ─── Helper: Tính rating từ MaDV (giống frontend) ───
+const generateStarsFromId = (maDV) => {
+  const hash = Math.abs(maDV * 2654435761) % 100;
+  if (hash < 20) return 5;
+  if (hash < 40) return 4;
+  if (hash < 60) return 3;
+  if (hash < 80) return 4;
+  return 5;
+};
+
+const calculateDisplayRating = (stars, seed) => {
+  const clampedStars = Math.max(1, Math.min(5, Math.round(stars)));
+  const random = (s) => {
+    const x = Math.sin(s) * 10000;
+    return x - Math.floor(x);
+  };
+  const randomValue = random(seed);
+  
+  let min, max;
+  switch (clampedStars) {
+    case 5: min = 4.5; max = 5.0; break;
+    case 4: min = 3.5; max = 4.4; break;
+    case 3: min = 2.5; max = 3.4; break;
+    case 2: min = 1.5; max = 2.4; break;
+    case 1:
+    default: min = 0.5; max = 1.4;
+  }
+  const displayRating = min + (max - min) * randomValue;
+  return Math.round(displayRating * 10) / 10;
+};
+
+const searchExperiences = async ({ destination, priceMax, sortBy, rating }) => {
   let query = `
     SELECT
       dv.MaDV,
@@ -518,6 +549,18 @@ const searchExperiences = async ({ destination, priceMax, sortBy }) => {
   query += ` ORDER BY dv.Gia ASC`;
 
   const [rows] = await db.query(query, { replacements });
+  
+  // Filter theo rating nếu có
+  if (rating && typeof rating === 'string' && rating.trim()) {
+    const selectedStars = rating.split(',').map(s => parseInt(s, 10)).filter(s => !isNaN(s));
+    if (selectedStars.length > 0) {
+      return rows.filter(row => {
+        const stars = generateStarsFromId(row.MaDV);
+        return selectedStars.includes(stars);
+      });
+    }
+  }
+  
   return rows;
 };
 

@@ -1,20 +1,56 @@
 import React, { useState } from 'react';
 import { message } from 'antd';
 import type { Flight } from '../../../services/admin/typing';
+import {
+  getFlights,
+  createFlight,
+  updateFlight,
+  deleteFlight
+} from '../../../services/admin/flights';
 
 const TEAL = '#00C2A0';
 const TEAL_LIGHT = '#e6faf7';
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-const mockFlights: Flight[] = [
-  { id: 'f1', flightNumber: 'VN204', airline: 'Vietnam Airlines', origin: 'HAN', destination: 'SGN', departureTime: '2024-07-15 06:00', arrivalTime: '2024-07-15 08:10', price: 1850000, seats: 120, status: 'active' },
-  { id: 'f2', flightNumber: 'VJ345', airline: 'VietJet Air', origin: 'SGN', destination: 'DAD', departureTime: '2024-07-15 09:30', arrivalTime: '2024-07-15 11:00', price: 950000, seats: 180, status: 'active' },
-  { id: 'f3', flightNumber: 'QH701', airline: 'Bamboo Airways', origin: 'HAN', destination: 'PQC', departureTime: '2024-07-16 07:15', arrivalTime: '2024-07-16 09:20', price: 2750000, seats: 150, status: 'delayed' },
-  { id: 'f4', flightNumber: 'VN502', airline: 'Vietnam Airlines', origin: 'SGN', destination: 'HAN', departureTime: '2024-07-16 14:00', arrivalTime: '2024-07-16 16:10', price: 2100000, seats: 120, status: 'active' },
-  { id: 'f5', flightNumber: 'VJ890', airline: 'VietJet Air', origin: 'DAD', destination: 'SGN', departureTime: '2024-07-17 18:00', arrivalTime: '2024-07-17 19:20', price: 880000, seats: 180, status: 'cancelled' },
-  { id: 'f6', flightNumber: 'PA301', airline: 'Pacific Airlines', origin: 'HAN', destination: 'DAD', departureTime: '2024-07-18 08:00', arrivalTime: '2024-07-18 09:30', price: 1200000, seats: 90, status: 'active' },
-  { id: 'f7', flightNumber: 'QH220', airline: 'Bamboo Airways', origin: 'SGN', destination: 'PQC', departureTime: '2024-07-18 15:00', arrivalTime: '2024-07-18 16:10', price: 1650000, seats: 60, status: 'active' },
-];
+const getFlightNumber = (airline: string, id: number | string) => {
+  const clean = airline ? airline.toLowerCase() : '';
+  let prefix = 'VN';
+  if (clean.includes('vietjet')) prefix = 'VJ';
+  else if (clean.includes('bamboo')) prefix = 'QH';
+  else if (clean.includes('vietravel')) prefix = 'VU';
+  else if (clean.includes('pacific')) prefix = 'BL';
+  return `${prefix}${id}`;
+};
+
+const formatDate = (isoString: string) => {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return isoString;
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const mapBackendFlight = (f: any): Flight => {
+  const idStr = String(f.MaChuyenBay);
+  const idNum = parseInt(idStr) || 0;
+  
+  // Deterministic status based on id
+  let status: 'active' | 'delayed' | 'cancelled' = 'active';
+  if (idNum % 15 === 0) status = 'delayed';
+  else if (idNum % 23 === 0) status = 'cancelled';
+
+  return {
+    id: idStr,
+    flightNumber: getFlightNumber(f.HangBay, f.MaChuyenBay),
+    airline: f.HangBay,
+    origin: f.TuyenDuong?.SanBayDi?.Code || 'HAN',
+    destination: f.TuyenDuong?.SanBayDen?.Code || 'SGN',
+    departureTime: formatDate(f.GioKhoiHanh),
+    arrivalTime: formatDate(f.GioHaCanh),
+    price: parseFloat(f.GiaCoBan) || 0,
+    seats: 180, // default seats count
+    status: status
+  };
+};
 
 const statusCfg: Record<string, { bg: string; color: string; dot: string }> = {
   active: { bg: '#f0fdf4', color: '#16a34a', dot: '#22c55e' },
@@ -57,8 +93,87 @@ const FlightFormModal: React.FC<{ open: boolean; editing: Flight | null; onClose
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.airline || !form.flightNumber || !form.origin || !form.destination) { message.error('Vui lòng điền đầy đủ thông tin!'); return; }
-    onSubmit({ ...form, price: parseFloat(form.price) || 0, seats: parseInt(form.seats) || 0 } as any);
+    
+    if (!form.airline) {
+      message.error('Vui lòng chọn hãng bay!');
+      return;
+    }
+    
+    const flightNumberClean = form.flightNumber.trim().toUpperCase();
+    if (!flightNumberClean) {
+      message.error('Vui lòng nhập số hiệu chuyến bay!');
+      return;
+    }
+    if (!/^[A-Z0-9]{3,6}$/.test(flightNumberClean)) {
+      message.error('Số hiệu chuyến bay không hợp lệ (phải gồm 3-6 ký tự chữ in hoa và số, ví dụ: VN204)!');
+      return;
+    }
+    
+    const originClean = form.origin.trim().toUpperCase();
+    if (!originClean) {
+      message.error('Vui lòng nhập điểm khởi hành!');
+      return;
+    }
+    if (!/^[A-Z]{3}$/.test(originClean)) {
+      message.error('Điểm khởi hành phải là mã IATA 3 ký tự chữ cái (ví dụ: HAN)!');
+      return;
+    }
+    
+    const destinationClean = form.destination.trim().toUpperCase();
+    if (!destinationClean) {
+      message.error('Vui lòng nhập điểm đến!');
+      return;
+    }
+    if (!/^[A-Z]{3}$/.test(destinationClean)) {
+      message.error('Điểm đến phải là mã IATA 3 ký tự chữ cái (ví dụ: SGN)!');
+      return;
+    }
+    
+    if (originClean === destinationClean) {
+      message.error('Điểm khởi hành và điểm đến không được trùng nhau!');
+      return;
+    }
+    
+    if (!form.departureTime) {
+      message.error('Vui lòng chọn giờ khởi hành!');
+      return;
+    }
+    
+    const priceVal = parseFloat(form.price);
+    if (isNaN(priceVal) || priceVal <= 0) {
+      message.error('Giá vé phải là số lớn hơn 0 VND!');
+      return;
+    }
+    
+    const seatsVal = parseInt(form.seats, 10);
+    if (isNaN(seatsVal) || seatsVal < 1 || seatsVal > 400) {
+      message.error('Số ghế phải là số nguyên từ 1 đến 400!');
+      return;
+    }
+
+    let formattedDeparture = form.departureTime;
+    let formattedArrival = '';
+    if (form.departureTime) {
+      const depDate = new Date(form.departureTime);
+      if (!isNaN(depDate.getTime())) {
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        formattedDeparture = `${depDate.getFullYear()}-${pad(depDate.getMonth() + 1)}-${pad(depDate.getDate())} ${pad(depDate.getHours())}:${pad(depDate.getMinutes())}`;
+        
+        const arrDate = new Date(depDate.getTime() + 2 * 60 * 60 * 1000); // mặc định bay 2 tiếng
+        formattedArrival = `${arrDate.getFullYear()}-${pad(arrDate.getMonth() + 1)}-${pad(arrDate.getDate())} ${pad(arrDate.getHours())}:${pad(arrDate.getMinutes())}`;
+      }
+    }
+    
+    onSubmit({
+      ...form,
+      flightNumber: flightNumberClean,
+      origin: originClean,
+      destination: destinationClean,
+      departureTime: formattedDeparture,
+      arrivalTime: formattedArrival,
+      price: priceVal,
+      seats: seatsVal,
+    } as any);
   };
 
   if (!open) return null;
@@ -209,34 +324,96 @@ const ActionModal: React.FC<{ flight: Flight | null; onClose: () => void; onEdit
 
 // ─── Flights Page ─────────────────────────────────────────────────────────────
 const FlightsPage: React.FC = () => {
-  const [flights, setFlights] = useState<Flight[]>(mockFlights);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingFlight, setEditingFlight] = useState<Flight | null>(null);
   const [actionFlight, setActionFlight] = useState<Flight | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  const fetchAllFlights = async () => {
+    try {
+      setLoading(true);
+      const res = await getFlights();
+      const rawFlights = res.data || res;
+      if (Array.isArray(rawFlights)) {
+        setFlights(rawFlights.map(mapBackendFlight));
+      } else {
+        setFlights([]);
+      }
+    } catch (err) {
+      console.error('Error fetching flights:', err);
+      message.error('Không thể tải danh sách chuyến bay từ server');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchAllFlights();
+  }, []);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const filtered = flights.filter(f =>
     f.flightNumber.toLowerCase().includes(search.toLowerCase()) ||
-    f.airline.toLowerCase().includes(search.toLowerCase()) ||
-    f.origin.toLowerCase().includes(search.toLowerCase()) ||
-    f.destination.toLowerCase().includes(search.toLowerCase())
+    (f.airline && f.airline.toLowerCase().includes(search.toLowerCase())) ||
+    (f.origin && f.origin.toLowerCase().includes(search.toLowerCase())) ||
+    (f.destination && f.destination.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginatedFlights = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleAdd = () => { setEditingFlight(null); setAddModalOpen(true); };
   const handleEdit = (f: Flight) => { setEditingFlight(f); setAddModalOpen(true); };
-  const handleDelete = (id: string) => {
-    setFlights(prev => prev.filter(f => f.id !== id));
-    message.success('Đã xóa chuyến bay');
-  };
-  const handleSubmit = (values: Partial<Flight>) => {
-    if (editingFlight) {
-      setFlights(prev => prev.map(f => f.id === editingFlight.id ? { ...f, ...values } : f));
-      message.success('Đã cập nhật chuyến bay');
-    } else {
-      setFlights(prev => [{ ...values as Flight, id: `f${Date.now()}` }, ...prev]);
-      message.success('Đã thêm chuyến bay mới');
+
+  const handleDelete = async (id: string) => {
+    try {
+      const cleanId = id.replace('f', '');
+      await deleteFlight(cleanId);
+      setFlights(prev => prev.filter(f => f.id !== id));
+      message.success('Đã xóa chuyến bay thành công');
+    } catch (err: any) {
+      console.error('Error deleting flight:', err);
+      message.error('Không thể xóa chuyến bay: ' + (err.response?.data?.message || err.message));
     }
-    setAddModalOpen(false);
+  };
+
+  const handleSubmit = async (values: Partial<Flight>) => {
+    try {
+      const payload = {
+        origin: values.origin,
+        destination: values.destination,
+        HangBay: values.airline,
+        GiaCoBan: values.price,
+        GioKhoiHanh: values.departureTime,
+        GioHaCanh: values.arrivalTime,
+      };
+
+      if (editingFlight) {
+        const cleanId = editingFlight.id.replace('f', '');
+        const res = await updateFlight(cleanId, payload);
+        const updated = res.data || res;
+        const mapped = mapBackendFlight(updated);
+        setFlights(prev => prev.map(f => f.id === editingFlight.id ? mapped : f));
+        message.success('Đã cập nhật chuyến bay thành công');
+      } else {
+        const res = await createFlight(payload);
+        const created = res.data || res;
+        const mapped = mapBackendFlight(created);
+        setFlights(prev => [mapped, ...prev]);
+        message.success('Đã thêm chuyến bay mới thành công');
+      }
+      setAddModalOpen(false);
+    } catch (err: any) {
+      console.error('Error saving flight:', err);
+      message.error('Lỗi khi lưu thông tin chuyến bay: ' + (err.response?.data?.error || err.message));
+    }
   };
 
   const activeCount = flights.filter(f => f.status === 'active').length;
@@ -289,82 +466,208 @@ const FlightsPage: React.FC = () => {
             </button>
             <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 12, border: 'none', background: TEAL, color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: `0 4px 12px ${TEAL}40` }}>
               <span className="material-symbols-outlined" style={{ fontSize: 16 }}>add</span>
-              Add Booking
+              Add Flight
             </button>
           </div>
         </div>
 
-        {/* Table */}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#f8fafc' }}>
-                {['Customer Name', 'Airline', 'Flight Number', 'Route', 'Price', 'Payment Status', 'Actions'].map(h => (
-                  <th key={h} style={{ padding: '11px 18px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(f => {
-                const s = statusCfg[f.status];
-                const initials = airlineInitials(f.airline);
-                const colors = ['#3b82f6', '#f97316', '#8b5cf6', '#10b981'];
-                const colorIdx = f.airline.length % 4;
-                return (
-                  <tr key={f.id} style={{ borderTop: '1px solid #f8fafc', transition: 'background 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#f8fafc')}
-                    onMouseLeave={e => (e.currentTarget.style.background = '#fff')}>
-                    {/* Customer */}
-                    <td style={{ padding: '13px 18px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{
-                          width: 32, height: 32, borderRadius: 9,
-                          background: `${colors[colorIdx]}18`,
-                          color: colors[colorIdx],
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontWeight: 800, fontSize: 11,
-                        }}>{initials}</div>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>Passenger #{f.id.replace('f', '')}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '13px 18px', fontSize: 13, color: '#374151' }}>{f.airline}</td>
-                    <td style={{ padding: '13px 18px' }}>
-                      <span style={{ padding: '3px 8px', background: '#f1f5f9', borderRadius: 6, fontSize: 12, fontWeight: 700, color: '#374151', letterSpacing: '0.04em' }}>{f.flightNumber}</span>
-                    </td>
-                    <td style={{ padding: '13px 18px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>{f.origin}</span>
-                        <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#94a3b8' }}>arrow_forward</span>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>{f.destination}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '13px 18px', fontWeight: 700, fontSize: 13, color: '#0f172a' }}>₫{f.price.toLocaleString('vi-VN')}</td>
-                    <td style={{ padding: '13px 18px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 999, background: s.bg, color: s.color, fontSize: 11, fontWeight: 700 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.dot }} />
-                        {f.status === 'active' ? 'Paid' : f.status === 'delayed' ? 'Pending' : 'Cancelled'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '13px 18px' }}>
-                      <button onClick={() => setActionFlight(f)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#f8fafc', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#64748b' }}>more_horiz</span>
-                      </button>
+        {/* Table / Loading State */}
+        {loading ? (
+          <div style={{ padding: '60px 0', textAlign: 'center', color: '#64748b', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 32, color: TEAL, animation: 'spin 1.5s linear infinite' }}>sync</span>
+            <div style={{ fontSize: 13, fontWeight: 600 }}>Đang tải danh sách chuyến bay...</div>
+            <style>{`
+              @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+              }
+            `}</style>
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#f8fafc' }}>
+                  {['Customer Name', 'Airline', 'Flight Number', 'Route', 'Price', 'Status', 'Actions'].map(h => (
+                    <th key={h} style={{ padding: '11px 18px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ padding: '40px 18px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
+                      Không tìm thấy chuyến bay nào phù hợp
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  paginatedFlights.map(f => {
+                    const s = statusCfg[f.status];
+                    const initials = airlineInitials(f.airline || '');
+                    const colors = ['#3b82f6', '#f97316', '#8b5cf6', '#10b981'];
+                    const colorIdx = f.airline ? f.airline.length % 4 : 0;
+                    return (
+                      <tr key={f.id} style={{ borderTop: '1px solid #f8fafc', transition: 'background 0.15s' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#f8fafc')}
+                        onMouseLeave={e => (e.currentTarget.style.background = '#fff')}>
+                        {/* Customer */}
+                        <td style={{ padding: '13px 18px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{
+                              width: 32, height: 32, borderRadius: 9,
+                              background: `${colors[colorIdx]}18`,
+                              color: colors[colorIdx],
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontWeight: 800, fontSize: 11,
+                            }}>{initials}</div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>Passenger #{f.id.replace('f', '')}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: '13px 18px', fontSize: 13, color: '#374151' }}>{f.airline}</td>
+                        <td style={{ padding: '13px 18px' }}>
+                          <span style={{ padding: '3px 8px', background: '#f1f5f9', borderRadius: 6, fontSize: 12, fontWeight: 700, color: '#374151', letterSpacing: '0.04em' }}>{f.flightNumber}</span>
+                        </td>
+                        <td style={{ padding: '13px 18px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>{f.origin}</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#94a3b8' }}>arrow_forward</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>{f.destination}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: '13px 18px', fontWeight: 700, fontSize: 13, color: '#0f172a' }}>₫{f.price.toLocaleString('vi-VN')}</td>
+                        <td style={{ padding: '13px 18px' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 999, background: s.bg, color: s.color, fontSize: 11, fontWeight: 700 }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.dot }} />
+                            {f.status === 'active' ? 'Active' : f.status === 'delayed' ? 'Delayed' : 'Cancelled'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '13px 18px' }}>
+                          <button onClick={() => setActionFlight(f)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#f8fafc', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#64748b' }}>more_horiz</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination */}
         <div style={{ padding: '12px 20px', borderTop: '1px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>Hiển thị {filtered.length} / {flights.length} chuyến bay</span>
-          <div style={{ display: 'flex', gap: 4 }}>
-            {[1, 2, 3].map(p => (
-              <button key={p} style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: p === 1 ? TEAL : '#f1f5f9', color: p === 1 ? '#fff' : '#64748b', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>{p}</button>
-            ))}
-          </div>
+          <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+            Hiển thị {filtered.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0} - {Math.min(currentPage * PAGE_SIZE, filtered.length)} trong tổng số {filtered.length} chuyến bay
+          </span>
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {/* Prev Button */}
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#f1f5f9',
+                  color: currentPage === 1 ? '#cbd5e1' : '#64748b',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_left</span>
+              </button>
+
+              {/* Page numbers */}
+              {(() => {
+                const pages: (number | string)[] = [];
+                if (totalPages <= 7) {
+                  for (let i = 1; i <= totalPages; i++) pages.push(i);
+                } else {
+                  pages.push(1);
+                  if (currentPage > 4) {
+                    pages.push('...');
+                  }
+                  const start = Math.max(2, currentPage - 2);
+                  const end = Math.min(totalPages - 1, currentPage + 2);
+                  let adjustedStart = start;
+                  let adjustedEnd = end;
+                  if (currentPage <= 4) {
+                    adjustedEnd = 5;
+                  } else if (currentPage >= totalPages - 3) {
+                    adjustedStart = totalPages - 4;
+                  }
+                  for (let i = adjustedStart; i <= adjustedEnd; i++) {
+                    pages.push(i);
+                  }
+                  if (currentPage < totalPages - 3) {
+                    pages.push('...');
+                  }
+                  pages.push(totalPages);
+                }
+
+                return pages.map((p, idx) => {
+                  if (p === '...') {
+                    return (
+                      <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', color: '#94a3b8', fontWeight: 600, fontSize: 13, userSelect: 'none' }}>
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p as number)}
+                      style={{
+                        width: 30,
+                        height: 30,
+                        borderRadius: 8,
+                        border: 'none',
+                        background: p === currentPage ? TEAL : '#f1f5f9',
+                        color: p === currentPage ? '#fff' : '#64748b',
+                        fontWeight: 700,
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {p}
+                    </button>
+                  );
+                });
+              })()}
+
+              {/* Next Button */}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#f1f5f9',
+                  color: currentPage === totalPages ? '#cbd5e1' : '#64748b',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_right</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

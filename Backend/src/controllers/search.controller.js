@@ -160,8 +160,8 @@ const searchTrains = async (req, res) => {
 // Trải nghiệm
 const searchExperiences = async (req, res) => {
   try {
-    const { destination, priceMax, sortBy } = req.query;
-    const results = await searchService.searchExperiences({ destination, priceMax, sortBy });
+    const { destination, priceMax, sortBy, rating } = req.query;
+    const results = await searchService.searchExperiences({ destination, priceMax, sortBy, rating });
     res.json({ success: true, data: results, total: results.length });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

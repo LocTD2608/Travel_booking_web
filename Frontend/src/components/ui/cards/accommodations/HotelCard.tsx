@@ -50,9 +50,9 @@ export const HotelCard: React.FC<{ hotel: HotelCardProps; onClick?: () => void }
                 </div>
             </div>
 
-            <div className="flex justify-between items-end mt-4">
+            <div className="flex justify-between items-end mt-4 gap-8">
                 {/* Facilities */}
-                <div className="flex gap-4">
+                <div className="flex gap-4 flex-wrap">
                     {hotel.facilities.map(fac => {
                         let icon = 'check';
                         if (fac.toLowerCase().includes('pool')) icon = 'pool';
@@ -64,7 +64,7 @@ export const HotelCard: React.FC<{ hotel: HotelCardProps; onClick?: () => void }
                         if (fac.toLowerCase().includes('restaurant')) icon = 'restaurant';
 
                         return (
-                            <div key={fac} className="flex items-center gap-1 text-xs text-gray-500">
+                            <div key={fac} className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
                                 <span className="material-symbols-outlined text-[16px] text-gray-400">{icon}</span>
                                 {fac}
                             </div>
@@ -73,7 +73,7 @@ export const HotelCard: React.FC<{ hotel: HotelCardProps; onClick?: () => void }
                 </div>
 
                 {/* Price & Action */}
-                <div className="text-right">
+                <div className="text-right flex-shrink-0">
                     {hotel.originalPrice && (
                         <div className="text-xs text-gray-400 line-through mb-0.5 mt-2">
                             {hotel.originalPrice.toLocaleString()} VNĐ
