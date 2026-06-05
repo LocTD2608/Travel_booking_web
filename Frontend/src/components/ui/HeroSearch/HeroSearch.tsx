@@ -9,9 +9,11 @@ interface HeroSearchProps {
     onSearch?: (searchData: Record<string, string>) => void;
     isCompact?: boolean;
     initialTab?: 'hotels' | 'flights' | 'package' | 'experience';
+    hideTabs?: boolean;
 }
 
-export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = false, initialTab = 'hotels' }) => {
+export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = false, initialTab = 'hotels', hideTabs = false }) => {
+    const shouldHideTabs = hideTabs || isCompact;
     const [activeTab, setActiveTab] = useState<'hotels' | 'flights' | 'package' | 'experience'>(initialTab);
     const [searchParams, setSearchParams] = useState({
         destination: '',
@@ -34,36 +36,38 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
     const searchCardContent = (
         <div className={styles.searchCard} style={isCompact ? { boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', border: '1px solid #f3f4f6', maxWidth: '100%', borderRadius: '16px' } : undefined}>
             {/* Tab Buttons */}
-            <div className={styles.tabs}>
-                <button
-                    className={`${styles.tab} ${activeTab === 'hotels' ? styles.active : ''}`}
-                    onClick={() => setActiveTab('hotels')}
-                >
-                    <span className="material-symbols-outlined">hotel</span>
-                    Hotels
-                </button>
-                <button
-                    className={`${styles.tab} ${activeTab === 'flights' ? styles.active : ''}`}
-                    onClick={() => setActiveTab('flights')}
-                >
-                    <span className="material-symbols-outlined">flight</span>
-                    Flights
-                </button>
-                <button
-                    className={`${styles.tab} ${activeTab === 'package' ? styles.active : ''}`}
-                    onClick={() => setActiveTab('package')}
-                >
-                    <span className="material-symbols-outlined">luggage</span>
-                    Flight + Hotel
-                </button>
-                <button
-                    className={`${styles.tab} ${activeTab === 'experience' ? styles.active : ''}`}
-                    onClick={() => setActiveTab('experience')}
-                >
-                    <span className="material-symbols-outlined">attractions</span>
-                    Xperience
-                </button>
-            </div>
+            {!shouldHideTabs && (
+                <div className={styles.tabs}>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'hotels' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('hotels')}
+                    >
+                        <span className="material-symbols-outlined">hotel</span>
+                        Hotels
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'flights' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('flights')}
+                    >
+                        <span className="material-symbols-outlined">flight</span>
+                        Flights
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'package' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('package')}
+                    >
+                        <span className="material-symbols-outlined">luggage</span>
+                        Flight + Hotel
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'experience' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('experience')}
+                    >
+                        <span className="material-symbols-outlined">attractions</span>
+                        Xperience
+                    </button>
+                </div>
+            )}
 
             {/* Search Form */}
             <div className={`${styles.searchForm} ${styles[activeTab]}`}>
