@@ -584,28 +584,52 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                         </div>
                         
                         {selectionMode === 'ask' ? (
-                            <div className="text-center text-xs font-semibold text-gray-400 py-3.5 bg-gray-100 border border-gray-200 rounded-xl">
-                                Vui lòng chọn phương thức xếp chỗ bên trái
+                            <div className="flex flex-col gap-2">
+                                <div className="text-center text-xs font-semibold text-gray-400 py-3.5 bg-gray-100 border border-gray-200 rounded-xl mb-1">
+                                    Vui lòng chọn phương thức xếp chỗ bên trái
+                                </div>
+                                <button 
+                                    type="button"
+                                    onClick={onClose}
+                                    className="w-full font-bold py-3.5 rounded-xl border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all flex justify-center items-center gap-2 cursor-pointer shadow-sm text-sm"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">close</span>
+                                    Thoát
+                                </button>
                             </div>
                         ) : (
-                            <button 
-                                onClick={handleConfirmClick}
-                                disabled={!canContinue}
-                                className={`w-full font-bold py-4 rounded-xl transition-all shadow-md flex justify-center items-center gap-2 cursor-pointer ${
-                                    canContinue 
-                                    ? 'bg-travel-blue hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-0.5' 
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                }`}
-                            >
-                                {selectionMode === 'auto' 
-                                    ? 'Tiếp tục thanh toán' 
-                                    : (canContinue 
-                                        ? 'Xác nhận ghế & Tiếp tục' 
-                                        : `Chọn đủ ${passengerCount} ghế (${selectedSeats.outbound.length}/${passengerCount})`
-                                    )
-                                }
-                                <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
-                            </button>
+                            <div className="flex gap-3">
+                                <button 
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectionMode('ask');
+                                        setSelectedSeats({ outbound: [], return: [] });
+                                    }}
+                                    className="flex-1 font-bold py-4 rounded-xl border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all flex justify-center items-center gap-2 cursor-pointer shadow-sm text-sm"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                                    Quay lại
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={handleConfirmClick}
+                                    disabled={!canContinue}
+                                    className={`flex-[2] font-bold py-4 rounded-xl transition-all shadow-md flex justify-center items-center gap-2 cursor-pointer text-sm ${
+                                        canContinue 
+                                        ? 'bg-travel-blue hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-0.5' 
+                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    }`}
+                                >
+                                    {selectionMode === 'auto' 
+                                        ? 'Tiếp tục' 
+                                        : (canContinue 
+                                            ? 'Xác nhận' 
+                                            : `Chọn ${passengerCount} ghế`
+                                        )
+                                    }
+                                    <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                                </button>
+                            </div>
                         )}
                     </div>
 
