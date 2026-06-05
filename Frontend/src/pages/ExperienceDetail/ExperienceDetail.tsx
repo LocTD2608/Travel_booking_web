@@ -193,7 +193,11 @@ const ExperienceDetail: React.FC = () => {
 
     const tour = useMemo(() => {
         if (id && TOUR_DETAILS[id]) {
-            return TOUR_DETAILS[id];
+            const mockTour = TOUR_DETAILS[id];
+            // Chỉ sử dụng dữ liệu cứng nếu tên tour trùng khớp (tránh đè ID với database)
+            if (!urlName || mockTour.name.toLowerCase().includes(urlName.toLowerCase()) || urlName.toLowerCase().includes(mockTour.name.toLowerCase())) {
+                return mockTour;
+            }
         }
         return getFallbackTour(id || 'default', urlName, urlPrice, urlDesc, urlPickup);
     }, [id, urlName, urlPrice, urlDesc, urlPickup]);
