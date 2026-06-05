@@ -11,14 +11,16 @@ type PaymentMethod = 'card' | 'momo' | 'bank' | 'vnpay';
 const BookingPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, isAdmin } = useAuth();
 
-    // Redirect if not logged in
+    // Redirect if not logged in or if admin
     useEffect(() => {
         if (!isAuthenticated) {
             navigate('/');
+        } else if (isAdmin) {
+            navigate('/admin');
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, isAdmin, navigate]);
 
     // Order details from query params
     const type = searchParams.get('type') || 'hotel'; // hotel | villa | apartment | flight | train | bus
@@ -26,6 +28,7 @@ const BookingPage: React.FC = () => {
     const image = searchParams.get('image') || '';
     const price = parseInt(searchParams.get('price') || '0');
     const nights = parseInt(searchParams.get('nights') || '1');
+    const quantity = parseInt(searchParams.get('quantity') || '1');
     const detail1 = searchParams.get('detail1') || '';
     const detail2 = searchParams.get('detail2') || '';
     const detail3 = searchParams.get('detail3') || '';
@@ -48,9 +51,10 @@ const BookingPage: React.FC = () => {
     const [bookingSuccess, setBookingSuccess] = useState(false);
 
     const isTransport = ['flight', 'train', 'bus'].includes(type);
+    const isTour = type === 'tour';
 
     // ── Price helpers ─────────────────────────────────────────────────────────
-    const subtotal = price * (isTransport ? 1 : nights);
+    const subtotal = price * (isTour ? quantity : (isTransport ? 1 : nights));
     const serviceFee = Math.round(subtotal * 0.10);
     const voucherAmt = form.voucherApplied ? form.voucherDiscount : 0;
     const total = subtotal + serviceFee - voucherAmt;
@@ -58,14 +62,17 @@ const BookingPage: React.FC = () => {
     const typeBg: Record<string, string> = {
         hotel: 'bg-[#005CE6]', villa: 'bg-green-600', apartment: 'bg-purple-600',
         flight: 'bg-sky-500', train: 'bg-blue-800', bus: 'bg-amber-600',
+        tour: 'bg-[#FF5E1F]',
     };
     const accentColor: Record<string, string> = {
         hotel: 'text-[#005CE6]', villa: 'text-green-600', apartment: 'text-purple-600',
         flight: 'text-sky-500', train: 'text-blue-800', bus: 'text-amber-600',
+        tour: 'text-[#FF5E1F]',
     };
     const borderColor: Record<string, string> = {
         hotel: 'border-[#005CE6]', villa: 'border-green-500', apartment: 'border-purple-500',
         flight: 'border-sky-400', train: 'border-blue-700', bus: 'border-amber-500',
+        tour: 'border-[#FF5E1F]',
     };
 
     const applyVoucher = () => {
@@ -155,6 +162,15 @@ const BookingPage: React.FC = () => {
                     state: {
                         transactionId: `TVK-PAY-${bookingResult.data.MaBooking}`,
                         bookingInfo: {
+                            type,
+                            name,
+                            price,
+                            totalPrice: total,
+                            nights: nights || 1,
+                            detail1,
+                            detail2,
+                            detail3,
+                            detail4,
                             hotel: {
                                 id: type === 'hotel' ? bookingResult.data.MaBooking : 'Service',
                                 name: name,
@@ -169,8 +185,6 @@ const BookingPage: React.FC = () => {
                                 checkIn: checkInDate,
                                 checkOut: checkOutDate,
                             },
-                            nights: nights || 1,
-                            totalPrice: total,
                         },
                         customerInfo: {
                             fullName: form.fullName,
@@ -497,7 +511,7 @@ const BookingPage: React.FC = () => {
                                 <div className="absolute top-2 left-2">
                                     <span className={`${typeBg[type]} text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1`}>
                                         <span className="material-symbols-outlined text-[14px]">verified</span>
-                                        VERIFIED STAY
+                                        {isTour ? 'VERIFIED TOUR' : isTransport ? 'VERIFIED TRANSPORT' : 'VERIFIED STAY'}
                                     </span>
                                 </div>
                             </div>
@@ -514,8 +528,8 @@ const BookingPage: React.FC = () => {
 
                             {/* Booking details */}
                             <div className="border-t border-gray-100 pt-3 space-y-2">
-                                {detail2 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? 'Class' : 'Room Type'}</span><span className="font-semibold text-gray-800">{detail2}</span></div>}
-                                {!isTransport && <div className="flex justify-between text-sm"><span className="text-gray-500">Duration</span><span className="font-semibold text-gray-800">{nights} Night{nights !== 1 ? 's' : ''}</span></div>}
+                                {detail2 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? 'Class' : isTour ? 'Loại hình' : 'Room Type'}</span><span className="font-semibold text-gray-800">{detail2}</span></div>}
+                                {!isTransport && !isTour && <div className="flex justify-between text-sm"><span className="text-gray-500">Duration</span><span className="font-semibold text-gray-800">{nights} Night{nights !== 1 ? 's' : ''}</span></div>}
                                 {detail3 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? 'Route' : 'Guests'}</span><span className="font-semibold text-gray-800">{detail3}</span></div>}
                                 {detail4 && <div className="flex justify-between text-sm"><span className="text-gray-500">{isTransport ? 'Departure' : 'Dates'}</span><span className="font-semibold text-gray-800">{detail4}</span></div>}
                             </div>
@@ -545,7 +559,14 @@ const BookingPage: React.FC = () => {
                             {/* Price breakdown */}
                             <div className="mt-4 border-t border-gray-100 pt-4 space-y-2">
                                 <div className="flex justify-between text-sm text-gray-500">
-                                    <span>{isTransport ? 'Ticket price' : `Room rate (${nights} night${nights !== 1 ? 's' : ''})`}</span>
+                                    <span>
+                                        {isTour 
+                                            ? `Giá tour (${quantity} khách)` 
+                                            : isTransport 
+                                                ? 'Ticket price' 
+                                                : `Room rate (${nights} night${nights !== 1 ? 's' : ''})`
+                                        }
+                                    </span>
                                     <span>{subtotal.toLocaleString()} VNĐ</span>
                                 </div>
                                 <div className="flex justify-between text-sm text-gray-500">

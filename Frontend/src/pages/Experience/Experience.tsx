@@ -6,6 +6,7 @@ import { fetchExperiences } from '../../services/searchApi';
 import type { ExperienceResult } from '../../types/search';
 import { ExperienceCard } from '../../components/ui/cards/experience/ExperienceCard';
 import { generateStarsFromId } from '../../utils/ratingUtils';
+import AuthModal from '../../components/auth/AuthModal';
 
 const Experience: React.FC = () => {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ const Experience: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [searched, setSearched] = useState(false);
     const [selectedStars, setSelectedStars] = useState<number[]>([]);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
     // Default search parameters if not present in URL
     const searchState = {
@@ -199,7 +201,7 @@ const Experience: React.FC = () => {
                         <h4 className="font-bold text-lg mb-2 relative z-10">Tour Siêu Ưu Đãi</h4>
                         <p className="text-xs text-purple-100 mb-4 relative z-10 leading-relaxed">Đăng nhập tài khoản để nhận thêm mã giảm giá tới 15% khi đặt các gói trải nghiệm đặc biệt hôm nay!</p>
                         <button 
-                            onClick={() => navigate('/login')}
+                            onClick={() => setIsAuthModalOpen(true)}
                             className="bg-white text-[#7c3aed] px-4 py-2 rounded-lg font-bold text-xs w-full relative z-10 hover:bg-gray-50 hover-scale transition-all"
                         >
                             Đăng Nhập Ngay
@@ -277,6 +279,7 @@ const Experience: React.FC = () => {
                     )}
                 </div>
             </div>
+            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialView="login" />
         </div>
     );
 };

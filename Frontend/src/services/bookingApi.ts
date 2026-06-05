@@ -49,5 +49,22 @@ export const bookingApi = {
         }
         
         return response.json();
+    },
+
+    getBookingDetail: async (bookingId: string | number): Promise<any> => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/detail/${bookingId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: token ? `Bearer ${token}` : '',
+            },
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy thông tin chi tiết giao dịch');
+        }
+
+        return response.json();
     }
 };
