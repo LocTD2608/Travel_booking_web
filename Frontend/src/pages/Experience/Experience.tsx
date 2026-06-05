@@ -6,6 +6,7 @@ import { fetchExperiences } from '../../services/searchApi';
 import type { ExperienceResult } from '../../types/search';
 import { ExperienceCard } from '../../components/ui/cards/experience/ExperienceCard';
 import { generateStarsFromId } from '../../utils/ratingUtils';
+import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 
 const Experience: React.FC = () => {
     const navigate = useNavigate();
@@ -16,6 +17,27 @@ const Experience: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [searched, setSearched] = useState(false);
     const [selectedStars, setSelectedStars] = useState<number[]>([]);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+    const handleSearchClick = (searchData: Record<string, string>) => {
+        const params = new URLSearchParams();
+        Object.entries(searchData).forEach(([key, value]) => {
+            if (value && key !== 'type') {
+                params.append(key, value);
+            }
+        });
+
+        const typeToPath: Record<string, string> = {
+            hotels: '/hotels',
+            flights: '/flights',
+            package: '/search',
+            experience: '/experience',
+        };
+
+        const path = typeToPath[searchData.type] || '/search';
+        navigate(`${path}?${params.toString()}`);
+        setIsSearchOpen(false);
+    };
 
     // Default search parameters if not present in URL
     const searchState = {
@@ -90,13 +112,21 @@ const Experience: React.FC = () => {
                     </div>
                     <button 
                         className="flex items-center gap-2 border border-purple-200 text-[#7c3aed] font-bold px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors"
-                        onClick={() => navigate('/')}
+                        onClick={() => setIsSearchOpen(!isSearchOpen)}
                     >
-                        <span className="material-symbols-outlined text-[18px]">edit</span>
-                        Thay đổi tìm kiếm
+                        <span className="material-symbols-outlined text-[18px]">{isSearchOpen ? 'close' : 'edit'}</span>
+                        {isSearchOpen ? 'Đóng' : 'Thay đổi tìm kiếm'}
                     </button>
                 </div>
             </div>
+
+            {isSearchOpen && (
+                <div className="w-full bg-white border-b border-gray-200 py-6 flex justify-center animate-fade-in shadow-inner relative z-30 mb-6">
+                    <div className="w-full max-w-[1200px] px-4">
+                        <HeroSearch isCompact={true} initialTab="experience" onSearch={handleSearchClick} />
+                    </div>
+                </div>
+            )}
 
             {/* Main Content Grid */}
             <div className="max-w-[1200px] mx-auto px-4 flex gap-6">

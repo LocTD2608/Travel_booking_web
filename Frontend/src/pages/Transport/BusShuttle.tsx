@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../components/auth/AuthModal';
 import { Slider } from 'antd';
 import { BusCard } from '../../components/ui/cards/transport/BusCard';
+import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 
 const MOCK_BUSES = [
     {
@@ -34,6 +35,27 @@ const BusShuttle: React.FC = () => {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+    const handleSearchClick = (searchData: Record<string, string>) => {
+        const params = new URLSearchParams();
+        Object.entries(searchData).forEach(([key, value]) => {
+            if (value && key !== 'type') {
+                params.append(key, value);
+            }
+        });
+
+        const typeToPath: Record<string, string> = {
+            hotels: '/hotels',
+            flights: '/flights',
+            package: '/search',
+            experience: '/experience',
+        };
+
+        const path = typeToPath[searchData.type] || '/search';
+        navigate(`${path}?${params.toString()}`);
+        setIsSearchOpen(false);
+    };
 
     const handleSelect = (bus: typeof MOCK_BUSES[0]) => {
         if (!isAuthenticated) { setIsAuthModalOpen(true); return; }
@@ -64,12 +86,21 @@ const BusShuttle: React.FC = () => {
                         </div>
                         <button 
                             className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
-                            onClick={() => navigate('/')}
+                            onClick={() => setIsSearchOpen(!isSearchOpen)}
                         >
-                            <span className="material-symbols-outlined text-[18px]">edit</span> Change Search
+                            <span className="material-symbols-outlined text-[18px]">{isSearchOpen ? 'close' : 'edit'}</span> 
+                            {isSearchOpen ? 'Close' : 'Change Search'}
                         </button>
                     </div>
                 </div>
+
+                {isSearchOpen && (
+                    <div className="w-full bg-white border-b border-gray-200 py-6 flex justify-center animate-fade-in shadow-inner relative z-30 mb-6">
+                        <div className="w-full max-w-[1200px] px-4">
+                            <HeroSearch isCompact={true} initialTab="flights" onSearch={handleSearchClick} />
+                        </div>
+                    </div>
+                )}
 
                 <div className="max-w-[1200px] mx-auto px-4 flex gap-6">
                     <div className="w-[280px] flex-shrink-0">

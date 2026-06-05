@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Slider } from 'antd';
 import { HotelCard, type HotelCardProps } from '../../components/ui/cards/accommodations/HotelCard';
 import { fetchHotels } from '../../services/searchApi';
+import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 
 const normalizeSearchText = (text: string) =>
     text
@@ -16,6 +17,27 @@ const Hotels: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { isAuthenticated } = useAuth();
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+    const handleSearchClick = (searchData: Record<string, string>) => {
+        const params = new URLSearchParams();
+        Object.entries(searchData).forEach(([key, value]) => {
+            if (value && key !== 'type') {
+                params.append(key, value);
+            }
+        });
+
+        const typeToPath: Record<string, string> = {
+            hotels: '/hotels',
+            flights: '/flights',
+            package: '/search',
+            experience: '/experience',
+        };
+
+        const path = typeToPath[searchData.type] || '/search';
+        navigate(`${path}?${params.toString()}`);
+        setIsSearchOpen(false);
+    };
     
     // Top Search State
     const searchState = {
@@ -138,13 +160,21 @@ const Hotels: React.FC = () => {
                     </div>
                     <button 
                         className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
-                        onClick={() => navigate('/')}
+                        onClick={() => setIsSearchOpen(!isSearchOpen)}
                     >
-                        <span className="material-symbols-outlined text-[18px]">edit</span>
-                        Change Search
+                        <span className="material-symbols-outlined text-[18px]">{isSearchOpen ? 'close' : 'edit'}</span>
+                        {isSearchOpen ? 'Close' : 'Change Search'}
                     </button>
                 </div>
             </div>
+
+            {isSearchOpen && (
+                <div className="w-full bg-white border-b border-gray-200 py-6 flex justify-center animate-fade-in shadow-inner relative z-30 mb-6">
+                    <div className="w-full max-w-[1200px] px-4">
+                        <HeroSearch isCompact={true} initialTab="hotels" onSearch={handleSearchClick} />
+                    </div>
+                </div>
+            )}
 
             {/* Main Content Grid */}
             <div className="max-w-[1200px] mx-auto px-4 flex gap-6">
