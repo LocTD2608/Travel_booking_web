@@ -72,6 +72,16 @@ export interface ExperienceFilters {
     date?: string;
     priceMax?: string;
     sortBy?: string;
+    rating?: string;
+}
+
+export interface DestinationResult {
+    id: number;
+    name: string;
+    subtitle: string;
+    price: string;
+    rating: number;
+    image: string;
 }
 
 // ─── Generic API response ────────────────────────────────────────────────────
@@ -80,4 +90,40 @@ export interface ApiResponse<T> {
     data: T[];
     total: number;
     message?: string;
+}
+
+export interface SingleResponse<T> {
+    success: boolean;
+    data: T;
+    message?: string;
+}
+
+// ─── Hotel Detail ─────────────────────────────────────────────────────────────
+export interface RoomTypeInfo {
+    roomTypeId: number;
+    name: string;
+    price: number;
+    maxGuests: number;
+}
+
+export interface HotelDetailResult {
+    hotel: {
+        id: number;
+        name: string;
+        address: string;
+        stars: number;
+    };
+    rooms: RoomTypeInfo[];
+    reviews: Array<{
+        rating: number;
+        comment: string;
+        date: string;
+        userName: string;
+    }>;
+}
+
+export interface GuestSelection {
+    adults: number;
+    children: number;
+    rooms: number;
 }

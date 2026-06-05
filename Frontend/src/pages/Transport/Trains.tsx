@@ -1,139 +1,160 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useUrlFilters } from '../../hooks/useUrlFilters';
-import { fetchTrains } from '../../services/searchApi';
-import type { TrainResult } from '../../types/search';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import AuthModal from '../../components/auth/AuthModal';
+import { Slider } from 'antd';
+import { TrainCard } from '../../components/ui/cards/transport/TrainCard';
+import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 
-const fmt = (price: number) =>
-    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-
-const TrainCard: React.FC<{ train: TrainResult }> = ({ train }) => (
-    <div style={{
-        background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12,
-        padding: '20px 24px', display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', gap: 16,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-    }}
-        onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)')}
-        onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)')}
-    >
-        <div style={{
-            width: 52, height: 52, background: '#dbeafe', borderRadius: 12,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-        }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 28, color: '#2563eb' }}>train</span>
-        </div>
-        <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>{train.from} → {train.to}</div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>{train.description}</div>
-            {train.seat_type && (
-                <span style={{
-                    display: 'inline-block', marginTop: 6, padding: '2px 8px',
-                    background: '#eff6ff', color: '#1d4ed8', borderRadius: 20, fontSize: 11, fontWeight: 600,
-                }}>{train.seat_type}</span>
-            )}
-        </div>
-        <div style={{ textAlign: 'right', minWidth: 140 }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#dc2626' }}>{fmt(train.price)}</div>
-            <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 10 }}>/ {train.unit || 'vé'}</div>
-            <button style={{
-                background: '#2563eb', color: '#fff', border: 'none',
-                borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13,
-            }}>Đặt vé</button>
-        </div>
-    </div>
-);
+const MOCK_TRAINS = [
+    {
+        id: 't1',
+        operator: 'Vietnam Railways',
+        trainNumber: 'SE3',
+        departureTime: '19:25',
+        arrivalTime: '10:45',
+        duration: '15h 20m',
+        from: 'Hanoi',
+        to: 'Da Nang',
+        price: 850000,
+        originalPrice: 950000,
+        type: 'Express',
+        class: 'Soft Bed',
+    },
+    {
+        id: 't2',
+        operator: 'Vietnam Railways',
+        trainNumber: 'SE1',
+        departureTime: '22:15',
+        arrivalTime: '13:30',
+        duration: '15h 15m',
+        from: 'Hanoi',
+        to: 'Da Nang',
+        price: 650000,
+        originalPrice: null,
+        type: 'Express',
+        class: 'Soft Seat',
+    }
+];
 
 const Trains: React.FC = () => {
-    const { filters, setFilter, setPage, resetFilters, currentPage } = useUrlFilters();
-    const [results, setResults] = useState<TrainResult[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [searched, setSearched] = useState(false);
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-    const doSearch = useCallback(async () => {
-        setLoading(true); setError(null); setSearched(true);
-        try {
-            const res = await fetchTrains({ from: filters.from, to: filters.to, date: filters.date, priceMax: filters.priceMax, sortBy: filters.sortBy });
-            setResults(res.data ?? []);
-        } catch (e: unknown) {
-            setError(e instanceof Error ? e.message : 'Có lỗi xảy ra');
-        } finally { setLoading(false); }
-    }, [filters.from, filters.to, filters.date, filters.priceMax, filters.sortBy]);
+    const handleSearchClick = (searchData: Record<string, string>) => {
+        const params = new URLSearchParams();
+        Object.entries(searchData).forEach(([key, value]) => {
+            if (value && key !== 'type') {
+                params.append(key, value);
+            }
+        });
 
-    useEffect(() => { if (searched) doSearch(); }, [filters.sortBy, filters.page]); // eslint-disable-line
-    useEffect(() => { if (filters.from || filters.to) doSearch(); }, []); // eslint-disable-line
+        const typeToPath: Record<string, string> = {
+            hotels: '/hotels',
+            flights: '/flights',
+            package: '/search',
+            experience: '/experience',
+        };
+
+        const path = typeToPath[searchData.type] || '/search';
+        navigate(`${path}?${params.toString()}`);
+        setIsSearchOpen(false);
+    };
+
+    const handleSelect = (train: typeof MOCK_TRAINS[0]) => {
+        if (!isAuthenticated) { setIsAuthModalOpen(true); return; }
+        const params = new URLSearchParams({
+            type: 'train',
+            name: `${train.operator} · Train ${train.trainNumber}`,
+            price: String(train.price),
+            detail2: train.class,
+            detail3: `${train.from} → ${train.to}`,
+            detail4: `${train.departureTime} – ${train.arrivalTime}`,
+        });
+        navigate(`/booking?${params.toString()}`);
+    };
+
+    const [priceRange, setPriceRange] = useState<[number, number]>([100000, 2000000]);
+    const [sortBy, setSortBy] = useState('price_asc');
 
     return (
-        <div style={{ padding: '40px 20px', maxWidth: 900, margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                <div style={{
-                    width: 72, height: 72, background: '#dbeafe', borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px'
-                }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#2563eb' }}>train</span>
-                </div>
-                <h1 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 8px' }}>Tìm vé tàu hỏa</h1>
-                <p style={{ color: '#6b7280', margin: 0 }}>Đặt vé tàu dễ dàng, di chuyển thoải mái</p>
-            </div>
-
-            <div style={{
-                background: '#fff', border: '1px solid #e5e7eb', borderRadius: 16, padding: 24,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)', marginBottom: 24
-            }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
-                    {[
-                        { label: 'Ga đi', key: 'from', placeholder: 'VD: Hà Nội' },
-                        { label: 'Ga đến', key: 'to', placeholder: 'VD: TP. Hồ Chí Minh' },
-                        { label: 'Ngày đi', key: 'date', type: 'date' },
-                        { label: 'Giá tối đa (VNĐ)', key: 'priceMax', type: 'number', placeholder: 'VD: 1000000' },
-                    ].map(({ label, key, type = 'text', placeholder }) => (
-                        <div key={key}>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>{label}</label>
-                            <input type={type} placeholder={placeholder}
-                                value={(filters as Record<string, string | undefined>)[key] ?? ''}
-                                onChange={e => setFilter({ [key]: e.target.value })}
-                                style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 12px', fontSize: 14 }}
-                            />
+        <>
+            <div className="bg-[#f5f7fa] min-h-screen pb-10 font-['Plus_Jakarta_Sans']">
+                <div className="bg-white border-b border-gray-200 py-4 mb-6 sticky z-30 flex justify-center shadow-sm" style={{ top: '64px' }}>
+                    <div className="w-full max-w-[1200px] px-4 flex items-center justify-between">
+                        <div className="flex gap-10">
+                            <div>
+                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">TRAIN</div>
+                                <div className="text-[15px] font-bold text-gray-900">Hanoi ➔ Da Nang</div>
+                            </div>
+                            <div className="w-px h-10 bg-gray-200"></div>
+                            <div>
+                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DEPARTURE</div>
+                                <div className="text-[15px] font-bold text-gray-900">Nov 10, 2024</div>
+                            </div>
                         </div>
-                    ))}
+                        <button 
+                            className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                            onClick={() => setIsSearchOpen(!isSearchOpen)}
+                        >
+                            <span className="material-symbols-outlined text-[18px]">{isSearchOpen ? 'close' : 'edit'}</span> 
+                            {isSearchOpen ? 'Close' : 'Change Search'}
+                        </button>
+                    </div>
                 </div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-                    <button onClick={doSearch} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-                        🔍 Tìm vé tàu
-                    </button>
-                    {searched && <button onClick={() => { resetFilters(); setResults([]); setSearched(false); }}
-                        style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: 10, padding: '10px 20px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-                        ✕ Xóa bộ lọc
-                    </button>}
+
+                {isSearchOpen && (
+                    <div className="w-full bg-white border-b border-gray-200 py-6 flex justify-center animate-fade-in shadow-inner relative z-30 mb-6">
+                        <div className="w-full max-w-[1200px] px-4">
+                            <HeroSearch isCompact={true} initialTab="flights" onSearch={handleSearchClick} />
+                        </div>
+                    </div>
+                )}
+
+                <div className="max-w-[1200px] mx-auto px-4 flex gap-6">
+                    <div className="w-[280px] flex-shrink-0">
+                        <div className="bg-white border text-gray-800 border-gray-200 rounded-xl p-5 mb-4 shadow-sm">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="font-bold text-lg">Filters</h3>
+                                <button className="text-travel-blue font-semibold text-sm hover:underline">Reset</button>
+                            </div>
+                            <div className="mb-6">
+                                <h4 className="font-semibold text-[15px] mb-4">Price / Passenger</h4>
+                                <Slider range min={0} max={2000000} step={50000} value={priceRange} onChange={(val: number[]) => setPriceRange(val as [number, number])} trackStyle={[{ backgroundColor: '#005CE6', height: 4 }]} handleStyle={[{ borderColor: '#005CE6' }, { borderColor: '#005CE6' }]} />
+                            </div>
+                            <div className="mb-6">
+                                <h4 className="font-semibold text-[15px] mb-3">Seat Type</h4>
+                                {['Hard Seat', 'Soft Seat', 'Hard Bed', 'Soft Bed'].map(type => (
+                                    <label key={type} className="flex justify-between items-center mb-3 cursor-pointer group">
+                                        <div className="flex items-center gap-3">
+                                            <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue" />
+                                            <span className="text-sm font-medium text-gray-700">{type}</span>
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col gap-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="font-semibold text-gray-600 text-sm">Sắp xếp theo:</span>
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-[15px] font-bold text-gray-900 outline-none">
+                                <option value="price_asc">Giá: Thấp đến Cao</option>
+                                <option value="duration">Thời gian đi</option>
+                            </select>
+                        </div>
+                        <div className="flex flex-col gap-4">
+                            {MOCK_TRAINS.filter(t => t.price >= priceRange[0] && t.price <= priceRange[1])
+                                .map((train) => <TrainCard key={train.id} train={train} onSelect={() => handleSelect(train)} />)}
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            {loading && <div style={{ textAlign: 'center', padding: 60, color: '#6b7280' }}><div style={{ fontSize: 40 }}>⏳</div><p>Đang tìm kiếm...</p></div>}
-            {error && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: 20, textAlign: 'center', color: '#dc2626' }}>
-                <p style={{ fontWeight: 700 }}>❌ Lỗi kết nối</p><p style={{ fontSize: 13 }}>{error}</p></div>}
-            {!loading && !error && searched && results.length === 0 && (
-                <div style={{ textAlign: 'center', padding: 60, color: '#6b7280' }}>
-                    <div style={{ fontSize: 48 }}>🚂</div>
-                    <p style={{ fontWeight: 700, fontSize: 17 }}>Không tìm thấy vé tàu</p>
-                    <p style={{ fontSize: 13 }}>Thử thay đổi điểm đi/đến</p>
-                </div>
-            )}
-            {!loading && !error && results.length > 0 && (
-                <div>
-                    <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 16 }}>Tìm thấy <strong>{results.length}</strong> kết quả</p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        {results.map(t => <TrainCard key={t.MaDV} train={t} />)}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
-                        <button disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}
-                            style={{ padding: '8px 20px', border: '1px solid #d1d5db', borderRadius: 8, cursor: currentPage <= 1 ? 'not-allowed' : 'pointer', opacity: currentPage <= 1 ? 0.4 : 1, background: '#fff' }}>← Trước</button>
-                        <span style={{ padding: '8px 20px', background: '#2563eb', color: '#fff', borderRadius: 8, fontWeight: 700 }}>{currentPage}</span>
-                        <button onClick={() => setPage(currentPage + 1)} style={{ padding: '8px 20px', border: '1px solid #d1d5db', borderRadius: 8, cursor: 'pointer', background: '#fff' }}>Sau →</button>
-                    </div>
-                </div>
-            )}
-        </div>
+            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialView="login" />
+        </>
     );
 };
-
 export default Trains;

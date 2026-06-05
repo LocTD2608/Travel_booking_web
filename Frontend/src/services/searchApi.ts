@@ -1,9 +1,10 @@
 import type {
     FlightResult, FlightFilters,
-    HotelResult, HotelFilters,
+    HotelResult, HotelFilters, HotelDetailResult,
     TrainResult, TrainFilters,
     ExperienceResult, ExperienceFilters,
-    ApiResponse,
+    DestinationResult,
+    ApiResponse, SingleResponse,
 } from '../types/search';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
@@ -26,9 +27,29 @@ export async function fetchFlights(filters: FlightFilters): Promise<ApiResponse<
     return res.json();
 }
 
+export async function fetchFlightSeats(flightId: string): Promise<any> {
+    const url = `${BASE_URL}/flights/${flightId}/seats`;
+    const token = localStorage.getItem('token');
+    const res = await fetch(url, {
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: token ? `Bearer ${token}` : '',
+        }
+    });
+    if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
 // ─── Hotels ──────────────────────────────────────────────────────────────────
 export async function fetchHotels(filters: HotelFilters): Promise<ApiResponse<HotelResult>> {
     const url = `${BASE_URL}/search/hotels${buildParams(filters as Record<string, string>)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
+export async function fetchHotelDetail(id: string): Promise<SingleResponse<HotelDetailResult>> {
+    const url = `${BASE_URL}/hotels/${id}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
     return res.json();
@@ -45,6 +66,13 @@ export async function fetchTrains(filters: TrainFilters): Promise<ApiResponse<Tr
 // ─── Experiences ─────────────────────────────────────────────────────────────
 export async function fetchExperiences(filters: ExperienceFilters): Promise<ApiResponse<ExperienceResult>> {
     const url = `${BASE_URL}/search/experiences${buildParams(filters as Record<string, string>)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
+export async function fetchDestinations(): Promise<ApiResponse<DestinationResult>> {
+    const url = `${BASE_URL}/search/destinations`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
     return res.json();

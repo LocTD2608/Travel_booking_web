@@ -5,7 +5,7 @@ const AboutUs: React.FC = () => {
     return (
         <div className={styles.container}>
             <div className={styles.hero}>
-                <h1>About Traveloka</h1>
+                <h1>About Booking Travel</h1>
                 <p>Empowering Discovery, One Journey at a Time</p>
             </div>
 
@@ -13,7 +13,7 @@ const AboutUs: React.FC = () => {
                 <section className={styles.missionSection}>
                     <h2>Our Mission</h2>
                     <p>
-                        At Traveloka, we believe that traveling should be an accessible, seamless, and joyous experience for everyone.
+                        At Booking Travel, we believe that traveling should be an accessible, seamless, and joyous experience for everyone.
                         Our mission is to empower people to discover and explore the world around them by providing a comprehensive,
                         easy-to-use platform for all their travel and lifestyle needs.
                     </p>
@@ -39,7 +39,7 @@ const AboutUs: React.FC = () => {
                     <div className={styles.storyGrid}>
                         <div className={styles.storyText}>
                             <p>
-                                Founded in 2012, Traveloka started as a flight search engine to make it easier for people to find cheaper flights back home.
+                                Founded in 2012, Booking Travel started as a flight search engine to make it easier for people to find cheaper flights back home.
                                 By 2013, we evolved into a ticket booking application, and we haven't stopped innovating since.
                             </p>
                             <br />
@@ -49,7 +49,7 @@ const AboutUs: React.FC = () => {
                             </p>
                         </div>
                         <div className={styles.storyImage}>
-                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOUxGIqRVbUdCmNozeycTjPhDt_WulULzmrpwAYNT23GLnTpMZIjQx3_lMKlzxDiPhxyoPNv94FFLJ1h5LsFyBY9HCq9S1hDbYRY4rn8cJQUil7v5O8Ii3aJSaS5-tLEvLTVfgYcbBKlyuGWlxWvtpPur_Vl4dqHseFqq9iJIkY4t1srjZcnCy0hJyD_el7_KKlhpACaERsV-cfTdy2YQ-KFLzUobD6DqOpaGzJIm44DDbz1bmqcOOD4IUT7525OZGvfKAZTKNxE0" alt="Traveloka Journey" />
+                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOUxGIqRVbUdCmNozeycTjPhDt_WulULzmrpwAYNT23GLnTpMZIjQx3_lMKlzxDiPhxyoPNv94FFLJ1h5LsFyBY9HCq9S1hDbYRY4rn8cJQUil7v5O8Ii3aJSaS5-tLEvLTVfgYcbBKlyuGWlxWvtpPur_Vl4dqHseFqq9iJIkY4t1srjZcnCy0hJyD_el7_KKlhpACaERsV-cfTdy2YQ-KFLzUobD6DqOpaGzJIm44DDbz1bmqcOOD4IUT7525OZGvfKAZTKNxE0" alt="Booking Travel Journey" />
                         </div>
                     </div>
                 </section>

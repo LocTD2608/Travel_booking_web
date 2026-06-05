@@ -9,10 +9,10 @@ const Footer: React.FC = () => {
                     <div className="col-span-2 lg:col-span-2">
                         <div className="flex items-center gap-2 mb-6">
                             <span className="material-symbols-outlined text-travel-blue text-3xl">flight_takeoff</span>
-                            <h2 className="text-[#141414] text-xl font-black tracking-tight">Traveloka</h2>
+                            <h2 className="text-[#141414] text-xl font-black tracking-tight">Booking Travel</h2>
                         </div>
                         <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-sm">
-                            Traveloka is Southeast Asia's leading travel platform, providing diverse travel needs in one platform. We are here to help you discover the world.
+                            Booking Travel is Southeast Asia's leading travel platform, providing diverse travel needs in one platform. We are here to help you discover the world.
                         </p>
                         <div className="flex gap-4">
                             <a className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors" href="#">
@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
                         </div>
                     </div>
                     <div>
-                        <h4 className="font-bold mb-4">About Traveloka</h4>
+                        <h4 className="font-bold mb-4">About Booking Travel</h4>
                         <ul className="space-y-3 text-sm text-gray-500">
                             <li><Link className="hover:text-primary" to="/how-to-book">How to Book</Link></li>
                             <li><Link className="hover:text-primary" to="/contact">Contact Us</Link></li>
@@ -49,7 +49,7 @@ const Footer: React.FC = () => {
                     <div>
                         <h4 className="font-bold mb-4">Others</h4>
                         <ul className="space-y-3 text-sm text-gray-500">
-                            <li><a className="hover:text-primary" href="#">Traveloka Affiliate</a></li>
+                            <li><a className="hover:text-primary" href="#">Booking Travel Affiliate</a></li>
                             <li><a className="hover:text-primary" href="#">Blog</a></li>
                             <li><a className="hover:text-primary" href="#">Privacy Policy</a></li>
                             <li><a className="hover:text-primary" href="#">Terms & Conditions</a></li>
@@ -57,7 +57,7 @@ const Footer: React.FC = () => {
                     </div>
                 </div>
                 <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p className="text-xs text-gray-400">© 2024 Traveloka. All rights reserved.</p>
+                    <p className="text-xs text-gray-400">© 2024 Booking Travel. All rights reserved.</p>
                 </div>
             </div>
         </footer>

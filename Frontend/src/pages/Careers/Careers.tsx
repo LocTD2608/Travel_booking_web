@@ -5,7 +5,7 @@ const Careers: React.FC = () => {
     return (
         <div className={styles.container}>
             <div className={styles.hero}>
-                <h1>Join the Traveloka Team</h1>
+                <h1>Join the Booking Travel Team</h1>
                 <p>Empowering discovery and shaping the future of travel</p>
             </div>
 

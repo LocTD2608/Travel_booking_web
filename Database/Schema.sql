@@ -1,4 +1,4 @@
-DROP DATABASE QUANLY_BOOKING;
+DROP DATABASE IF EXISTS QUANLY_BOOKING;
 
 -- =========================
 -- TẠO DATABASE
@@ -117,7 +117,6 @@ CREATE TABLE CHUYEN_BAY (
     MaChuyenBay INT PRIMARY KEY AUTO_INCREMENT,
     MaTuyenDuong INT,
     HangBay VARCHAR(50),
-    HangGhe VARCHAR(30),
     GiaCoBan DECIMAL(15,2),
     GioKhoiHanh DATETIME,
     GioHaCanh DATETIME,
@@ -131,9 +130,12 @@ CREATE TABLE GHE (
     MaGhe INT PRIMARY KEY AUTO_INCREMENT,
     MaChuyenBay INT,
     SoGhe VARCHAR(10),
+    HangGhe VARCHAR(30),
+    GiaPhuPhi DECIMAL(15,2),
     TrangThaiGhe VARCHAR(30),
     FOREIGN KEY (MaChuyenBay) REFERENCES CHUYEN_BAY(MaChuyenBay)
 );
+
 
 -- =========================
 -- XE ĐƯA ĐÓN
@@ -231,6 +233,9 @@ CREATE TABLE CHI_TIET_BOOKING (
     DonGia DECIMAL(15,2),
     LoaiDoiTuong VARCHAR(30),
     MaKM INT,
+    TenDichVu VARCHAR(255),
+    HinhAnh VARCHAR(255),
+    ThongTinThem TEXT,
     PRIMARY KEY (MaBooking, MaCTBooking),
     FOREIGN KEY (MaBooking) REFERENCES BOOKING(MaBooking),
     FOREIGN KEY (MaKM) REFERENCES KHUYEN_MAI(MaKM)
@@ -261,6 +266,18 @@ CREATE TABLE CTBOOKING_DV (
     FOREIGN KEY (MaDV) REFERENCES DICH_VU(MaDV),
     FOREIGN KEY (MaChuyenBay) REFERENCES CHUYEN_BAY(MaChuyenBay),
     FOREIGN KEY (MaXe) REFERENCES XE_DUA_DON(MaXe)
+);
+
+-- =========================
+-- CHI TIẾT BOOKING GHẾ (Bảng trung gian)
+-- =========================
+CREATE TABLE CTBOOKING_GHE (
+    MaCTBooking INT,
+    MaGhe INT,
+    GiaPhuPhi DECIMAL(15,2),
+    PRIMARY KEY (MaCTBooking, MaGhe),
+    FOREIGN KEY (MaCTBooking) REFERENCES CHI_TIET_BOOKING(MaCTBooking),
+    FOREIGN KEY (MaGhe) REFERENCES GHE(MaGhe)
 );
 
 -- =========================

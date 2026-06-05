@@ -13,7 +13,7 @@ const Contact: React.FC = () => {
                     <h2>Get in Touch</h2>
                     <div className={styles.infoItem}>
                         <span className="material-symbols-outlined">location_on</span>
-                        <p>123 Traveloka Street, Ho Chi Minh City, Vietnam</p>
+                        <p>123 Booking Travel Street, Ho Chi Minh City, Vietnam</p>
                     </div>
                     <div className={styles.infoItem}>
                         <span className="material-symbols-outlined">phone</span>
@@ -21,7 +21,7 @@ const Contact: React.FC = () => {
                     </div>
                     <div className={styles.infoItem}>
                         <span className="material-symbols-outlined">mail</span>
-                        <p>support@traveloka.com</p>
+                        <p>support@bookingtravel.com</p>
                     </div>
                 </div>
                 <form className={styles.form}>

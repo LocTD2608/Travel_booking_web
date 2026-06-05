@@ -1,143 +1,150 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useUrlFilters } from '../../hooks/useUrlFilters';
-import { fetchHotels } from '../../services/searchApi';
-import type { HotelResult } from '../../types/search';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Slider } from 'antd';
+import { ApartmentCard } from '../../components/ui/cards/accommodations/ApartmentCard';
 
-const fmt = (price: number) =>
-    price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price) : 'Liên hệ';
-
-const ApartmentCard: React.FC<{ item: HotelResult }> = ({ item }) => (
-    <div style={{
-        background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12,
-        padding: '20px 24px', display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', gap: 16,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-    }}
-        onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)')}
-        onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)')}
-    >
-        <div style={{
-            width: 52, height: 52, background: '#dbeafe', borderRadius: 12,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-        }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 28, color: '#2563eb' }}>apartment</span>
-        </div>
-        <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>{item.name}</div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>📍 {item.address}</div>
-            {item.stars > 0 && <div style={{ fontSize: 12, color: '#f59e0b', marginTop: 2 }}>{'⭐'.repeat(item.stars)}</div>}
-        </div>
-        <div style={{ textAlign: 'right', minWidth: 140 }}>
-            <div style={{ fontSize: 11, color: '#6b7280' }}>Từ</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#dc2626' }}>{fmt(item.min_price)}</div>
-            <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 10 }}>/ đêm</div>
-            <button style={{
-                background: '#2563eb', color: '#fff', border: 'none',
-                borderRadius: 8, padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: 13,
-            }}>Xem phòng</button>
-        </div>
-    </div>
-);
+const MOCK_APARTMENTS = [
+    {
+        id: 'a1',
+        name: 'Luxury City Center Studio',
+        location: 'District 1, Ho Chi Minh City',
+        rating: 9.1,
+        ratingText: 'Superb',
+        reviews: 420,
+        price: 1200000,
+        originalPrice: 1500000,
+        badge: 'POPULAR',
+        image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        facilities: ['Kitchen', 'Washing Machine', 'City View', 'Gym'],
+        stars: 4,
+    },
+    {
+        id: 'a2',
+        name: 'Cozy Vintage Homestay',
+        location: 'Hoan Kiem, Hanoi',
+        rating: 8.5,
+        ratingText: 'Very Good',
+        reviews: 310,
+        price: 850000,
+        originalPrice: null,
+        badge: '',
+        image: 'https://images.unsplash.com/photo-1502672260266-1c1c24240f57?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        facilities: ['1 Bedroom', 'Balcony', 'Kitchen'],
+        stars: 3,
+    }
+];
 
 const Apartments: React.FC = () => {
-    const { filters, setFilter, setPage, resetFilters, currentPage } = useUrlFilters();
-    const [results, setResults] = useState<HotelResult[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [searched, setSearched] = useState(false);
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
+    const [priceRange, setPriceRange] = useState<[number, number]>([300000, 5000000]);
+    const [sortBy, setSortBy] = useState('popularity');
+    const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
-    // Apartments dùng cùng API Hotels (theo cùng bảng KHACH_SAN)
-    const doSearch = useCallback(async () => {
-        setLoading(true); setError(null); setSearched(true);
-        try {
-            const res = await fetchHotels({ city: filters.destination, checkIn: filters.checkIn, checkOut: filters.checkOut, rating: filters.rating, sortBy: filters.sortBy });
-            setResults(res.data ?? []);
-        } catch (e: unknown) {
-            setError(e instanceof Error ? e.message : 'Có lỗi xảy ra');
-        } finally { setLoading(false); }
-    }, [filters.destination, filters.checkIn, filters.checkOut, filters.rating, filters.sortBy]);
+    const toggleType = (type: string) => {
+        setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+    };
 
-    useEffect(() => { if (searched) doSearch(); }, [filters.sortBy, filters.page]); // eslint-disable-line
-    useEffect(() => { if (filters.destination) doSearch(); }, []); // eslint-disable-line
+    const filteredApartments = MOCK_APARTMENTS.filter(a => {
+        const matchesPrice = a.price >= priceRange[0] && a.price <= priceRange[1];
+        const matchesTypes = selectedTypes.length === 0 || selectedTypes.some(type => {
+            const tl = type.toLowerCase();
+            const keyword = tl.includes('studio') ? 'studio' : tl.includes('1 bedroom') ? '1 bedroom' : tl.includes('house') ? 'house' : tl;
+            return a.name.toLowerCase().includes(keyword) || a.facilities.some(f => f.toLowerCase().includes(keyword));
+        });
+        return matchesPrice && matchesTypes;
+    }).sort((a, b) => {
+        if (sortBy === 'price_asc') return a.price - b.price;
+        return b.reviews - a.reviews;
+    });
 
     return (
-        <div style={{ padding: '40px 20px', maxWidth: 900, margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                <div style={{
-                    width: 72, height: 72, background: '#dbeafe', borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px'
-                }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#2563eb' }}>apartment</span>
+        <div className="bg-[#f5f7fa] min-h-screen pb-10 font-['Plus_Jakarta_Sans']">
+            <div className="bg-white border-b border-gray-200 py-4 mb-6 sticky z-30 flex justify-center shadow-sm" style={{ top: '64px' }}>
+                <div className="w-full max-w-[1200px] px-4 flex items-center justify-between">
+                    <div className="flex gap-10">
+                        <div>
+                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DESTINATION</div>
+                            <div className="text-[15px] font-bold text-gray-900">Ho Chi Minh City</div>
+                        </div>
+                        <div className="w-px h-10 bg-gray-200"></div>
+                        <div>
+                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DATES</div>
+                            <div className="text-[15px] font-bold text-gray-900">Dec 01 - Dec 05, 2024</div>
+                        </div>
+                    </div>
+                    <button 
+                        className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                        onClick={() => navigate('/')}
+                    >
+                        <span className="material-symbols-outlined text-[18px]">edit</span> Change Search
+                    </button>
                 </div>
-                <h1 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 8px' }}>Tìm căn hộ</h1>
-                <p style={{ color: '#6b7280', margin: 0 }}>Tận hưởng không gian riêng tư như ở nhà</p>
             </div>
 
-            <div style={{
-                background: '#fff', border: '1px solid #e5e7eb', borderRadius: 16, padding: 24,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)', marginBottom: 24
-            }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
-                    {[
-                        { label: 'Điểm đến', key: 'destination', placeholder: 'VD: Đà Lạt' },
-                        { label: 'Ngày nhận', key: 'checkIn', type: 'date' },
-                        { label: 'Ngày trả', key: 'checkOut', type: 'date' },
-                    ].map(({ label, key, type = 'text', placeholder }) => (
-                        <div key={key}>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>{label}</label>
-                            <input type={type} placeholder={placeholder}
-                                value={(filters as Record<string, string | undefined>)[key] ?? ''}
-                                onChange={e => setFilter({ [key]: e.target.value })}
-                                style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 12px', fontSize: 14 }}
-                            />
+            <div className="max-w-[1200px] mx-auto px-4 flex gap-6">
+                <div className="w-[280px] flex-shrink-0">
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4 shadow-sm">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-bold text-lg">Filters</h3>
+                            <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => { setPriceRange([300000, 5000000]); setSortBy('popularity'); setSelectedTypes([]); }}>Reset</button>
                         </div>
-                    ))}
-                    <div>
-                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Sắp xếp</label>
-                        <select value={filters.sortBy ?? 'price'} onChange={e => setFilter({ sortBy: e.target.value })}
-                            style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 12px', fontSize: 14 }}>
-                            <option value="price">Giá thấp nhất</option>
-                            <option value="rating">Đánh giá cao nhất</option>
+                        <div className="mb-6">
+                            <h4 className="font-semibold text-[15px] mb-4">Price per night</h4>
+                            <Slider range min={0} max={5000000} step={100000} value={priceRange} onChange={(val: number[]) => setPriceRange(val as [number, number])} trackStyle={[{ backgroundColor: '#005CE6', height: 4 }]} handleStyle={[{ borderColor: '#005CE6' }, { borderColor: '#005CE6' }]} />
+                        </div>
+                        <div className="mb-6">
+                            <h4 className="font-semibold text-[15px] mb-3">Room Type</h4>
+                            {['Studio', '1 Bedroom', '2 Bedrooms', 'Entire House'].map(type => (
+                                <label key={type} className="flex items-center gap-3 mb-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 text-travel-blue"
+                                        checked={selectedTypes.includes(type)}
+                                        onChange={() => toggleType(type)}
+                                    />
+                                    <span className="text-sm font-medium text-gray-700">{type}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Promo Box — hidden when authenticated */}
+                    {!isAuthenticated && (
+                        <div className="bg-purple-700 text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
+                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">apartment</span>
+                            <h4 className="font-bold text-lg mb-2 relative z-10">Member Rates</h4>
+                            <p className="text-sm text-purple-100 mb-4 relative z-10">Sign in to unlock exclusive rates on apartments.</p>
+                            <button className="bg-white text-purple-700 px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 transition-all">
+                                Sign In Now
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex-1 flex flex-col gap-4">
+                    <div className="flex items-center gap-3 mb-2">
+                        <span className="font-semibold text-gray-600 text-sm">Sắp xếp theo:</span>
+                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-white border rounded-lg px-3 py-2 text-[15px] font-bold outline-none cursor-pointer">
+                            <option value="popularity">Phù hợp nhất</option>
+                            <option value="price_asc">Giá: Thấp đến Cao</option>
                         </select>
                     </div>
-                </div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-                    <button onClick={doSearch} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 28px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-                        🔍 Tìm căn hộ
-                    </button>
-                    {searched && <button onClick={() => { resetFilters(); setResults([]); setSearched(false); }}
-                        style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: 10, padding: '10px 20px', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-                        ✕ Xóa bộ lọc
-                    </button>}
+                    <div className="flex flex-col gap-4">
+                        {filteredApartments.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 border-dashed rounded-xl text-gray-400 mt-4 h-64">
+                                <span className="material-symbols-outlined text-5xl mb-3 text-gray-300">apartment</span>
+                                <p className="font-bold text-gray-500">No results to display</p>
+                                <p className="text-sm">Try adjusting your filters.</p>
+                            </div>
+                        ) : (
+                            filteredApartments.map((apt) => <ApartmentCard key={apt.id} apartment={apt} onClick={() => navigate(`/apartments/${apt.id}`)} />)
+                        )}
+                    </div>
                 </div>
             </div>
-
-            {loading && <div style={{ textAlign: 'center', padding: 60, color: '#6b7280' }}><div style={{ fontSize: 40 }}>⏳</div><p>Đang tìm kiếm...</p></div>}
-            {error && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: 20, textAlign: 'center', color: '#dc2626' }}>
-                <p style={{ fontWeight: 700 }}>❌ Lỗi kết nối</p><p style={{ fontSize: 13 }}>{error}</p></div>}
-            {!loading && !error && searched && results.length === 0 && (
-                <div style={{ textAlign: 'center', padding: 60, color: '#6b7280' }}>
-                    <div style={{ fontSize: 48 }}>🏢</div>
-                    <p style={{ fontWeight: 700, fontSize: 17 }}>Không tìm thấy căn hộ</p>
-                    <p style={{ fontSize: 13 }}>Thử thay đổi địa điểm hoặc ngày</p>
-                </div>
-            )}
-            {!loading && !error && results.length > 0 && (
-                <div>
-                    <p style={{ color: '#6b7280', fontSize: 14, marginBottom: 16 }}>Tìm thấy <strong>{results.length}</strong> căn hộ</p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        {results.map(item => <ApartmentCard key={item.MaKS} item={item} />)}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
-                        <button disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}
-                            style={{ padding: '8px 20px', border: '1px solid #d1d5db', borderRadius: 8, cursor: currentPage <= 1 ? 'not-allowed' : 'pointer', opacity: currentPage <= 1 ? 0.4 : 1, background: '#fff' }}>← Trước</button>
-                        <span style={{ padding: '8px 20px', background: '#2563eb', color: '#fff', borderRadius: 8, fontWeight: 700 }}>{currentPage}</span>
-                        <button onClick={() => setPage(currentPage + 1)} style={{ padding: '8px 20px', border: '1px solid #d1d5db', borderRadius: 8, cursor: 'pointer', background: '#fff' }}>Sau →</button>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
-
 export default Apartments;

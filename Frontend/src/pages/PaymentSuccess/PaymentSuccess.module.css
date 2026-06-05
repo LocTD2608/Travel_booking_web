@@ -1,0 +1,301 @@
+.container {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.successContainer {
+    max-width: 900px;
+    width: 100%;
+}
+
+.successHeader {
+    text-align: center;
+    color: white;
+    margin-bottom: 40px;
+}
+
+.checkmark {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: scaleIn 0.6s ease-out;
+}
+
+.checkmark span {
+    color: #52c41a;
+    display: inline-block;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.successHeader h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+}
+
+.successHeader p {
+    font-size: 18px;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.detailCard {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    margin-bottom: 24px;
+    padding: 32px !important;
+}
+
+.detailCard h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #1f1f1f;
+}
+
+.detailCard h3 span {
+    font-size: 24px;
+    color: #1890ff;
+}
+
+.transactionInfo .infoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #fafafa;
+    border-radius: 6px;
+    border-left: 4px solid #1890ff;
+}
+
+.infoRow span:first-child {
+    font-weight: 600;
+    color: #666;
+}
+
+.infoRow span:last-child {
+    color: #333;
+    word-break: break-all;
+}
+
+.highlight {
+    color: #1890ff !important;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.bookingInfo {
+    margin-top: 24px;
+}
+
+.bookingDetail {
+    padding: 16px;
+    background: #f5f9ff;
+    border-radius: 6px;
+    border-left: 4px solid #52c41a;
+}
+
+.bookingDetail strong {
+    display: block;
+    color: #1f1f1f;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.bookingDetail strong:first-child {
+    margin-top: 0;
+}
+
+.bookingDetail p {
+    margin: 0;
+    color: #333;
+    font-size: 15px;
+}
+
+.totalPrice {
+    color: #52c41a !important;
+    font-weight: 700;
+    font-size: 18px !important;
+}
+
+.nextSteps {
+    margin-top: 24px;
+}
+
+.nextSteps ul {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0 0;
+}
+
+.nextSteps li {
+    padding: 10px 0;
+    padding-left: 24px;
+    position: relative;
+    color: #333;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.nextSteps li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #52c41a;
+    font-weight: bold;
+}
+
+.actionButtons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.button {
+    min-width: 200px;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.supportCard {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    padding: 24px !important;
+}
+
+.supportCard h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1f1f1f;
+}
+
+.supportCard h3 span {
+    font-size: 24px;
+    color: #faad14;
+}
+
+.supportCard p {
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.supportCard p:last-child {
+    margin-bottom: 0;
+    color: #1890ff;
+    font-weight: 500;
+}
+
+.errorCard {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 48px !important;
+}
+
+.errorContent {
+    text-align: center;
+}
+
+.errorContent h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 20px 0 12px 0;
+    color: #1f1f1f;
+}
+
+.errorContent p {
+    color: #666;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 20px 16px;
+    }
+
+    .successHeader h1 {
+        font-size: 28px;
+    }
+
+    .successHeader p {
+        font-size: 16px;
+    }
+
+    .detailCard {
+        padding: 20px !important;
+    }
+
+    .transactionInfo .infoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .actionButtons {
+        flex-direction: column;
+    }
+
+    .button {
+        min-width: 100%;
+    }
+
+    .checkmark {
+        font-size: 60px;
+    }
+}
+
+.loadingCard {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 48px !important;
+}
+
+.loadingContent {
+    text-align: center;
+}

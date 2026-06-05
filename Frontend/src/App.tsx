@@ -1,18 +1,49 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from "./components/layout/MainLayout"
 import { HomePage } from './pages/Home/HomePage'
 import Flights from './pages/Transport/Flights'
 import Experience from './pages/Experience/Experience'
+import ExperienceDetail from './pages/ExperienceDetail/ExperienceDetail'
 import Contact from './pages/Contact/Contact'
 import AboutUs from './pages/AboutUs/AboutUs'
 import Trains from './pages/Transport/Trains'
 import Hotels from './pages/Accommodations/Hotels'
+import HotelDetail from './pages/Accommodations/HotelDetail'
 import Apartments from './pages/Accommodations/Apartments'
 import HowToBook from './pages/HowToBook/HowToBook'
 import HelpCenter from './pages/HelpCenter/HelpCenter'
 import Careers from './pages/Careers/Careers'
 import ScrollToTop from './components/common/ScrollToTop'
 import Login from "./pages/Login"
+import BookingPage from "./pages/BookingPage"
+import SearchResults from './pages/SearchResults/SearchResults'
+import ResetPassword from './pages/ResetPassword'
+
+import Villas from './pages/Accommodations/Villas'
+import VillaDetail from './pages/Accommodations/VillaDetail'
+import ApartmentDetail from './pages/Accommodations/ApartmentDetail'
+import BusShuttle from './pages/Transport/BusShuttle'
+import AirportTransfer from './pages/Transport/AirportTransfer'
+import CarRental from './pages/Transport/CarRental'
+import MobileCredit from './pages/Bills/MobileCredit'
+import DataPlans from './pages/Bills/DataPlans'
+import Electricity from './pages/Bills/Electricity'
+import AdminRoute from './components/common/AdminRoute'
+import Profile from './pages/Profile/Profile'
+import BookingHistory from './pages/Profile/BookingHistory'
+import Checkout from './pages/Checkout/Checkout'
+import PaymentCallback from './pages/PaymentCallback/PaymentCallback'
+import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess'
+
+// Admin Layout & Pages
+import AdminLayout from './components/layout/AdminLayout'
+import AdminDashboard from './pages/Admin/dashboard'
+import AdminFlights from './pages/Admin/flights'
+import AdminAccommodations from './pages/Admin/accommodations'
+import AdminBookings from './pages/Admin/bookings'
+import AdminCancellations from './pages/Admin/cancellations'
+import AdminUsers from './pages/Admin/users'
+
 
 function App() {
   return (
@@ -21,22 +52,61 @@ function App() {
 
       <Routes>
 
-        {/* Route không dùng layout */}
+        {/* Routes without layout */}
         <Route path="/login" element={<Login />} />
+        <Route path="/booking" element={<BookingPage />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
 
         {/* Route dùng MainLayout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/flights" element={<Flights />} />
           <Route path="/experience" element={<Experience />} />
+          <Route path="/tour/:id" element={<ExperienceDetail />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/trains" element={<Trains />} />
           <Route path="/hotels" element={<Hotels />} />
+          <Route path="/hotels/:id" element={<HotelDetail />} />
           <Route path="/apartments" element={<Apartments />} />
+          <Route path="/apartments/:id" element={<ApartmentDetail />} />
+          <Route path="/villas" element={<Villas />} />
+          <Route path="/villas/:id" element={<VillaDetail />} />
           <Route path="/how-to-book" element={<HowToBook />} />
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/careers" element={<Careers />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment-return" element={<PaymentCallback />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/booking-history" element={<BookingHistory />} />
+
+          <Route path="/bus" element={<BusShuttle />} />
+          <Route path="/airport-transfer" element={<AirportTransfer />} />
+          <Route path="/car-rental" element={<CarRental />} />
+          <Route path="/mobile-credit" element={<MobileCredit />} />
+          <Route path="/data-plans" element={<DataPlans />} />
+          <Route path="/electricity" element={<Electricity />} />
+        </Route>
+
+        {/* Protected Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="flights" element={<AdminFlights />} />
+          <Route path="accommodations" element={<AdminAccommodations />} />
+          <Route path="bookings" element={<AdminBookings />} />
+          <Route path="cancellations" element={<AdminCancellations />} />
+          <Route path="users" element={<AdminUsers />} />
         </Route>
 
       </Routes>

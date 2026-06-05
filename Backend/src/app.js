@@ -3,21 +3,48 @@ const cors = require('cors');
 const testRoutes = require("./routes/testRoutes");
 const searchRoutes = require("./routes/search.routes");
 const userRoutes = require("./routes/user.routes");
+const authRoutes = require("./routes/auth.routes");
 const errorHandler = require("./middlewares/errorHandler");
-
+const flightRoutes = require("./routes/flight.routes");
+const roomRoutes = require("./routes/room.routes");
+const bookingRoutes = require("./routes/bookingRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const dashboardRoutes = require("./routes/dashboard.routes");
+const tourRoutes = require("./routes/tour.routes");
+const hotelRoutes = require("./routes/hotel.routes");
+const accommodationRoutes = require("./routes/accommodation.routes");
+const cancellationRoutes = require("./routes/cancellation.routes");
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use("/api", testRoutes);
 
-// Search API
-app.use("/api/search", searchRoutes);
+// Request Logging
+app.use((req, res, next) => {
+  console.log(`[DEBUG] ${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
 
-// User API
-app.use("/api/users", userRoutes);
+const apiRouter = express.Router();
+
+apiRouter.use("/auth", authRoutes);
+apiRouter.use("/search", searchRoutes);
+apiRouter.use("/users", userRoutes);
+apiRouter.use("/flights", flightRoutes);
+apiRouter.use("/hotels", hotelRoutes);
+apiRouter.use("/rooms", roomRoutes);
+apiRouter.use("/payment", paymentRoutes);
+apiRouter.use("/booking", bookingRoutes);
+apiRouter.use("/tours", tourRoutes);
+apiRouter.use("/accommodations", accommodationRoutes);
+apiRouter.use("/cancellations", cancellationRoutes);
+apiRouter.use("/", testRoutes);
+
+app.use("/api", apiRouter);
+
+app.use("/api/dashboard", dashboardRoutes);
 
 // Test API
 app.get('/', (req, res) => {
@@ -26,7 +53,23 @@ app.get('/', (req, res) => {
   });
 });
 
+// Catch-all 404 handler
+app.use((req, res) => {
+  console.log(`[404] ${req.method} ${req.url}`);
+  res.status(404).json({ message: `Path ${req.url} not found on this server` });
+});
+
 // Global Error Handler
 app.use(errorHandler);
 
+require("./workers/bookingWorker");
+
+// Database Sync
+const sequelize = require("./configs/database");
+sequelize.authenticate()
+  .then(() => console.log("Database synced successfully"))
+  .catch(err => console.error("Database sync error:", err));
+
 module.exports = app;
+
+
