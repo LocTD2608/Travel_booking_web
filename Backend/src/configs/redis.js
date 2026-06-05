@@ -1,13 +1,10 @@
 const Redis = require("ioredis");
+
 let connection = null;
 
-if (process.env.REDIS_HOST || process.env.REDIS_PORT) {
+if (process.env.REDIS_URL) {
   try {
-    connection = new Redis({
-      host: process.env.REDIS_HOST,
-      port: process.env.REDIS_PORT,
-      maxRetriesPerRequest: null,
-    });
+    connection = new Redis(process.env.REDIS_URL);
 
     connection.on("connect", () => {
       console.log("Redis connected successfully");
@@ -16,12 +13,13 @@ if (process.env.REDIS_HOST || process.env.REDIS_PORT) {
     connection.on("error", (err) => {
       console.error("Redis connection error:", err.message);
     });
+
   } catch (e) {
-    console.error("Failed to initialize Redis connection:", e.message);
+    console.error("Failed to initialize Redis:", e.message);
     connection = null;
   }
 } else {
-  console.log("⚠️ REDIS_HOST/REDIS_PORT not defined in env. Redis features are disabled (running in-memory mode).");
+  console.log("⚠️ REDIS_URL not defined. Redis disabled.");
 }
 
 module.exports = connection;
