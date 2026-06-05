@@ -171,12 +171,12 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
     };
 
     // --- PRICING CALCULATION ---
-    const outboundBasePrice = outboundFlight.price;
-    const outboundTotal = selectedSeats.outbound.reduce((sum, seat) => sum + outboundBasePrice + seat.priceAddition, 0);
+    const outboundBasePrice = Number(outboundFlight.price || 0);
+    const outboundTotal = selectedSeats.outbound.reduce((sum, seat) => sum + outboundBasePrice + Number(seat.priceAddition || 0), 0);
 
-    const returnBasePrice = MOCK_RETURN_FLIGHT.basePrice;
+    const returnBasePrice = Number(MOCK_RETURN_FLIGHT.basePrice || 0);
     const returnTotal = isRoundTrip 
-        ? selectedSeats.return.reduce((sum, seat) => sum + returnBasePrice + seat.priceAddition, 0)
+        ? selectedSeats.return.reduce((sum, seat) => sum + returnBasePrice + Number(seat.priceAddition || 0), 0)
         : 0;
 
     const grandTotal = outboundTotal + returnTotal;
@@ -221,7 +221,15 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                     
                     {/* Header & Tabs */}
                     <div className="p-6 pb-0 border-b border-gray-200 shrink-0">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Seat Map</h2>
+                        <div className="flex items-center gap-3 mb-6">
+                            <button 
+                                onClick={onClose}
+                                className="flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 p-1.5 rounded-full transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+                            </button>
+                            <h2 className="text-2xl font-bold text-gray-900">Seat Map</h2>
+                        </div>
 
                         {isRoundTrip && (
                             <div className="flex gap-4">
@@ -374,7 +382,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                                 <div className="text-[10px] uppercase font-bold text-gray-500">{s.className}</div>
                                             </div>
                                             <div className="text-sm font-semibold text-gray-700">
-                                                {(outboundBasePrice + s.priceAddition).toLocaleString()} ₫
+                                                {(outboundBasePrice + Number(s.priceAddition || 0)).toLocaleString('vi-VN')} <span className="text-xs font-semibold text-gray-500">VNĐ</span>
                                             </div>
                                         </div>
                                     ))}
@@ -408,7 +416,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                                     <div className="text-[10px] uppercase font-bold text-gray-500">{s.className}</div>
                                                 </div>
                                                 <div className="text-sm font-semibold text-gray-700">
-                                                    {(returnBasePrice + s.priceAddition).toLocaleString()} ₫
+                                                    {(returnBasePrice + Number(s.priceAddition || 0)).toLocaleString('vi-VN')} <span className="text-xs font-semibold text-gray-500">VNĐ</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -422,20 +430,28 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                     <div className="pt-4 border-t border-gray-200 mt-4 shrink-0 bg-[#f5f7fa]">
                         <div className="flex flex-col mb-4">
                             <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Amount</span>
-                            <span className="text-[28px] leading-none font-black text-travel-blue">{grandTotal.toLocaleString()} <span className="text-lg">VND</span></span>
+                            <span className="text-[28px] leading-none font-black text-travel-blue">{Number(grandTotal).toLocaleString('vi-VN')} <span className="text-sm font-semibold text-gray-500">VNĐ</span></span>
                         </div>
-                        <button 
-                            onClick={handleConfirmClick}
-                            disabled={!canContinue}
-                            className={`w-full font-bold py-4 rounded-xl transition-all shadow-md flex justify-center items-center gap-2 ${
-                                canContinue 
-                                ? 'bg-travel-blue hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-0.5' 
-                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            }`}
-                        >
-                            {canContinue ? 'Continue to Payment' : 'Select Seats to Continue'}
-                            <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
-                        </button>
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={onClose}
+                                className="py-4 px-5 border border-gray-300 rounded-xl font-bold text-gray-600 hover:bg-gray-100 bg-white transition-colors"
+                            >
+                                Back
+                            </button>
+                            <button 
+                                onClick={handleConfirmClick}
+                                disabled={!canContinue}
+                                className={`flex-1 font-bold py-4 rounded-xl transition-all shadow-md flex justify-center items-center gap-2 ${
+                                    canContinue 
+                                    ? 'bg-travel-blue hover:bg-blue-700 text-white hover:shadow-lg hover:-translate-y-0.5' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                            >
+                                {canContinue ? 'Continue' : 'Select Seats'}
+                                <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                            </button>
+                        </div>
                     </div>
 
                 </div>
