@@ -239,7 +239,8 @@ INSERT INTO DICH_VU (LoaiDichVu, MoTa, Gia, DonViTinh) VALUES
 ('DU_LICH', 'Tour Ha Giang Loop', 4800000, 'tour'),
 ('DU_LICH', 'Tour Quy Nhon Beach', 3900000, 'tour'),
 ('DU_LICH', 'Tour Ninh Binh Discovery', 2300000, 'tour'),
-('DU_LICH', 'Tour Cat Ba Island', 2700000, 'tour');
+('DU_LICH', 'Tour Cat Ba Island', 2700000, 'tour'),
+('DU_LICH', 'Tour Resort Maldives 5 Sao Hạng Sang', 24500000, 'tour');
 
 INSERT INTO DV_TRUNG_CHUYEN VALUES (1, 'Sân bay', 'Khách sạn', '1 chiều');
 INSERT INTO DV_DU_LICH VALUES (2, 'Khách sạn', 'Bà Nà Hills');
@@ -263,7 +264,8 @@ INSERT INTO DV_DU_LICH (
 (15, 'Ha Noi', 'Ha Giang'),
 (16, 'Quy Nhon', 'Ky Co Beach'),
 (17, 'Ha Noi', 'Trang An Ninh Binh'),
-(18, 'Hai Phong', 'Cat Ba Island');
+(18, 'Hai Phong', 'Cat Ba Island'),
+(19, 'San bay Maldives', 'Resort Maldives');
 
 -- =========================
 -- BOOKING + CHI TIẾT (mẫu)

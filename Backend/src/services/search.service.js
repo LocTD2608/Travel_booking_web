@@ -1,11 +1,23 @@
 const { Sequelize } = require("sequelize");
 const db = require("../configs/database");
 
+const normalizeCity = (term) => {
+  if (!term) return null;
+  const normalized = term.toLowerCase().replace(/đ/g, 'd').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (normalized.includes('ha noi') || normalized.includes('hanoi')) return 'Ha Noi';
+  if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('hcm')) return 'Ho Chi Minh';
+  if (normalized.includes('da nang') || normalized.includes('danang')) return 'Da Nang';
+  if (normalized.includes('nha trang') || normalized.includes('cam ranh')) return 'Nha Trang';
+  if (normalized.includes('phu quoc') || normalized.includes('phuquoc')) return 'Phu Quoc';
+  if (normalized.includes('maldives')) return 'Maldives';
+  return term; // Fallback
+};
+
 const getAirportCode = (term) => {
   if (!term) return null;
   const codeMatch = term.match(/\(([A-Z]{3})\)/);
   if (codeMatch) return codeMatch[1];
-  const normalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const normalized = term.toLowerCase().replace(/đ/g, 'd').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   if (normalized.includes('ha noi') || normalized.includes('hanoi') || normalized.includes('han')) return 'HAN';
   if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('sgn')) return 'SGN';
   if (normalized.includes('da nang') || normalized.includes('danang') || normalized.includes('dad')) return 'DAD';
@@ -138,17 +150,6 @@ const searchHotels = async (params) => {
     offset = 0
   } = params;
 
-  const normalizeCityForHotel = (term) => {
-    if (!term) return null;
-    const normalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (normalized.includes('ha noi') || normalized.includes('hanoi')) return 'Ha Noi';
-    if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('hcm')) return 'Ho Chi Minh';
-    if (normalized.includes('da nang') || normalized.includes('danang')) return 'Da Nang';
-    if (normalized.includes('nha trang') || normalized.includes('cam ranh')) return 'Nha Trang';
-    if (normalized.includes('phu quoc') || normalized.includes('phuquoc')) return 'Phu Quoc';
-    return term; // Fallback
-  };
-
   let baseQuery = `
     FROM KHACH_SAN ks
     LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
@@ -158,7 +159,7 @@ const searchHotels = async (params) => {
   const replacements = {};
 
   if (city) {
-    const normalizedCity = normalizeCityForHotel(city);
+    const normalizedCity = normalizeCity(city);
     baseQuery += ` AND ks.DiaChi LIKE :city`;
     replacements.city = `%${normalizedCity}%`;
   }
@@ -541,8 +542,9 @@ const searchExperiences = async ({ destination, priceMax, sortBy, rating }) => {
   const replacements = {};
 
   if (destination) {
+    const normalizedDest = normalizeCity(destination);
     query += ` AND (dl.DiaDiemThamQuan LIKE :dest OR dl.DiemDon LIKE :dest)`;
-    replacements.dest = `%${destination}%`;
+    replacements.dest = `%${normalizedDest}%`;
   }
   if (priceMax) { query += ` AND dv.Gia <= :priceMax`; replacements.priceMax = priceMax; }
 
