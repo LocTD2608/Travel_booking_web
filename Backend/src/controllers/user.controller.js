@@ -23,6 +23,14 @@ exports.register = async (req, res) => {
         message: "Ho, Ten, Email và Password là bắt buộc"
       });
     }
+    
+    // Validate CCCD
+    const cccdRegex = /^\d{12}$/;
+    if (CCCD && !cccdRegex.test(CCCD)) {
+      return res.status(400).json({
+        message: "CCCD phải gồm đúng 12 chữ số"
+      });
+    }
 
     const hashedPassword = await bcrypt.hash(Password, 10);
 
