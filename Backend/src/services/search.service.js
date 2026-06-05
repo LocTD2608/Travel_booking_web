@@ -536,7 +536,7 @@ const searchExperiences = async ({ destination, priceMax, sortBy, rating }) => {
       dl.DiemDon             AS pickup,
       dl.DiaDiemThamQuan     AS attraction
     FROM dich_vu dv
-    JOIN DV_DU_LICH dl ON dv.MaDV = dl.MaDV_DL
+    JOIN dv_du_lich dl ON dv.MaDV = dl.MaDV_DL
     WHERE 1=1
   `;
   const replacements = {};
