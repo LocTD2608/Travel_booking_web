@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
 import styles from './HeroSearch.module.css';
@@ -20,6 +20,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
     const shouldHideTabs = hideTabs || isCompact;
     const [activeTab, setActiveTab] = useState<'hotels' | 'flights' | 'package' | 'experience'>(initialTab);
     const [showSuggestions, setShowSuggestions] = useState<'destination' | 'origin' | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const [searchParams, setSearchParams] = useState({
         destination: '',
@@ -33,7 +34,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
         passengers: '1 Adult, Economy',
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const origin = urlParams.get('origin') || urlParams.get('from') || '';
         const destination = urlParams.get('destination') || urlParams.get('to') || '';
@@ -57,14 +58,20 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
         }));
     }, []);
 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setShowSuggestions(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const handleFocus = (field: 'destination' | 'origin') => {
         setShowSuggestions(field);
-    };
-
-    const handleBlur = () => {
-        setTimeout(() => {
-            setShowSuggestions(null);
-        }, 250);
     };
 
     const selectSuggestion = (field: 'destination' | 'origin', value: string) => {
@@ -202,7 +209,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
             )}
 
             {/* Search Form */}
-            <div className={`${styles.searchForm} ${styles[activeTab]}`}>
+            <div ref={containerRef} className={`${styles.searchForm} ${styles[activeTab]}`}>
                 {activeTab === 'hotels' && (
                     <>
                         <div className={styles.inputGroup} style={{ position: 'relative' }}>
@@ -215,7 +222,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                                     value={searchParams.destination}
                                     onChange={(e) => setSearchParams({ ...searchParams, destination: e.target.value })}
                                     onFocus={() => handleFocus('destination')}
-                                    onBlur={handleBlur}
+                                    autoComplete="off"
                                 />
                             </div>
                             {showSuggestions === 'destination' && renderSuggestionsDropdown('destination')}
@@ -285,7 +292,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                                     value={searchParams.origin}
                                     onChange={(e) => setSearchParams({ ...searchParams, origin: e.target.value })}
                                     onFocus={() => handleFocus('origin')}
-                                    onBlur={handleBlur}
+                                    autoComplete="off"
                                 />
                             </div>
                             {showSuggestions === 'origin' && renderSuggestionsDropdown('origin')}
@@ -301,7 +308,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                                     value={searchParams.destination}
                                     onChange={(e) => setSearchParams({ ...searchParams, destination: e.target.value })}
                                     onFocus={() => handleFocus('destination')}
-                                    onBlur={handleBlur}
+                                    autoComplete="off"
                                 />
                             </div>
                             {showSuggestions === 'destination' && renderSuggestionsDropdown('destination')}
@@ -370,7 +377,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                                     value={searchParams.origin}
                                     onChange={(e) => setSearchParams({ ...searchParams, origin: e.target.value })}
                                     onFocus={() => handleFocus('origin')}
-                                    onBlur={handleBlur}
+                                    autoComplete="off"
                                 />
                             </div>
                             {showSuggestions === 'origin' && renderSuggestionsDropdown('origin')}
@@ -386,7 +393,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                                     value={searchParams.destination}
                                     onChange={(e) => setSearchParams({ ...searchParams, destination: e.target.value })}
                                     onFocus={() => handleFocus('destination')}
-                                    onBlur={handleBlur}
+                                    autoComplete="off"
                                 />
                             </div>
                             {showSuggestions === 'destination' && renderSuggestionsDropdown('destination')}
@@ -456,7 +463,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({ onSearch, isCompact = fa
                                     value={searchParams.destination}
                                     onChange={(e) => setSearchParams({ ...searchParams, destination: e.target.value })}
                                     onFocus={() => handleFocus('destination')}
-                                    onBlur={handleBlur}
+                                    autoComplete="off"
                                 />
                             </div>
                             {showSuggestions === 'destination' && renderSuggestionsDropdown('destination')}
