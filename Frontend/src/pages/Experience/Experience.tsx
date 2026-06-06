@@ -9,6 +9,7 @@ import { generateStarsFromId } from '../../utils/ratingUtils';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
 import AuthModal from '../../components/auth/AuthModal';
 import { useLanguage } from '../../context';
+import { useAuth } from '../../context/AuthContext';
 
 const Experience: React.FC = () => {
     const navigate = useNavigate();
@@ -22,6 +23,7 @@ const Experience: React.FC = () => {
     const [selectedStars, setSelectedStars] = useState<number[]>([]);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const { isAuthenticated } = useAuth();
 
     const handleSearchClick = (searchData: Record<string, string>) => {
         const params = new URLSearchParams();
@@ -247,17 +249,19 @@ const Experience: React.FC = () => {
                     </div>
 
                     {/* Purple Themed Promo Card */}
-                    <div className="bg-[#7c3aed] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
-                        <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_activity</span>
-                        <h4 className="font-bold text-lg mb-2 relative z-10">{t('experience.promoTitle', 'Tour Siêu Ưu Đãi')}</h4>
-                        <p className="text-xs text-purple-100 mb-4 relative z-10 leading-relaxed">{t('experience.promoDesc', 'Đăng nhập tài khoản để nhận thêm mã giảm giá tới 15% khi đặt các gói trải nghiệm đặc biệt hôm nay!')}</p>
-                        <button 
-                            onClick={() => setIsAuthModalOpen(true)}
-                            className="bg-white text-[#7c3aed] px-4 py-2 rounded-lg font-bold text-xs w-full relative z-10 hover:bg-gray-50 hover-scale transition-all"
-                        >
-                            {t('experience.loginNow', 'Đăng Nhập Ngay')}
-                        </button>
-                    </div>
+                    {!isAuthenticated && (
+                        <div className="bg-[#7c3aed] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
+                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_activity</span>
+                            <h4 className="font-bold text-lg mb-2 relative z-10">{t('experience.promoTitle', 'Tour Siêu Ưu Đãi')}</h4>
+                            <p className="text-xs text-purple-100 mb-4 relative z-10 leading-relaxed">{t('experience.promoDesc', 'Đăng nhập tài khoản để nhận thêm mã giảm giá tới 15% khi đặt các gói trải nghiệm đặc biệt hôm nay!')}</p>
+                            <button 
+                                onClick={() => setIsAuthModalOpen(true)}
+                                className="bg-white text-[#7c3aed] px-4 py-2 rounded-lg font-bold text-xs w-full relative z-10 hover:bg-gray-50 hover-scale transition-all"
+                            >
+                                {t('experience.loginNow', 'Đăng Nhập Ngay')}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Column (Results) */}

@@ -6,6 +6,7 @@ import { HotelCard, type HotelCardProps } from '../../components/ui/cards/accomm
 import { useLanguage } from '../../context';
 import { fetchHotels } from '../../services/searchApi';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
+import AuthModal from '../../components/auth/AuthModal';
 
 const normalizeSearchText = (text: string) =>
     text
@@ -106,6 +107,7 @@ const Hotels: React.FC = () => {
 
     const [priceRange, setPriceRange] = useState<[number, number]>([500000, 5000000]);
     const [sortBy, setSortBy] = useState('popularity');
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [selectedStars, setSelectedStars] = useState<number[]>([]);
     const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
 
@@ -286,7 +288,10 @@ const Hotels: React.FC = () => {
                             <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_offer</span>
                             <h4 className="font-bold text-lg mb-2 relative z-10">{t('hotel.unlockPrivateDeals', 'Unlock Private Deals')}</h4>
                             <p className="text-sm text-blue-100 mb-4 relative z-10">{t('hotel.signInDesc', 'Sign in to see prices up to 30% lower on selected hotels.')}</p>
-                            <button className="bg-white text-[#0064D2] px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 hover-scale transition-all">
+                            <button 
+                                onClick={() => setIsAuthModalOpen(true)}
+                                className="bg-white text-[#0064D2] px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 hover-scale transition-all"
+                            >
                                 {t('hotel.signInNow', 'Sign In Now')}
                             </button>
                         </div>
@@ -332,6 +337,7 @@ const Hotels: React.FC = () => {
                     )}
                 </div>
             </div>
+            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialView="login" />
         </div>
     );
 };
