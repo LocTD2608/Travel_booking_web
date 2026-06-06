@@ -180,5 +180,19 @@
     "status": "pending",
     "userId": 6,
     "acknowledged": false
+  },
+  {
+    "id": "CR015",
+    "bookingId": "53",
+    "customerName": "Vũ Linh",
+    "customerEmail": "shinnosakine@gmail.com",
+    "bookingType": "hotel",
+    "bookingDetail": "Liberty Central Saigon",
+    "bookingClass": "Ho Chi Minh",
+    "reason": "o",
+    "requestedAt": "2026-06-06 07:00",
+    "status": "pending",
+    "userId": 6,
+    "acknowledged": false
   }
 ]
