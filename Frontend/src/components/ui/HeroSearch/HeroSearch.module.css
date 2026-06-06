@@ -1,7 +1,6 @@
 .heroSection {
     position: relative;
     width: 100%;
-    z-index: 30;
 }
 
 .heroBackground {
@@ -18,7 +17,7 @@
 
 .heroContent {
     position: relative;
-    z-index: 10;
+    z-index: 30;
     padding: 64px 40px 128px;
     max-width: 1280px;
     margin: 0 auto;
