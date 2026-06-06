@@ -382,6 +382,14 @@ export const translations: Record<Language, Record<string, string>> = {
 
         // Mock Search Criteria Values
         'guests.6adults1entirevilla': '6 Người lớn, 1 Biệt thự',
+        'villa.type.pool': 'Biệt thự có hồ bơi',
+        'villa.type.beachfront': 'Sát biển',
+        'villa.type.mountain': 'Hướng núi',
+        'villa.type.family': 'Phù hợp gia đình',
+        'apt.type.studio': 'Căn hộ Studio',
+        'apt.type.oneBed': '1 Phòng ngủ',
+        'apt.type.twoBed': '2 Phòng ngủ',
+        'apt.type.entire': 'Nguyên căn',
 
         // Footer
         'footer.desc': 'Booking Travel là nền tảng du lịch hàng đầu Đông Nam Á, cung cấp các nhu cầu du lịch đa dạng trong một nền tảng. Chúng tôi ở đây để giúp bạn khám phá thế giới.',
@@ -1400,6 +1408,14 @@ export const translations: Record<Language, Record<string, string>> = {
 
         // Mock Search Criteria Values
         'guests.6adults1entirevilla': '6 Adults, 1 Entire Villa',
+        'villa.type.pool': 'Pool Villa',
+        'villa.type.beachfront': 'Beachfront',
+        'villa.type.mountain': 'Mountain View',
+        'villa.type.family': 'Family Friendly',
+        'apt.type.studio': 'Studio Apartment',
+        'apt.type.oneBed': '1 Bedroom',
+        'apt.type.twoBed': '2 Bedrooms',
+        'apt.type.entire': 'Entire House',
 
         // Footer
         'footer.desc': "Booking Travel is Southeast Asia's leading travel platform, providing diverse travel needs in one platform. We are here to help you discover the world.",

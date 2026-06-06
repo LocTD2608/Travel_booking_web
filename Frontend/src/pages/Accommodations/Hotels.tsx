@@ -261,10 +261,10 @@ const Hotels: React.FC = () => {
                         <div className="mb-2">
                             <h4 className="font-semibold text-[15px] mb-3">{t('search.facilities', 'Facilities')}</h4>
                             {[
-                                { name: 'Pool', displayName: t('amenity.pool', 'Hồ bơi'), icon: 'pool' },
-                                { name: 'WiFi', displayName: t('amenity.wifi', 'WiFi'), icon: 'wifi' },
-                                { name: 'Restaurant', displayName: t('amenity.restaurant', 'Nhà hàng'), icon: 'restaurant' },
-                                { name: 'Gym', displayName: t('amenity.gym', 'Phòng gym'), icon: 'fitness_center' }
+                                { name: 'Pool', displayName: t('facility.pool', 'Hồ bơi'), icon: 'pool' },
+                                { name: 'WiFi', displayName: t('facility.wifi', 'WiFi'), icon: 'wifi' },
+                                { name: 'Restaurant', displayName: t('facility.restaurant', 'Nhà hàng'), icon: 'restaurant' },
+                                { name: 'Gym', displayName: t('facility.gym', 'Phòng gym'), icon: 'fitness_center' }
                             ].map(amenity => (
                                 <label key={amenity.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
                                     <input
