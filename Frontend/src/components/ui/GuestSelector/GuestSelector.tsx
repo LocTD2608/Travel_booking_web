@@ -1,6 +1,7 @@
 import React from 'react';
 import { Popover } from 'antd';
 import type { GuestSelection } from '../../../types/search';
+import { useLanguage } from '../../../context';
 import styles from './GuestSelector.module.css';
 
 interface GuestSelectorProps {
@@ -11,6 +12,7 @@ interface GuestSelectorProps {
 }
 
 const GuestSelector: React.FC<GuestSelectorProps> = ({ value, onChange, simpleMode = false }) => {
+    const { t } = useLanguage();
 
     const update = (field: keyof GuestSelection, delta: number) => {
         const next = { ...value, [field]: value[field] + delta };
@@ -26,17 +28,20 @@ const GuestSelector: React.FC<GuestSelectorProps> = ({ value, onChange, simpleMo
     };
 
     const displayText = simpleMode
-        ? `${value.adults} Hành khách`
-        : `${value.adults} Người lớn, ${value.children} Trẻ em, ${value.rooms} Phòng`;
+        ? t('guests.displayTextSimple', '{adults} Hành khách').replace('{adults}', String(value.adults))
+        : t('guests.displayText', '{adults} Người lớn, {children} Trẻ em, {rooms} Phòng')
+            .replace('{adults}', String(value.adults))
+            .replace('{children}', String(value.children))
+            .replace('{rooms}', String(value.rooms));
 
     const rows = simpleMode
         ? [
-            { key: 'adults' as const, label: 'Hành khách', desc: 'Từ 12 tuổi trở lên', min: 1, max: 10 },
+            { key: 'adults' as const, label: t('guests.passengers', 'Hành khách'), desc: t('guests.adultsDesc', 'Từ 12 tuổi trở lên'), min: 1, max: 10 },
         ]
         : [
-            { key: 'adults' as const, label: 'Người lớn', desc: 'Từ 12 tuổi trở lên', min: 1, max: 10 },
-            { key: 'children' as const, label: 'Trẻ em', desc: '0 – 11 tuổi', min: 0, max: 6 },
-            { key: 'rooms' as const, label: 'Phòng', desc: 'Tối đa 5 phòng', min: 1, max: 5 },
+            { key: 'adults' as const, label: t('guests.adults', 'Người lớn'), desc: t('guests.adultsDesc', 'Từ 12 tuổi trở lên'), min: 1, max: 10 },
+            { key: 'children' as const, label: t('guests.children', 'Trẻ em'), desc: t('guests.childrenDesc', '0 – 11 tuổi'), min: 0, max: 6 },
+            { key: 'rooms' as const, label: t('guests.rooms', 'Phòng'), desc: t('guests.roomsDesc', 'Tối đa 5 phòng'), min: 1, max: 5 },
         ];
 
     const content = (

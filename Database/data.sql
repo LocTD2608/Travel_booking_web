@@ -8,7 +8,32 @@ INSERT INTO USERS (Ho, Ten, Email, SDT, CCCD, Password, Role, TrangThai, TinhTra
 ('Tran', 'Binh', 'binh2@gmail.com', '090000002', '001001002', '123456', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-02 09:30:00'),
 ('Le', 'Chi', 'chi3@gmail.com', '090000003', '001001003', '123456', 'ADMIN', 'ACTIVE', 'VERIFIED', '2026-01-01 07:00:00'),
 ('Pham', 'Dung', 'dung4@gmail.com', '090000004', '001001004', '123456', 'USER', 'INACTIVE', 'PENDING', '2026-01-05 14:20:00'),
-('Hoang', 'Ha', 'ha5@gmail.com', '090000005', '001001005', '123456', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-10 10:15:00');
+('Hoang', 'Ha', 'ha5@gmail.com', '090000005', '001001005', '123456', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-10 10:15:00'),
+-- Admins
+('Nguyen Van', 'Hai', 'admin_van@gmail.com', '0910000001', '100100100101', 'password123', 'ADMIN', 'ACTIVE', 'VERIFIED', '2026-01-01 07:00:00'),
+('Tran Thi', 'Lan', 'admin_thi@gmail.com', '0910000002', '100100100102', 'password123', 'ADMIN', 'ACTIVE', 'VERIFIED', '2026-01-01 07:00:00'),
+('Le Hoang', 'Nam', 'admin_hoang@gmail.com', '0910000003', '100100100103', 'password123', 'ADMIN', 'ACTIVE', 'VERIFIED', '2026-01-01 07:00:00'),
+-- Users
+('Nguyen Dinh', 'Hoang', 'hoangnguyen@gmail.com', '0920000001', '200200200201', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Tran Minh', 'Khoa', 'khoatran@gmail.com', '0920000002', '200200200202', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Le Thanh', 'Hai', 'haile@gmail.com', '0920000003', '200200200203', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Pham Quoc', 'Bao', 'baopham@gmail.com', '0920000004', '200200200204', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Hoang Khanh', 'Chi', 'chihoang@gmail.com', '0920000005', '200200200205', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Vu Thuy', 'Linh', 'linhvu@gmail.com', '0920000006', '200200200206', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Phan Anh', 'Tuan', 'tuanphan@gmail.com', '0920000007', '200200200207', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Do Thu', 'Ha', 'hado@gmail.com', '0920000008', '200200200208', 'password123', 'USER', 'INACTIVE', 'UNVERIFIED', '2026-01-01 08:00:00'),
+('Bui Tien', 'Dung', 'dungbui@gmail.com', '0920000009', '200200200209', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Huynh Minh', 'Triet', 'triethuynh@gmail.com', '0920000010', '200200200210', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Trinh Cong', 'Son', 'sontrinh@gmail.com', '0920000011', '200200200211', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Dang Thu', 'Thao', 'thaodang@gmail.com', '0920000012', '200200200212', 'password123', 'USER', 'ACTIVE', 'UNVERIFIED', '2026-01-01 08:00:00'),
+('Mai Phuong', 'Thuy', 'thuymai@gmail.com', '0920000013', '200200200213', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Ngo Bao', 'Chau', 'chaungo@gmail.com', '0920000014', '200200200214', 'password123', 'USER', 'BANNED', 'UNVERIFIED', '2026-01-01 08:00:00'),
+('Duong Trung', 'Quoc', 'quocduong@gmail.com', '0920000015', '200200200215', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Ly Thuong', 'Kiet', 'kietly@gmail.com', '0920000016', '200200200216', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Vo Nguyen', 'Giap', 'giapvo@gmail.com', '0920000017', '200200200217', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Phan Chau', 'Trinh', 'trinhphan@gmail.com', '0920000018', '200200200218', 'password123', 'USER', 'INACTIVE', 'UNVERIFIED', '2026-01-01 08:00:00'),
+('Nguyen', 'Hue', 'huenguyen@gmail.com', '0920000019', '200200200219', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00'),
+('Dinh Bo', 'Linh', 'linhdinh@gmail.com', '0920000020', '200200200220', 'password123', 'USER', 'ACTIVE', 'VERIFIED', '2026-01-01 08:00:00');
 
 -- =========================
 -- SAN BAY (10 sân bay)
@@ -214,7 +239,8 @@ INSERT INTO DICH_VU (LoaiDichVu, MoTa, Gia, DonViTinh) VALUES
 ('DU_LICH', 'Tour Ha Giang Loop', 4800000, 'tour'),
 ('DU_LICH', 'Tour Quy Nhon Beach', 3900000, 'tour'),
 ('DU_LICH', 'Tour Ninh Binh Discovery', 2300000, 'tour'),
-('DU_LICH', 'Tour Cat Ba Island', 2700000, 'tour');
+('DU_LICH', 'Tour Cat Ba Island', 2700000, 'tour'),
+('DU_LICH', 'Tour Resort Maldives 5 Sao Hạng Sang', 24500000, 'tour');
 
 INSERT INTO DV_TRUNG_CHUYEN VALUES (1, 'Sân bay', 'Khách sạn', '1 chiều');
 INSERT INTO DV_DU_LICH VALUES (2, 'Khách sạn', 'Bà Nà Hills');
@@ -238,7 +264,8 @@ INSERT INTO DV_DU_LICH (
 (15, 'Ha Noi', 'Ha Giang'),
 (16, 'Quy Nhon', 'Ky Co Beach'),
 (17, 'Ha Noi', 'Trang An Ninh Binh'),
-(18, 'Hai Phong', 'Cat Ba Island');
+(18, 'Hai Phong', 'Cat Ba Island'),
+(19, 'San bay Maldives', 'Resort Maldives');
 
 -- =========================
 -- BOOKING + CHI TIẾT (mẫu)
@@ -249,3 +276,32 @@ VALUES (1, NOW(), NOW(), 5000000, 'DA_THANH_TOAN');
 INSERT INTO CHI_TIET_BOOKING
 (MaCTBooking, MaBooking, SoLuongNguoi, DonGia, LoaiDoiTuong, MaKM)
 VALUES (1, 1, 2, 2500000, 'FLIGHT', NULL);
+
+-- =========================
+-- KHUYẾN MÃI
+-- =========================
+INSERT INTO KHUYEN_MAI (TenKM, LoaiKM, NgayApDung, NgayKetThuc, DieuKien, TrangThaiKM) VALUES 
+('Up to 20% Off\nDining Vouchers', 'PROMO', '2026-06-01', '2026-12-31', 
+ '{"badge": "LIMITED TIME", "badgeColor": "yellow", "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCUh0E7h4kKz315MnHIzv_UTPH9iYSAgKp5u59CVwebESS8qSBsR-xoVQ2FnLHoG5zZJl_Fogvhc8S0JhBWbxmRMBY0e2ehHNkC1z1VcRZGaNtQxLDWBvFPsZxf9nlwpRZ4fC5oBPlOw-cT8QWF6VVE7zimKRvocqbiKSv5f4cA9S9W8vrQIgFuW7Yk5ktPwbIWZaPyOG527-J3nX-IawG9l7rUMl5xXTHdd5FRn9LzMkLbuXDkUyImJ5mM6g3gCN9PAqVNmcLU47c", "targetUrl": "/experience"}', 
+ 'ACTIVE'),
+
+('International Flights\nStarting from $199', 'PROMO', '2026-06-01', '2026-12-31', 
+ '{"badge": "FLIGHT DEAL", "badgeColor": "blue", "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAMv7gS5O3bc8_67hLa_ydpldx0r7L-BjMVVuBXmPyPgxNAKGl4T3lEVXH7yom2ylDE7ZXpw0ydLkviVAoRUd3fiznhTZOp1e_anYolCVExsN7jbxyhTLXMBiuIIsrjUTR1rSLBebaqGKiWZ57YKgfPR-owgYKTWy1qgRIoFXWfU7YIMmjoBYyH7qnu0j629oPlTus3NFbKsejq68LMsWL2MnMHMmI2TFvTAgPLJkHPb0SJvQoQZNRzy3xC3MbkUjXzR81uOH4M0-g", "targetUrl": "/flights"}', 
+ 'ACTIVE'),
+
+('Weekend Getaway\nPackages', 'PROMO', '2026-06-01', '2026-12-31', 
+ '{"badge": "STAYCATION", "badgeColor": "purple", "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAOUxGIqRVbUdCmNozeycTjPhDt_WulULzmrpwAYNT23GLnTpMZIjQx3_lMKlzxDiPhxyoPNv94FFLJ1h5LsFyBY9HCq9S1hDbYRY4rn8cJQUil7v5O8Ii3aJSaS5-tLEvLTVfgYcbBKlyuGWlxWvtpPur_Vl4dqHseFqq9iJIkY4t1srjZcnCy0hJyD_el7_KKlhpACaERsV-cfTdy2YQ-KFLzUobD6DqOpaGzJIm44DDbz1bmqcOOD4IUT7525OZGvfKAZTKNxE0", "targetUrl": "/hotels"}', 
+ 'ACTIVE');
+
+INSERT INTO KHUYEN_MAI (TenKM, LoaiKM, NgayApDung, NgayKetThuc, DieuKien, TrangThaiKM) VALUES 
+('FLYHIGH', 'COUPON', '2026-06-01', '2026-12-31', 
+ '{"title": "International Flights", "discount": "Save $50", "terms": "Min. spend $500 • Valid until Dec 31", "icon": "flight_takeoff", "color": "blue"}', 
+ 'ACTIVE'),
+
+('STAYLUXE', 'COUPON', '2026-06-01', '2026-12-31', 
+ '{"title": "First Hotel Booking", "discount": "15% OFF", "terms": "Max discount $30 • New users only", "icon": "hotel", "color": "orange"}', 
+ 'ACTIVE'),
+
+('FUNTIME', 'COUPON', '2026-06-01', '2026-12-31', 
+ '{"title": "Xperience Activity", "discount": "10% Back", "terms": "Cashback in points • All activities", "icon": "local_activity", "color": "purple"}', 
+ 'ACTIVE');

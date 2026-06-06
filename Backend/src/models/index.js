@@ -9,6 +9,7 @@ const TinhTrangPhongTrong = require('./TinhTrangPhongTrong')(sequelize, Sequeliz
 const ThanhToan = require('./ThanhToan')(sequelize, Sequelize);
 const Hotel = require('./Hotel')(sequelize, Sequelize);
 const LoaiPhong = require('./LoaiPhong')(sequelize, Sequelize);
+const KhuyenMai = require('./KhuyenMai')(sequelize, Sequelize);
 
 const ChuyenBay = require('./ChuyenBay')(sequelize, Sequelize);
 const TuyenDuong = require('./TuyenDuong')(sequelize, Sequelize);
@@ -20,6 +21,9 @@ const DichVu = require('./DichVu')(sequelize, Sequelize);
 const DV_DU_LICH = require('./DV_DU_LICH')(sequelize, Sequelize);
 
 // ===== QUAN HỆ =====
+Hotel.hasMany(LoaiPhong, { foreignKey: 'MaKS', as: 'rooms' });
+LoaiPhong.belongsTo(Hotel, { foreignKey: 'MaKS' });
+
 ChuyenBay.belongsTo(TuyenDuong, {
     foreignKey: "MaTuyenDuong"
 });
@@ -63,6 +67,7 @@ db.TinhTrangPhongTrong = TinhTrangPhongTrong;
 db.ThanhToan = ThanhToan;
 db.Hotel = Hotel;
 db.LoaiPhong = LoaiPhong;
+db.KhuyenMai = KhuyenMai;
 
 db.ChuyenBay = ChuyenBay;
 db.TuyenDuong = TuyenDuong;

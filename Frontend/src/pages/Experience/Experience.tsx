@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Slider } from 'antd';
 import { useUrlFilters } from '../../hooks/useUrlFilters';
@@ -6,23 +6,52 @@ import { fetchExperiences } from '../../services/searchApi';
 import type { ExperienceResult } from '../../types/search';
 import { ExperienceCard } from '../../components/ui/cards/experience/ExperienceCard';
 import { generateStarsFromId } from '../../utils/ratingUtils';
+import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
+import AuthModal from '../../components/auth/AuthModal';
+import { useLanguage } from '../../context';
 
 const Experience: React.FC = () => {
     const navigate = useNavigate();
     const { filters, setFilter, setPage, resetFilters, currentPage } = useUrlFilters();
+    const { t, language } = useLanguage();
     
     const [results, setResults] = useState<ExperienceResult[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [searched, setSearched] = useState(false);
     const [selectedStars, setSelectedStars] = useState<number[]>([]);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+    const handleSearchClick = (searchData: Record<string, string>) => {
+        const params = new URLSearchParams();
+        Object.entries(searchData).forEach(([key, value]) => {
+            if (value && key !== 'type') {
+                params.append(key, value);
+            }
+        });
+
+        const typeToPath: Record<string, string> = {
+            hotels: '/hotels',
+            flights: '/flights',
+            package: '/search',
+            experience: '/experience',
+        };
+
+        const path = typeToPath[searchData.type] || '/search';
+        navigate(`${path}?${params.toString()}`);
+        setIsSearchOpen(false);
+    };
 
     // Default search parameters if not present in URL
-    const searchState = {
-        destination: filters.destination || 'Phú Quốc, Việt Nam',
-        dates: 'Xem lịch trình chi tiết',
-        category: 'Tours & Trải nghiệm'
-    };
+    const searchState = useMemo(() => {
+        const defaultDest = language === 'en' ? 'Phu Quoc, Vietnam' : 'Phú Quốc, Việt Nam';
+        return {
+            destination: filters.destination || defaultDest,
+            dates: t('detail.viewDetailedItinerary', 'Xem lịch trình chi tiết'),
+            category: t('experience.title', 'Hoạt động & Vui chơi')
+        };
+    }, [filters.destination, language, t]);
 
     const doSearch = useCallback(async () => {
         setLoading(true);
@@ -37,11 +66,11 @@ const Experience: React.FC = () => {
             });
             setResults(res.data ?? []);
         } catch (e: unknown) {
-            setError(e instanceof Error ? e.message : 'Có lỗi xảy ra khi kết nối máy chủ');
+            setError(e instanceof Error ? e.message : t('experience.loadError', 'Có lỗi xảy ra khi kết nối máy chủ'));
         } finally {
             setLoading(false);
         }
-    }, [filters.destination, filters.priceMax, filters.sortBy, selectedStars]);
+    }, [filters.destination, filters.priceMax, filters.sortBy, selectedStars, t]);
 
     // Triggers search when filters update
     useEffect(() => {
@@ -51,7 +80,8 @@ const Experience: React.FC = () => {
     // Handle Reset Filter
     const handleReset = () => {
         resetFilters();
-        setFilter({ destination: 'Phú Quốc, Việt Nam' });
+        const defaultDest = language === 'en' ? 'Phu Quoc, Vietnam' : 'Phú Quốc, Việt Nam';
+        setFilter({ destination: defaultDest });
     };
 
     // Rating star filter toggling
@@ -67,6 +97,21 @@ const Experience: React.FC = () => {
         return selectedStars.includes(stars);
     });
 
+    const popularCities = useMemo(() => {
+        return language === 'en'
+            ? ['Phu Quoc, Vietnam', 'Da Nang, Vietnam', 'Ha Noi, Vietnam', 'Maldives']
+            : ['Phú Quốc, Việt Nam', 'Đà Nẵng, Việt Nam', 'Hà Nội, Việt Nam', 'Maldives'];
+    }, [language]);
+
+    const inclusionsList = useMemo(() => {
+        return [
+            { name: t('experience.shuttle', 'Xe đưa đón'), icon: 'directions_bus' },
+            { name: t('experience.ticket', 'Vé tham quan'), icon: 'confirmation_number' },
+            { name: t('experience.meal', 'Bữa ăn'), icon: 'restaurant' },
+            { name: t('experience.guide', 'Hướng dẫn viên'), icon: 'hail' }
+        ];
+    }, [t]);
+
     return (
         <div className="bg-[#f5f7fa] min-h-screen pb-12 font-['Plus_Jakarta_Sans']">
             {/* Top Search Info Bar - Unified Sticky Bar */}
@@ -74,29 +119,37 @@ const Experience: React.FC = () => {
                 <div className="w-full max-w-[1200px] px-4 flex items-center justify-between">
                     <div className="flex gap-10">
                         <div>
-                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">ĐIỂM ĐẾN / TOUR</div>
+                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('experience.labelDestinationLower', 'ĐIỂM ĐẾN / TOUR')}</div>
                             <div className="text-[15px] font-bold text-gray-900">{searchState.destination}</div>
                         </div>
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div>
-                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">THỜI GIAN</div>
+                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('experience.labelTime', 'THỜI GIAN')}</div>
                             <div className="text-[15px] font-bold text-gray-900">{searchState.dates}</div>
                         </div>
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div>
-                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DANH MỤC</div>
+                            <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('experience.labelCategory', 'DANH MỤC')}</div>
                             <div className="text-[15px] font-bold text-gray-900">{searchState.category}</div>
                         </div>
                     </div>
                     <button 
                         className="flex items-center gap-2 border border-purple-200 text-[#7c3aed] font-bold px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors"
-                        onClick={() => navigate('/')}
+                        onClick={() => setIsSearchOpen(!isSearchOpen)}
                     >
-                        <span className="material-symbols-outlined text-[18px]">edit</span>
-                        Thay đổi tìm kiếm
+                        <span className="material-symbols-outlined text-[18px]">{isSearchOpen ? 'close' : 'edit'}</span>
+                        {isSearchOpen ? t('booking.close', 'Đóng') : t('booking.changeSearch', 'Thay đổi tìm kiếm')}
                     </button>
                 </div>
             </div>
+
+            {isSearchOpen && (
+                <div className="w-full bg-white border-b border-gray-200 py-6 flex justify-center animate-fade-in shadow-inner relative z-30 mb-6">
+                    <div className="w-full max-w-[1200px] px-4">
+                        <HeroSearch isCompact={true} initialTab="experience" onSearch={handleSearchClick} />
+                    </div>
+                </div>
+            )}
 
             {/* Main Content Grid */}
             <div className="max-w-[1200px] mx-auto px-4 flex gap-6">
@@ -105,46 +158,51 @@ const Experience: React.FC = () => {
                 <div className="w-[280px] flex-shrink-0">
                     <div className="bg-white border text-gray-800 border-gray-200 rounded-xl p-5 mb-4 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-lg">Bộ lọc</h3>
+                            <h3 className="font-bold text-lg">{t('results.filters', 'Bộ lọc')}</h3>
                             <button 
                                 className="text-[#7c3aed] font-semibold text-sm hover:underline" 
                                 onClick={handleReset}
                             >
-                                Thiết lập lại
+                                {t('experience.reset', 'Thiết lập lại')}
                             </button>
                         </div>
 
                         {/* Destination search filter */}
                         <div className="mb-6">
-                            <h4 className="font-semibold text-[15px] mb-3">Điểm đến phổ biến</h4>
-                            {['Phú Quốc, Việt Nam', 'Đà Nẵng, Việt Nam', 'Hà Nội, Việt Nam', 'Maldives'].map(city => (
-                                <button
-                                    key={city}
-                                    onClick={() => setFilter({ destination: city })}
-                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold mb-1.5 transition-all flex items-center justify-between ${
-                                        filters.destination === city || (city === 'Phú Quốc, Việt Nam' && !filters.destination)
-                                            ? 'bg-purple-50 text-[#7c3aed] border border-purple-100'
-                                            : 'text-gray-600 hover:bg-gray-50 border border-transparent'
-                                    }`}
-                                >
-                                    <span>{city}</span>
-                                    <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                                </button>
-                            ))}
+                            <h4 className="font-semibold text-[15px] mb-3">{t('hero.search.popularDestinations', 'Điểm đến phổ biến')}</h4>
+                            {popularCities.map(city => {
+                                const defaultDest = language === 'en' ? 'Phu Quoc, Vietnam' : 'Phú Quốc, Việt Nam';
+                                const isSelected = filters.destination === city || (city === defaultDest && !filters.destination);
+                                return (
+                                    <button
+                                        key={city}
+                                        onClick={() => setFilter({ destination: city })}
+                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold mb-1.5 transition-all flex items-center justify-between ${
+                                            isSelected
+                                                ? 'bg-purple-50 text-[#7c3aed] border border-purple-100'
+                                                : 'text-gray-600 hover:bg-gray-50 border border-transparent'
+                                        }`}
+                                    >
+                                        <span>{city}</span>
+                                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                    </button>
+                                );
+                            })}
                         </div>
 
                         {/* Price Filter */}
                         <div className="mb-6">
-                            <h4 className="font-semibold text-[15px] mb-4">Giá tối đa / Người</h4>
+                            <h4 className="font-semibold text-[15px] mb-4">{t('experience.priceMaxPerPerson', 'Giá tối đa / Người')}</h4>
                             <Slider
+                                range={false}
                                 min={500000}
                                 max={30000000}
                                 step={500000}
                                 value={Number(filters.priceMax) || 30000000}
-                                onChange={(val: number) => setFilter({ priceMax: String(val) })}
+                                onChange={(val: number | number[]) => setFilter({ priceMax: String(Array.isArray(val) ? val[0] : val) })}
                                 tooltip={{ formatter: (val) => `${val?.toLocaleString()} VNĐ` }}
-                                trackStyle={[{ backgroundColor: '#7c3aed', height: 4 }]}
-                                handleStyle={[{ borderColor: '#7c3aed', width: 16, height: 16, marginTop: -6 }]}
+                                trackStyle={{ backgroundColor: '#7c3aed', height: 4 }}
+                                handleStyle={{ borderColor: '#7c3aed', width: 16, height: 16, marginTop: -6 }}
                             />
                             <div className="flex justify-between text-xs font-semibold text-gray-400 mt-2">
                                 <span>500.000đ</span>
@@ -154,7 +212,7 @@ const Experience: React.FC = () => {
 
                         {/* Star Rating Checklist */}
                         <div className="mb-6">
-                            <h4 className="font-semibold text-[15px] mb-3">Hạng sao dịch vụ</h4>
+                            <h4 className="font-semibold text-[15px] mb-3">{t('results.starRating', 'Xếp hạng sao')}</h4>
                             {[5, 4, 3].map(star => (
                                 <label key={star} className="flex items-center gap-3 mb-2 cursor-pointer group">
                                     <input
@@ -173,13 +231,8 @@ const Experience: React.FC = () => {
 
                         {/* Inclusions / Amenities */}
                         <div className="mb-2">
-                            <h4 className="font-semibold text-[15px] mb-3">Dịch vụ đi kèm</h4>
-                            {[
-                                { name: 'Xe đưa đón', icon: 'directions_bus' },
-                                { name: 'Vé tham quan', icon: 'confirmation_number' },
-                                { name: 'Bữa ăn', icon: 'restaurant' },
-                                { name: 'Hướng dẫn viên', icon: 'hail' }
-                            ].map(item => (
+                            <h4 className="font-semibold text-[15px] mb-3">{t('detail.inclusions', 'Dịch vụ đi kèm')}</h4>
+                            {inclusionsList.map(item => (
                                 <label key={item.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
@@ -196,13 +249,13 @@ const Experience: React.FC = () => {
                     {/* Purple Themed Promo Card */}
                     <div className="bg-[#7c3aed] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
                         <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">local_activity</span>
-                        <h4 className="font-bold text-lg mb-2 relative z-10">Tour Siêu Ưu Đãi</h4>
-                        <p className="text-xs text-purple-100 mb-4 relative z-10 leading-relaxed">Đăng nhập tài khoản để nhận thêm mã giảm giá tới 15% khi đặt các gói trải nghiệm đặc biệt hôm nay!</p>
+                        <h4 className="font-bold text-lg mb-2 relative z-10">{t('experience.promoTitle', 'Tour Siêu Ưu Đãi')}</h4>
+                        <p className="text-xs text-purple-100 mb-4 relative z-10 leading-relaxed">{t('experience.promoDesc', 'Đăng nhập tài khoản để nhận thêm mã giảm giá tới 15% khi đặt các gói trải nghiệm đặc biệt hôm nay!')}</p>
                         <button 
-                            onClick={() => navigate('/login')}
+                            onClick={() => setIsAuthModalOpen(true)}
                             className="bg-white text-[#7c3aed] px-4 py-2 rounded-lg font-bold text-xs w-full relative z-10 hover:bg-gray-50 hover-scale transition-all"
                         >
-                            Đăng Nhập Ngay
+                            {t('experience.loginNow', 'Đăng Nhập Ngay')}
                         </button>
                     </div>
                 </div>
@@ -212,20 +265,24 @@ const Experience: React.FC = () => {
 
                     {/* Sort Bar */}
                     <div className="flex items-center gap-3 mb-2">
-                        <span className="font-semibold text-gray-600 text-sm">Sắp xếp theo:</span>
+                        <span className="font-semibold text-gray-600 text-sm">{t('results.sortBy', 'Sắp xếp theo:')}</span>
                         <select
                             value={filters.sortBy ?? 'popular'}
                             onChange={(e) => setFilter({ sortBy: e.target.value })}
-                            className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-[14px] font-bold text-gray-900 outline-none cursor-pointer focus:border-[#7c3aed] shadow-sm min-w-[180px]"
+                            className="bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-[14px] font-bold text-gray-900 outline-none cursor-pointer focus:border-[#7c3aed] shadow-sm min-w-[200px]"
                         >
-                            <option value="popular">Phổ biến nhất</option>
-                            <option value="price">Giá thấp đến cao</option>
+                            <option value="popular">{t('experience.sort.popular', 'Phổ biến nhất')}</option>
+                            <option value="price">{t('results.sort.price_asc', 'Giá thấp đến cao')}</option>
                         </select>
 
                         {/* Display Total Results */}
                         {!loading && filteredResults.length > 0 && (
                             <span className="text-xs text-gray-500 font-semibold ml-auto bg-white border border-gray-100 px-3 py-2 rounded-lg shadow-sm">
-                                Tìm thấy <strong>{filteredResults.length}</strong> kết quả
+                                {language === 'vi' ? (
+                                    <>Tìm thấy <strong className="font-bold">{filteredResults.length}</strong> kết quả</>
+                                ) : (
+                                    <>Found <strong className="font-bold">{filteredResults.length}</strong> results</>
+                                )}
                             </span>
                         )}
                     </div>
@@ -234,19 +291,19 @@ const Experience: React.FC = () => {
                     {loading ? (
                         <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 rounded-xl text-gray-400 mt-4 h-72 shadow-sm">
                             <div className="w-8 h-8 border-4 border-[#7c3aed] border-t-transparent rounded-full animate-spin mb-4"></div>
-                            <p className="font-bold text-gray-500 text-sm">Đang tìm kiếm tour và trải nghiệm...</p>
+                            <p className="font-bold text-gray-500 text-sm">{t('experience.searching', 'Đang tìm kiếm tour và trải nghiệm...')}</p>
                         </div>
                     ) : error ? (
                         <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center text-red-600">
                             <span className="material-symbols-outlined text-4xl mb-2">error</span>
-                            <p className="font-bold">Không thể tải dữ liệu trải nghiệm</p>
+                            <p className="font-bold">{t('experience.loadError', 'Không thể tải dữ liệu trải nghiệm')}</p>
                             <p className="text-xs">{error}</p>
                         </div>
                     ) : filteredResults.length === 0 ? (
                         <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 border-dashed rounded-xl text-gray-400 mt-4 h-72">
                             <span className="material-symbols-outlined text-5xl mb-3 text-gray-300">explore_off</span>
-                            <p className="font-bold text-gray-500 text-sm">Không tìm thấy trải nghiệm nào</p>
-                            <p className="text-xs mt-1">Vui lòng thay đổi điểm đến hoặc bộ lọc giá tối đa để thử lại.</p>
+                            <p className="font-bold text-gray-500 text-sm">{t('experience.noResults', 'Không tìm thấy trải nghiệm nào')}</p>
+                            <p className="text-xs mt-1">{t('experience.noResultsDesc', 'Vui lòng thay đổi điểm đến hoặc bộ lọc giá tối đa để thử lại.')}</p>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-4">
@@ -261,22 +318,23 @@ const Experience: React.FC = () => {
                                     onClick={() => setPage(currentPage - 1)}
                                     className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
-                                    ← Trước
+                                    {t('experience.prevPage', '← Trước')}
                                 </button>
                                 <span className="px-4 py-2 bg-[#7c3aed] text-white rounded-lg text-xs font-bold shadow-sm">
-                                    Trang {currentPage}
+                                    {t('experience.pageNumber', 'Trang {page}').replace('{page}', String(currentPage))}
                                 </span>
                                 <button 
                                     onClick={() => setPage(currentPage + 1)}
                                     className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold bg-white text-gray-600 hover:bg-gray-50 transition-colors"
                                 >
-                                    Sau →
+                                    {t('experience.nextPage', 'Sau →')}
                                 </button>
                             </div>
                         </div>
                     )}
                 </div>
             </div>
+            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} initialView="login" />
         </div>
     );
 };

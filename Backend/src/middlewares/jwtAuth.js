@@ -15,6 +15,12 @@ const jwtAuth = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
+    // Handle hardcoded admin account (id === "admin" in token)
+    if (decoded.id === "admin" && decoded.role === "ADMIN") {
+      req.user = { UserID: "admin", Ho: "Admin", Ten: "TLK", Email: "admintlk@gmail.com", Role: "ADMIN" };
+      return next();
+    }
+
     // Lấy thông tin user đầy đủ từ DB để có trường Role
     const user = await User.findByPk(decoded.id);
     if (!user) {

@@ -131,6 +131,14 @@ exports.updateUser = async (req, res) => {
       TinhTrangXacMinh
     } = req.body;
 
+    // Validate CCCD
+    const cccdRegex = /^\d{12}$/;
+    if (CCCD && !cccdRegex.test(CCCD)) {
+      return res.status(400).json({
+        message: "CCCD phải gồm đúng 12 chữ số"
+      });
+    }
+
     const user = await User.findByPk(id);
 
     if (!user) {
@@ -211,6 +219,112 @@ exports.deleteUser = async (req, res) => {
     });
 
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * ADMIN: tạo user mới (có thể set Role, TrangThai, TinhTrangXacMinh, và validate input)
+ */
+exports.createUser = async (req, res) => {
+  try {
+    if (req.user.Role !== "ADMIN") {
+      return res.status(403).json({
+        message: "Chỉ Admin được phép tạo người dùng mới"
+      });
+    }
+
+    const {
+      Ho,
+      Ten,
+      Email,
+      SDT,
+      CCCD,
+      Password,
+      Role,
+      TrangThai,
+      TinhTrangXacMinh
+    } = req.body;
+
+    if (!Ho || !Ten || !Email || !Password) {
+      return res.status(400).json({
+        message: "Họ, Tên, Email và Mật khẩu là bắt buộc"
+      });
+    }
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(Email)) {
+      return res.status(400).json({
+        message: "Email không đúng định dạng"
+      });
+    }
+
+    // Validate số điện thoại (nếu có cung cấp)
+    if (SDT) {
+      const phoneRegex = /^0\d{9}$/;
+      if (!phoneRegex.test(SDT)) {
+        return res.status(400).json({
+          message: "Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số"
+        });
+      }
+    }
+
+    // Validate CCCD (nếu có cung cấp)
+    if (CCCD) {
+      const cccdRegex = /^\d{12}$/;
+      if (!cccdRegex.test(CCCD)) {
+        return res.status(400).json({
+          message: "CCCD phải gồm đúng 12 chữ số"
+        });
+      }
+    }
+
+    const existingUser = await User.findOne({ where: { Email } });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email đã được sử dụng" });
+    }
+
+    if (SDT) {
+      const existingPhone = await User.findOne({ where: { SDT } });
+      if (existingPhone) {
+        return res.status(400).json({ message: "Số điện thoại đã được sử dụng" });
+      }
+    }
+
+    if (CCCD) {
+      const existingCccd = await User.findOne({ where: { CCCD } });
+      if (existingCccd) {
+        return res.status(400).json({ message: "CCCD đã được sử dụng" });
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(Password, 10);
+
+    const user = await User.create({
+      Ho,
+      Ten,
+      Email,
+      SDT: SDT || null,
+      CCCD: CCCD || null,
+      Password: hashedPassword,
+      Role: Role || "USER",
+      TrangThai: TrangThai || "ACTIVE",
+      TinhTrangXacMinh: TinhTrangXacMinh || "UNVERIFIED"
+    });
+
+    const userResponse = user.toJSON();
+    delete userResponse.Password;
+
+    res.status(201).json({
+      message: "Người dùng đã được tạo thành công",
+      user: userResponse
+    });
+
+  } catch (err) {
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ message: "Dữ liệu đã tồn tại (Email, Số điện thoại hoặc CCCD)" });
+    }
     res.status(500).json({ error: err.message });
   }
 };

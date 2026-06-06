@@ -234,4 +234,16 @@ const checkAvailability = async (req, res) => {
   }
 };
 
-module.exports = { searchFlights, searchHotels, getDestinations, getRecommendations, searchTrains, searchExperiences, checkAvailability };
+const getPromotions = async (req, res) => {
+  try {
+    const data = await searchService.getActivePromotions();
+    res.json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { searchFlights, searchHotels, getDestinations, getRecommendations, searchTrains, searchExperiences, checkAvailability, getPromotions };

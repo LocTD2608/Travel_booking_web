@@ -6,6 +6,7 @@ const { isAdmin } = require("../middlewares/auth");
 
 // Accommodations Routes
 router.get("/", jwtAuth, accommodationController.getAccommodations);
+router.get("/stats", jwtAuth, accommodationController.getAccommodationStats);
 router.get("/:id", jwtAuth, accommodationController.getAccommodationById);
 router.post("/", jwtAuth, isAdmin, accommodationController.createAccommodation);
 router.put("/:id", jwtAuth, isAdmin, accommodationController.updateAccommodation);

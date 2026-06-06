@@ -46,7 +46,8 @@ export interface TransactionData {
  */
 export const createVNPayUrl = async (amount: number, orderId: string): Promise<{ success: boolean; paymentUrl: string }> => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/create-vnpay`, { amount, orderId });
+        const returnUrl = `${window.location.origin}/payment-return`;
+        const response = await axios.post(`${API_BASE_URL}/create-vnpay`, { amount, orderId, returnUrl });
         return response.data;
     } catch (error: any) {
         throw new Error(error.response?.data?.message || 'Failed to create VNPay URL');

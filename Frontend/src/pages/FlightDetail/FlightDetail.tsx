@@ -5,6 +5,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { fetchFlightDetail } from '../../services/searchApi';
 import type { FlightDetailResult, GuestSelection } from '../../types/search';
 import GuestSelector from '../../components/ui/GuestSelector/GuestSelector';
+import { useLanguage } from '../../context';
 import styles from './FlightDetail.module.css';
 
 const fmt = (price: number) =>
@@ -15,6 +16,7 @@ const fmtTime = (dt: string) =>
 
 const FlightDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const { t } = useLanguage();
 
     const [flight, setFlight] = useState<FlightDetailResult | null>(null);
     const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ const FlightDetail: React.FC = () => {
         return (
             <div className={styles.loadingState}>
                 <span className={`material-symbols-outlined ${styles.spinner}`}>progress_activity</span>
-                <p>Đang tải thông tin chuyến bay...</p>
+                <p>{t('detail.loadingFlight', 'Đang tải thông tin chuyến bay...')}</p>
             </div>
         );
     }
@@ -64,9 +66,9 @@ const FlightDetail: React.FC = () => {
         return (
             <div className={styles.errorState}>
                 <span className="material-symbols-outlined" style={{ fontSize: 48 }}>error</span>
-                <p style={{ fontWeight: 700 }}>Không tìm thấy chuyến bay</p>
+                <p style={{ fontWeight: 700 }}>{t('detail.flightNotFound', 'Không tìm thấy chuyến bay')}</p>
                 <p style={{ fontSize: 13 }}>{error}</p>
-                <Link to="/flights" style={{ color: '#1BA0E2', fontWeight: 600 }}>← Quay lại tìm kiếm</Link>
+                <Link to="/flights" style={{ color: '#1BA0E2', fontWeight: 600 }}>{t('detail.backToFlights', '← Quay lại tìm kiếm chuyến bay')}</Link>
             </div>
         );
     }
@@ -78,7 +80,7 @@ const FlightDetail: React.FC = () => {
         <div className={styles.detailPage}>
             {/* Breadcrumb */}
             <div className={styles.breadcrumb}>
-                <Link to="/">Trang chủ</Link> / <Link to="/flights">Chuyến bay</Link> / CB-{flight.MaChuyenBay}
+                <Link to="/">{t('checkout.breadcrumbHome', 'Trang chủ')}</Link> / <Link to="/flights">{t('header.flights', 'Chuyến bay')}</Link> / CB-{flight.MaChuyenBay}
             </div>
 
             {/* Flight Info Card */}
@@ -89,7 +91,7 @@ const FlightDetail: React.FC = () => {
                         {flight.HangGhe || 'Economy'}
                     </span>
                     <span style={{ color: '#9ca3af', fontSize: 13, marginLeft: 'auto' }}>
-                        Mã: CB-{flight.MaChuyenBay}
+                        {t('detail.flightCode', 'Mã: CB-{code}').replace('{code}', String(flight.MaChuyenBay))}
                     </span>
                 </div>
 
@@ -113,18 +115,18 @@ const FlightDetail: React.FC = () => {
 
             {/* Booking Section */}
             <div className={styles.bookingSection}>
-                <h3>Đặt vé</h3>
+                <h3>{t('detail.bookTitle', 'Đặt vé')}</h3>
 
                 <div className={styles.bookingGrid}>
                     {/* Date Picker */}
                     <div>
-                        <span className={styles.fieldLabel}>Ngày khởi hành</span>
+                        <span className={styles.fieldLabel}>{t('detail.departureDate', 'Ngày khởi hành')}</span>
                         <DatePicker
                             value={selectedDate}
                             onChange={(date) => setSelectedDate(date)}
                             disabledDate={disabledDate}
                             format="DD/MM/YYYY"
-                            placeholder="Chọn ngày bay"
+                            placeholder={t('detail.selectDatePlaceholder', 'Chọn ngày bay')}
                             style={{ width: '100%' }}
                             size="large"
                         />
@@ -132,7 +134,7 @@ const FlightDetail: React.FC = () => {
 
                     {/* Guest Selector (simple mode – passengers only) */}
                     <div>
-                        <span className={styles.fieldLabel}>Số hành khách</span>
+                        <span className={styles.fieldLabel}>{t('detail.passengersCount', 'Số hành khách')}</span>
                         <GuestSelector value={guests} onChange={setGuests} simpleMode />
                     </div>
                 </div>
@@ -140,12 +142,12 @@ const FlightDetail: React.FC = () => {
                 {/* Price */}
                 <div className={styles.priceSection}>
                     <div>
-                        <div className={styles.totalLabel}>Tổng tiền ({guests.adults} hành khách)</div>
+                        <div className={styles.totalLabel}>{t('detail.totalPassengers', 'Tổng tiền ({count} hành khách)').replace('{count}', String(guests.adults))}</div>
                         <div className={styles.totalPrice}>{fmt(totalPrice)}</div>
                     </div>
                     <button className={styles.bookBtn}>
                         <span className="material-symbols-outlined">confirmation_number</span>
-                        Đặt vé ngay
+                        {t('detail.bookFlight', 'Đặt vé ngay')}
                     </button>
                 </div>
             </div>

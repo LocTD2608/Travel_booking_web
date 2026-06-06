@@ -1,4 +1,5 @@
-const API_URL = "http://127.0.0.1:3000/api/booking";
+const BASE_API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+const API_URL = `${BASE_API_URL}/booking`;
 
 export interface BookingDetails {
     booking: any;
@@ -48,6 +49,23 @@ export const bookingApi = {
             throw new Error(err.message || 'Không thể tạo đặt phòng');
         }
         
+        return response.json();
+    },
+
+    getBookingDetail: async (bookingId: string | number): Promise<any> => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/detail/${bookingId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: token ? `Bearer ${token}` : '',
+            },
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy thông tin chi tiết giao dịch');
+        }
+
         return response.json();
     }
 };

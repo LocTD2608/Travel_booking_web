@@ -9,6 +9,15 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.sendOtpEmail = async (email, otp) => {
+    console.log(`\n====================================`);
+    console.log(`[EMAIL SERVICE MOCK] OTP for ${email} is: ${otp}`);
+    console.log(`====================================\n`);
+
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.warn("⚠️ SMTP_USER or SMTP_PASS not set in .env. Mocking email sending.");
+        return Promise.resolve({ message: "Mock OTP email sent" });
+    }
+
     const mailOptions = {
         from: process.env.SMTP_USER,
         to: email,
@@ -33,6 +42,13 @@ exports.sendOtpEmail = async (email, otp) => {
 };
 
 exports.sendBookingSuccess = async (booking) => {
+    console.log(`[EMAIL SERVICE MOCK] Sending booking confirmation email to: ${booking.Email || "user@example.com"}`);
+
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.warn("⚠️ SMTP_USER or SMTP_PASS not set in .env. Skipping real email sending.");
+        return Promise.resolve({ message: "Mock booking confirmation email logged" });
+    }
+
     // Tạo link Barcode động dựa trên mã Booking (dùng API miễn phí)
     const barcodeUrl = `https://barcode.tec-it.com/barcode.ashx?data=${booking.MaBooking}&code=Code128&dpi=96`;
     const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);

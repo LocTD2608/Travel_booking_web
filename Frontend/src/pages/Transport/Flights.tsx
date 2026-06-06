@@ -6,6 +6,8 @@ import { Slider } from 'antd';
 import { FlightCard, type FlightCardProps } from '../../components/ui/cards/transport/FlightCard';
 import { fetchFlights } from '../../services/searchApi';
 import FlightSelectionModal from '../../components/ui/modal/FlightSelectionModal';
+import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
+import { useLanguage } from '../../context';
 
 const Flights: React.FC = () => {
     const navigate = useNavigate();
@@ -14,6 +16,28 @@ const Flights: React.FC = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [isFlightModalOpen, setIsFlightModalOpen] = useState(false);
     const [selectedFlight, setSelectedFlight] = useState<FlightCardProps | null>(null);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const { t, translatePassengers } = useLanguage();
+
+    const handleSearchClick = (searchData: Record<string, string>) => {
+        const params = new URLSearchParams();
+        Object.entries(searchData).forEach(([key, value]) => {
+            if (value && key !== 'type') {
+                params.append(key, value);
+            }
+        });
+
+        const typeToPath: Record<string, string> = {
+            hotels: '/hotels',
+            flights: '/flights',
+            package: '/search',
+            experience: '/experience',
+        };
+
+        const path = typeToPath[searchData.type] || '/search';
+        navigate(`${path}?${params.toString()}`);
+        setIsSearchOpen(false);
+    };
 
     // Top Search State
     const searchState = {
@@ -29,13 +53,25 @@ const Flights: React.FC = () => {
         setIsFlightModalOpen(true);
     };
 
+    // Parse passenger count from search parameters
+    const getPassengerCount = () => {
+        const passengersStr = searchState.passengers;
+        const match = passengersStr.match(/^(\d+)/);
+        return match ? parseInt(match[1]) : 1;
+    };
+    const passengerCount = getPassengerCount();
+
     const handleConfirmFlight = (finalData: any) => {
         setIsFlightModalOpen(false);
+        const seatsText = finalData.isAutoAssigned 
+            ? `${passengerCount} Seats (Auto-assigned: ${finalData.outbound.seats.map((s: any) => s.id).join(', ')})`
+            : `${finalData.outbound.seats.length} Seats (${finalData.outbound.seats.map((s: any) => s.id).join(', ')})`;
+            
         const params = new URLSearchParams({
             type: 'flight',
             name: `${finalData.outbound.flight.airline} ${finalData.outbound.flight.flightNumber}`,
             price: String(finalData.grandTotal),
-            detail2: `${finalData.outbound.seats.length} Seats` + (finalData.isRoundTrip ? ` & Return ${finalData.return.flight.flightNumber}` : ''),
+            detail2: seatsText + (finalData.isRoundTrip ? ` & Return ${finalData.return.flight.flightNumber}` : ''),
             detail3: `${finalData.outbound.flight.from} → ${finalData.outbound.flight.to}`,
             detail4: `${finalData.outbound.flight.departureTime} – ${finalData.outbound.flight.arrivalTime}`,
         });
@@ -54,28 +90,32 @@ const Flights: React.FC = () => {
                 const res = await fetchFlights({ from: fromCity, to: toCity });
                 if (res.success) {
                     const mapped = res.data.map(f => {
-                        const dep = new Date(`1970-01-01T${f.departure_time}`);
-                        const arr = new Date(`1970-01-01T${f.arrival_time}`);
+                        const departureVal = f.departure_time || '00:00:00';
+                        const arrivalVal = f.arrival_time || '00:00:00';
+                        const dep = new Date(`1970-01-01T${departureVal}`);
+                        const arr = new Date(`1970-01-01T${arrivalVal}`);
                         let diffMins = Math.round((arr.getTime() - dep.getTime()) / 60000);
                         if (diffMins < 0) diffMins += 24 * 60;
                         const h = Math.floor(diffMins / 60);
                         const m = diffMins % 60;
                         const duration = `${h}h ${m}m`;
 
+                        const airlineName = f.HangBay || 'Flight';
+
                         return {
                             id: f.MaChuyenBay.toString(),
-                            airline: f.HangBay,
-                            airlineLogo: f.HangBay,
-                            flightNumber: `${f.HangBay.substring(0, 2).toUpperCase()}-${f.MaChuyenBay}`,
-                            departureTime: f.departure_time.substring(0, 5),
-                            arrivalTime: f.arrival_time.substring(0, 5),
+                            airline: airlineName,
+                            airlineLogo: airlineName,
+                            flightNumber: `${airlineName.substring(0, 2).toUpperCase()}-${f.MaChuyenBay}`,
+                            departureTime: departureVal.substring(0, 5),
+                            arrivalTime: arrivalVal.substring(0, 5),
                             duration,
-                            from: f.from_name,
-                            to: f.to_name,
-                            price: f.price,
+                            from: f.from_name || '',
+                            to: f.to_name || '',
+                            price: f.price || 0,
                             originalPrice: null,
                             type: 'Direct',
-                            class: f.HangGhe,
+                            class: f.HangGhe || 'Economy',
                             baggage: '20kg Checked',
                         };
                     });
@@ -92,10 +132,47 @@ const Flights: React.FC = () => {
 
     const [priceRange, setPriceRange] = useState<[number, number]>([500000, 5000000]);
     const [sortBy, setSortBy] = useState('price_asc');
+    const [selectedAirlines, setSelectedAirlines] = useState<string[]>([]);
+    const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+
+    const handleAirlineToggle = (name: string) => {
+        setSelectedAirlines(prev => 
+            prev.includes(name) 
+                ? prev.filter(a => a !== name) 
+                : [...prev, name]
+        );
+    };
+
+    const handleTimeToggle = (name: string) => {
+        setSelectedTimes(prev => 
+            prev.includes(name) 
+                ? prev.filter(t => t !== name) 
+                : [...prev, name]
+        );
+    };
 
     // Filtering & Sorting Logic
     const filteredFlights = flights.filter((flight) => {
-        return flight.price >= priceRange[0] && flight.price <= priceRange[1];
+        const matchesPrice = flight.price >= priceRange[0] && flight.price <= priceRange[1];
+        
+        const matchesAirline = selectedAirlines.length === 0 || selectedAirlines.some(sel => {
+            const flightAirlineLower = flight.airline.toLowerCase();
+            const selLower = sel.toLowerCase();
+            if (selLower.includes('vietnam')) return flightAirlineLower.includes('vietnam');
+            if (selLower.includes('bamboo')) return flightAirlineLower.includes('bamboo');
+            if (selLower.includes('vietjet')) return flightAirlineLower.includes('vietjet') || flightAirlineLower.includes('vj');
+            return flightAirlineLower.includes(selLower);
+        });
+
+        const matchesTime = selectedTimes.length === 0 || selectedTimes.some(timeRange => {
+            const hour = parseInt(flight.departureTime.split(':')[0]);
+            if (timeRange === 'Morning') return hour >= 6 && hour < 12;
+            if (timeRange === 'Afternoon') return hour >= 12 && hour < 18;
+            if (timeRange === 'Evening') return hour >= 18 && hour <= 24;
+            return true;
+        });
+
+        return matchesPrice && matchesAirline && matchesTime;
     }).sort((a, b) => {
         if (sortBy === 'price_asc') return a.price - b.price;
         if (sortBy === 'price_desc') return b.price - a.price;
@@ -118,35 +195,43 @@ const Flights: React.FC = () => {
 
     return (
         <>
-            <div className="bg-[#f5f7fa] min-h-screen pb-10 font-['Plus_Jakarta_Sans']">
+            <div className="bg-[#f5f7fa] min-h-screen pb-10 font-display">
                 {/* Top Search Info Bar */}
                 <div className="bg-white border-b border-gray-200 py-4 mb-6 sticky z-30 flex justify-center shadow-sm" style={{ top: '64px' }}>
                     <div className="w-full max-w-[1200px] px-4 flex items-center justify-between">
                         <div className="flex gap-10">
                             <div>
-                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">FLIGHT</div>
+                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('header.flights', 'Flights').toUpperCase()}</div>
                                 <div className="text-[15px] font-bold text-gray-900">{searchState.from} ➔ {searchState.to}</div>
                             </div>
                             <div className="w-px h-10 bg-gray-200"></div>
                             <div>
-                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">DEPARTURE RATE</div>
+                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('booking.departure', 'Departure').toUpperCase()}</div>
                                 <div className="text-[15px] font-bold text-gray-900">{searchState.date}</div>
                             </div>
                             <div className="w-px h-10 bg-gray-200"></div>
                             <div>
-                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">PASSENGERS & CLASS</div>
-                                <div className="text-[15px] font-bold text-gray-900">{searchState.passengers}</div>
+                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('hero.flights.labelPassengers', 'Passengers').toUpperCase()}</div>
+                                <div className="text-[15px] font-bold text-gray-900">{translatePassengers(searchState.passengers)}</div>
                             </div>
                         </div>
                         <button 
                             className="flex items-center gap-2 border border-blue-200 text-travel-blue font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
-                            onClick={() => navigate('/')}
+                            onClick={() => setIsSearchOpen(!isSearchOpen)}
                         >
-                            <span className="material-symbols-outlined text-[18px]">edit</span>
-                            Change Search
+                            <span className="material-symbols-outlined text-[18px]">{isSearchOpen ? 'close' : 'edit'}</span>
+                            {isSearchOpen ? t('booking.close', 'Close') : t('booking.changeSearch', 'Change Search')}
                         </button>
                     </div>
                 </div>
+
+                {isSearchOpen && (
+                    <div className="w-full bg-white border-b border-gray-200 py-6 flex justify-center animate-fade-in shadow-inner relative z-30 mb-6">
+                        <div className="w-full max-w-[1200px] px-4">
+                            <HeroSearch isCompact={true} initialTab="flights" onSearch={handleSearchClick} />
+                        </div>
+                    </div>
+                )}
 
                 {/* Main Content Grid */}
                 <div className="max-w-[1200px] mx-auto px-4 flex gap-6">
@@ -155,18 +240,23 @@ const Flights: React.FC = () => {
                     <div className="w-[280px] flex-shrink-0">
                         <div className="bg-white border text-gray-800 border-gray-200 rounded-xl p-5 mb-4 shadow-sm">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-bold text-lg">Filters</h3>
+                                <h3 className="font-bold text-lg">{t('transport.filters', 'Filters')}</h3>
                                 <button
                                     className="text-travel-blue font-semibold text-sm hover:underline"
-                                    onClick={() => { setPriceRange([500000, 5000000]); setSortBy('price_asc'); }}
+                                    onClick={() => {
+                                        setPriceRange([500000, 5000000]);
+                                        setSortBy('price_asc');
+                                        setSelectedAirlines([]);
+                                        setSelectedTimes([]);
+                                    }}
                                 >
-                                    Reset
+                                    {t('transport.reset', 'Reset')}
                                 </button>
                             </div>
 
                             {/* Popular Routes */}
                             <div className="mb-6">
-                                <h4 className="font-semibold text-[15px] mb-3">Popular Routes</h4>
+                                <h4 className="font-semibold text-[15px] mb-3">{t('transport.popularRoutes', 'Popular Routes')}</h4>
                                 {[
                                     { name: 'Hanoi ➔ Da Nang', from: 'Hanoi (HAN)', to: 'Da Nang (DAD)' },
                                     { name: 'Ho Chi Minh ➔ Hanoi', from: 'Ho Chi Minh (SGN)', to: 'Hanoi (HAN)' },
@@ -190,7 +280,7 @@ const Flights: React.FC = () => {
 
                             {/* Price Filter */}
                             <div className="mb-6">
-                                <h4 className="font-semibold text-[15px] mb-4">Price / Passenger</h4>
+                                <h4 className="font-semibold text-[15px] mb-4">{t('transport.pricePassenger', 'Price / Passenger')}</h4>
                                 <Slider
                                     range
                                     min={0}
@@ -210,7 +300,7 @@ const Flights: React.FC = () => {
 
                             {/* Airlines */}
                             <div className="mb-6">
-                                <h4 className="font-semibold text-[15px] mb-3">Airlines</h4>
+                                <h4 className="font-semibold text-[15px] mb-3">{t('transport.airlines', 'Airlines')}</h4>
                                 {[
                                     { name: 'Vietnam Airlines', count: 12, code: '#005F6E' },
                                     { name: 'Bamboo Airways', count: 8, code: '#00A14B' },
@@ -218,7 +308,12 @@ const Flights: React.FC = () => {
                                 ].map(airline => (
                                     <label key={airline.name} className="flex justify-between items-center mb-3 cursor-pointer group">
                                         <div className="flex items-center gap-3">
-                                            <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" />
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedAirlines.includes(airline.name)}
+                                                onChange={() => handleAirlineToggle(airline.name)}
+                                                className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                            />
                                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: airline.code }}></div>
                                             <span className="text-sm font-medium text-gray-700">{airline.name}</span>
                                         </div>
@@ -228,21 +323,31 @@ const Flights: React.FC = () => {
 
                             {/* Departure Time */}
                             <div className="mb-2">
-                                <h4 className="font-semibold text-[15px] mb-3">Departure Time</h4>
+                                <h4 className="font-semibold text-[15px] mb-3">{t('transport.departureTime', 'Departure Time')}</h4>
                                 {[
                                     { name: 'Morning', icon: 'wb_sunny', desc: '06:00 - 12:00' },
                                     { name: 'Afternoon', icon: 'partly_cloudy_day', desc: '12:00 - 18:00' },
                                     { name: 'Evening', icon: 'nightlight', desc: '18:00 - 24:00' },
-                                ].map(time => (
-                                    <label key={time.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
-                                        <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" />
-                                        <span className="material-symbols-outlined text-[20px] text-yellow-500 group-hover:text-yellow-600 transition-colors">{time.icon}</span>
-                                        <div>
-                                            <div className="text-sm font-medium text-gray-700">{time.name}</div>
-                                            <div className="text-[11px] text-gray-400">{time.desc}</div>
-                                        </div>
-                                    </label>
-                                ))}
+                                ].map(time => {
+                                    const timeLabel = time.name === 'Morning' ? t('transport.morning', 'Morning') :
+                                                      time.name === 'Afternoon' ? t('transport.afternoon', 'Afternoon') :
+                                                      t('transport.evening', 'Evening');
+                                    return (
+                                        <label key={time.name} className="flex items-center gap-3 mb-3 cursor-pointer group">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedTimes.includes(time.name)}
+                                                onChange={() => handleTimeToggle(time.name)}
+                                                className="w-4 h-4 rounded border-gray-300 text-travel-blue focus:ring-travel-blue cursor-pointer" 
+                                            />
+                                            <span className="material-symbols-outlined text-[20px] text-yellow-500 group-hover:text-yellow-600 transition-colors">{time.icon}</span>
+                                            <div>
+                                                <div className="text-sm font-medium text-gray-700">{timeLabel}</div>
+                                                <div className="text-[11px] text-gray-400">{time.desc}</div>
+                                            </div>
+                                        </label>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -250,10 +355,10 @@ const Flights: React.FC = () => {
                         {!isAuthenticated && (
                             <div className="bg-[#FF5E1F] text-white rounded-xl p-5 shadow-sm relative overflow-hidden">
                                 <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[120px] text-black/10 rotate-12">loyalty</span>
-                                <h4 className="font-bold text-lg mb-2 relative z-10">Fly Cheaper</h4>
-                                <p className="text-sm text-orange-100 mb-4 relative z-10">Login to unlock special flight discounts up to 20% on selected routes.</p>
+                                <h4 className="font-bold text-lg mb-2 relative z-10">{t('transport.flyCheaper', 'Fly Cheaper')}</h4>
+                                <p className="text-sm text-orange-100 mb-4 relative z-10">{t('transport.flyCheaperDesc', 'Login to unlock special flight discounts up to 20% on selected routes.')}</p>
                                 <button onClick={() => setIsAuthModalOpen(true)} className="bg-white text-[#FF5E1F] px-4 py-2 rounded-lg font-bold text-sm w-full relative z-10 hover:bg-gray-100 hover-scale transition-all">
-                                    Sign In Now
+                                    {t('transport.signInNow', 'Sign In Now')}
                                 </button>
                             </div>
                         )}
@@ -264,16 +369,16 @@ const Flights: React.FC = () => {
 
                         {/* Sort Bar */}
                         <div className="flex items-center gap-3 mb-2">
-                            <span className="font-semibold text-gray-600 text-sm">Sắp xếp theo:</span>
+                            <span className="font-semibold text-gray-600 text-sm">{t('transport.sortBy', 'Sort by:')}</span>
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
-                                className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-[15px] font-bold text-gray-900 outline-none cursor-pointer focus:border-travel-blue shadow-sm min-w-[200px]"
+                                className="bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-[15px] font-bold text-gray-900 outline-none cursor-pointer focus:border-travel-blue shadow-sm min-w-[220px]"
                             >
-                                <option value="price_asc">Giá: Thấp đến Cao</option>
-                                <option value="price_desc">Giá: Cao đến Thấp</option>
-                                <option value="duration">Thời gian bay</option>
-                                <option value="departure">Giờ khởi hành sớm nhất</option>
+                                <option value="price_asc">{t('transport.sort.priceAsc', 'Price: Low to High')}</option>
+                                <option value="price_desc">{t('transport.sort.priceDesc', 'Price: High to Low')}</option>
+                                <option value="duration">{t('search.sort.flightDuration', 'Flight Duration')}</option>
+                                <option value="departure">{t('search.sort.earliestDeparture', 'Earliest Departure')}</option>
                             </select>
                         </div>
 
@@ -281,13 +386,13 @@ const Flights: React.FC = () => {
                         {loading ? (
                             <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 rounded-xl text-gray-400 mt-4 h-64 shadow-sm">
                                 <div className="w-8 h-8 border-4 border-travel-blue border-t-transparent rounded-full animate-spin mb-4"></div>
-                                <p className="font-bold text-gray-500">Searching flights...</p>
+                                <p className="font-bold text-gray-500">{t('transport.searchingFlights', 'Searching flights...')}</p>
                             </div>
                         ) : filteredFlights.length === 0 ? (
                             <div className="flex flex-col items-center justify-center p-10 bg-white border border-gray-200 border-dashed rounded-xl text-gray-400 mt-4 h-64">
                                 <span className="material-symbols-outlined text-5xl mb-3 text-gray-300">flight_off</span>
-                                <p className="font-bold text-gray-500">No flights available</p>
-                                <p className="text-sm">Try adjusting your dates or routes.</p>
+                                <p className="font-bold text-gray-500">{t('transport.noFlights', 'No flights available')}</p>
+                                <p className="text-sm">{t('transport.adjustFlightRoutes', 'Try adjusting your dates or routes.')}</p>
                             </div>
                         ) : (
                             <div className="flex flex-col gap-4">
@@ -305,6 +410,7 @@ const Flights: React.FC = () => {
                 onClose={() => setIsFlightModalOpen(false)} 
                 outboundFlight={selectedFlight}
                 onConfirm={handleConfirmFlight}
+                passengerCount={passengerCount}
             />
         </>
     );

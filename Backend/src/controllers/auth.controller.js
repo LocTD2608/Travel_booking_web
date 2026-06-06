@@ -14,6 +14,22 @@ exports.register = async (req, res) => {
         const SDT = req.body.SDT || req.body.sdt;
         const Password = req.body.Password || req.body.password;
         
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(Email)) {
+            return res.status(400).json({
+                message: "Email không đúng định dạng"
+            });
+        }
+
+        // Validate số điện thoại
+        const phoneRegex = /^0\d{9}$/;
+        if (!phoneRegex.test(SDT)) {
+            return res.status(400).json({
+                message: "Số điện thoại phải bắt đầu bằng 0 và gồm 10 chữ số"
+            });
+        }
+
         if (!Email) return res.status(400).json({ message: "Email là bắt buộc" });
         const existingUser = await User.findOne({ where: { Email } });
         if (existingUser) return res.status(400).json({ message: "Email đã được sử dụng" });
@@ -58,7 +74,16 @@ exports.login = async (req, res) => {
         }
 
         // Regular user login from DB
-        const user = await User.findOne({ where: { Email: email } });
+        const { Op } = require("sequelize");
+        //test
+        const user = await User.findOne({
+        where: {
+            Email: {
+            [Op.eq]: email.trim()
+            }
+        }
+        });
+        
         if (!user) return res.status(400).json({ message: "Tài khoản không tồn tại" });
 
         let isMatch = false;
@@ -75,11 +100,11 @@ exports.login = async (req, res) => {
 
         if (!isMatch) return res.status(400).json({ message: "Mật khẩu không chính xác" });
 
-        const token = jwt.sign({ id: user.UserID, role: user.Role || "USER" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        const token = jwt.sign({ id: user.UserID, role: user.Role }, process.env.JWT_SECRET, { expiresIn: "7d" });
         res.json({
             message: "Đăng nhập thành công",
             token,
-            user: { id: user.UserID, Ho: user.Ho, Ten: user.Ten, Email: user.Email, Role: user.Role || "USER" }
+            user: { id: user.UserID, Ho: user.Ho, Ten: user.Ten, Email: user.Email, Role: user.Role }
         });
     } catch (error) {
         console.error("Login Error:", error);
