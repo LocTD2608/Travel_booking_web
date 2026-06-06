@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
         GiaPhuPhi: DataTypes.DECIMAL(15, 2),
         TrangThaiGhe: DataTypes.STRING(30)
     }, {
-        tableName: "GHE",
+        tableName: "ghe",
         timestamps: false
     });
 
