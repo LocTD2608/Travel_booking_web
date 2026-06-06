@@ -134,7 +134,10 @@ const Hotels: React.FC = () => {
     }).sort((a, b) => {
         if (sortBy === 'price_asc') return a.price - b.price;
         if (sortBy === 'price_desc') return b.price - a.price;
-        if (sortBy === 'rating_desc') return b.rating - a.rating;
+        if (sortBy === 'rating_desc') {
+            if (b.stars !== a.stars) return b.stars - a.stars;
+            return b.reviews - a.reviews;
+        }
         // Popularity: default mock order or by reviews
         return b.reviews - a.reviews;
     });
