@@ -5,6 +5,7 @@ import AuthModal from '../../components/auth/AuthModal';
 import { Slider } from 'antd';
 import { BusCard } from '../../components/ui/cards/transport/BusCard';
 import { HeroSearch } from '../../components/ui/HeroSearch/HeroSearch';
+import { useLanguage } from '../../context';
 
 const MOCK_BUSES = [
     {
@@ -36,6 +37,7 @@ const BusShuttle: React.FC = () => {
     const { isAuthenticated } = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const { t } = useLanguage();
 
     const handleSearchClick = (searchData: Record<string, string>) => {
         const params = new URLSearchParams();
@@ -75,12 +77,12 @@ const BusShuttle: React.FC = () => {
 
     return (
         <>
-            <div className="bg-[#f5f7fa] min-h-screen pb-10 font-['Plus_Jakarta_Sans']">
+            <div className="bg-[#f5f7fa] min-h-screen pb-10 font-display">
                 <div className="bg-white border-b border-gray-200 py-4 mb-6 sticky z-30 flex justify-center shadow-sm" style={{ top: '64px' }}>
                     <div className="w-full max-w-[1200px] px-4 flex items-center justify-between">
                         <div className="flex gap-10">
                             <div>
-                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">BUS</div>
+                                <div className="text-xs text-gray-500 font-bold mb-0.5 tracking-wider">{t('header.bus', 'Bus & Shuttle').toUpperCase()}</div>
                                 <div className="text-[15px] font-bold text-gray-900">Ho Chi Minh ➔ Da Lat</div>
                             </div>
                         </div>
@@ -89,7 +91,7 @@ const BusShuttle: React.FC = () => {
                             onClick={() => setIsSearchOpen(!isSearchOpen)}
                         >
                             <span className="material-symbols-outlined text-[18px]">{isSearchOpen ? 'close' : 'edit'}</span> 
-                            {isSearchOpen ? 'Close' : 'Change Search'}
+                            {isSearchOpen ? t('booking.close', 'Close') : t('booking.changeSearch', 'Change Search')}
                         </button>
                     </div>
                 </div>
@@ -106,11 +108,11 @@ const BusShuttle: React.FC = () => {
                     <div className="w-[280px] flex-shrink-0">
                         <div className="bg-white border text-gray-800 border-gray-200 rounded-xl p-5 mb-4 shadow-sm">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-bold text-lg">Filters</h3>
-                                <button className="text-travel-blue font-semibold text-sm hover:underline">Reset</button>
+                                <h3 className="font-bold text-lg">{t('transport.filters', 'Filters')}</h3>
+                                <button className="text-travel-blue font-semibold text-sm hover:underline" onClick={() => setPriceRange([100000, 1000000])}>{t('transport.reset', 'Reset')}</button>
                             </div>
                             <div className="mb-6">
-                                <h4 className="font-semibold text-[15px] mb-4">Price / Passenger</h4>
+                                <h4 className="font-semibold text-[15px] mb-4">{t('transport.pricePassenger', 'Price / Passenger')}</h4>
                                 <Slider range min={0} max={1000000} step={20000} value={priceRange} onChange={(val: number[]) => setPriceRange(val as [number, number])} trackStyle={[{ backgroundColor: '#005CE6', height: 4 }]} handleStyle={[{ borderColor: '#005CE6' }, { borderColor: '#005CE6' }]} />
                             </div>
                         </div>
@@ -118,9 +120,9 @@ const BusShuttle: React.FC = () => {
 
                     <div className="flex-1 flex flex-col gap-4">
                         <div className="flex items-center gap-3 mb-2">
-                            <span className="font-semibold text-gray-600 text-sm">Sắp xếp theo:</span>
-                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-[15px] font-bold text-gray-900 outline-none">
-                                <option value="price_asc">Giá: Thấp đến Cao</option>
+                            <span className="font-semibold text-gray-600 text-sm">{t('transport.sortBy', 'Sort by:')}</span>
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-white border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-[15px] font-bold text-gray-900 outline-none min-w-[220px] cursor-pointer">
+                                <option value="price_asc">{t('transport.sort.priceAsc', 'Price: Low to High')}</option>
                             </select>
                         </div>
                         <div className="flex flex-col gap-4">

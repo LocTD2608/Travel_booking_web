@@ -77,3 +77,17 @@ export async function fetchDestinations(): Promise<ApiResponse<DestinationResult
     if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
     return res.json();
 }
+
+export async function fetchRecommendations(type: 'hotels' | 'flights', limit: number = 3): Promise<ApiResponse<any>> {
+    const url = `${BASE_URL}/search/recommendations?type=${type}&limit=${limit}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
+export async function fetchPromotions(): Promise<ApiResponse<any>> {
+    const url = `${BASE_URL}/search/promotions`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+    return res.json();
+}

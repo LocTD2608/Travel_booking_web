@@ -1,4 +1,5 @@
-const BASE_URL = "http://127.0.0.1:3000/api/cancellations";
+const BASE_API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+const BASE_URL = `${BASE_API_URL}/cancellations`;
 
 export interface CancellationRequest {
     id: string;

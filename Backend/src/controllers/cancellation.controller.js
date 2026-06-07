@@ -57,8 +57,9 @@ exports.updateCancellationStatus = async (req, res) => {
     writeData(data);
 
     // Đồng bộ trạng thái sang bảng Booking thực tế nếu đó là ID số (real DB booking)
-    const bookingIdNum = parseInt(request.bookingId.replace(/\D/g, ""), 10);
-    if (!isNaN(bookingIdNum)) {
+    const isRealBooking = /^\d+$/.test(request.bookingId);
+    if (isRealBooking) {
+      const bookingIdNum = parseInt(request.bookingId, 10);
       try {
         const booking = await db.Booking.findByPk(bookingIdNum);
         if (booking) {
@@ -131,13 +132,18 @@ exports.requestCancellation = async (req, res) => {
       return res.status(403).json({ message: "Bạn không có quyền thực hiện thao tác trên đơn đặt vé này." });
     }
 
-    if (booking.TrangThaiBooking !== "Đã thanh toán") {
+    const isValidStatus = booking.TrangThaiBooking === "Đã thanh toán" || booking.TrangThaiBooking === "DA_THANH_TOAN";
+    if (!isValidStatus) {
       return res.status(400).json({ message: "Chỉ đơn hàng đã thanh toán thành công mới được phép yêu cầu hủy hoàn tiền." });
     }
 
-    // 2. Kiểm tra yêu cầu hủy trùng lặp
+    // 2. Kiểm tra yêu cầu hủy trùng lặp (chỉ trùng nếu có yêu cầu pending và booking cũng đang ở trạng thái Yêu cầu hủy)
     const data = readData();
-    const existing = data.find((c) => c.bookingId === String(bookingId));
+    const existing = data.find(
+      (c) => c.bookingId === String(bookingId) && 
+             c.status === "pending" && 
+             booking.TrangThaiBooking === "Yêu cầu hủy"
+    );
     if (existing) {
       return res.status(400).json({ message: "Đơn đặt chỗ này đã có yêu cầu hủy trước đó." });
     }
@@ -162,7 +168,7 @@ exports.requestCancellation = async (req, res) => {
     const newRequest = {
       id: nextId,
       bookingId: String(bookingId),
-      customerName: `${req.user.Ho || ''} ${req.user.Ten || ''}`.trim() || "Khách hàng",
+      customerName: `${req.user.Ho || req.user.ho || ''} ${req.user.Ten || req.user.ten || ''}`.trim() || "Khách hàng",
       customerEmail: req.user.Email || "",
       bookingType: detail.LoaiDoiTuong || "hotel",
       bookingDetail: detail.TenDichVu || "N/A",

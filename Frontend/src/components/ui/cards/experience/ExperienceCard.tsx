@@ -2,12 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ExperienceResult } from '../../../../types/search';
 import { generateStarsFromId, calculateDisplayRating, getRatingText } from '../../../../utils/ratingUtils';
+import { useLanguage } from '../../../../context';
 
 const fmt = (price: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 export const ExperienceCard: React.FC<{ item: ExperienceResult }> = ({ item }) => {
     const navigate = useNavigate();
+    const { t, translateRating } = useLanguage();
 
     // Map high-quality images based on attraction name
     const getExperienceImage = (attraction: string) => {
@@ -61,7 +63,7 @@ export const ExperienceCard: React.FC<{ item: ExperienceResult }> = ({ item }) =
                     className="w-full h-full object-cover transition-transform hover:scale-105 duration-500" 
                 />
                 <div className="absolute top-3 left-3 bg-[#7c3aed] text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
-                    Khám phá mới
+                    {t('experience.newDiscovery', 'Khám phá mới')}
                 </div>
             </div>
 
@@ -70,14 +72,14 @@ export const ExperienceCard: React.FC<{ item: ExperienceResult }> = ({ item }) =
                 <div>
                     <div className="flex justify-between items-start mb-1">
                         <span className="text-xs font-bold text-[#7c3aed] uppercase tracking-wider">
-                            Trải nghiệm & Tour
+                            {t('experience.tourCategory', 'Trải nghiệm & Tour')}
                         </span>
                         <div className="flex items-center gap-1">
                             <span className="bg-[#ede9fe] text-[#7c3aed] font-bold px-2 py-0.5 rounded text-xs">
                                 {mockRating.toFixed(1)}
                             </span>
-                            <span className="text-[#7c3aed] font-semibold text-xs">{ratingText}</span>
-                            <span className="text-gray-400 text-[11px]">({mockReviews} đánh giá)</span>
+                            <span className="text-[#7c3aed] font-semibold text-xs">{translateRating(ratingText)}</span>
+                            <span className="text-gray-400 text-[11px]">{t('experience.reviewsCount', '({count} đánh giá)').replace('{count}', String(mockReviews))}</span>
                         </div>
                     </div>
 
@@ -88,7 +90,7 @@ export const ExperienceCard: React.FC<{ item: ExperienceResult }> = ({ item }) =
                     {item.pickup && (
                         <div className="text-xs text-gray-500 flex items-center gap-1 mb-2">
                             <span className="material-symbols-outlined text-[14px] text-gray-400">location_on</span>
-                            Điểm đón: <strong>{item.pickup}</strong>
+                            {t('experience.pickupLabel', 'Điểm đón:')} <strong>{item.pickup}</strong>
                         </div>
                     )}
 
@@ -97,20 +99,20 @@ export const ExperienceCard: React.FC<{ item: ExperienceResult }> = ({ item }) =
                     </p>
                 </div>
 
-                <div className="flex justify-between items-end mt-3 pt-3 border-t border-gray-50">
+                <div className="flex justify-between items-end mt-3 pt-3 border-t border-gray-55">
                     {/* Tour inclusions icons */}
                     <div className="flex gap-3">
                         <div className="flex items-center gap-1 text-[11px] text-gray-500">
                             <span className="material-symbols-outlined text-[14px] text-gray-400">directions_bus</span>
-                            Xe đưa đón
+                            {t('experience.shuttle', 'Xe đưa đón')}
                         </div>
                         <div className="flex items-center gap-1 text-[11px] text-gray-500">
                             <span className="material-symbols-outlined text-[14px] text-gray-400">confirmation_number</span>
-                            Vé vào cổng
+                            {t('experience.ticket', 'Vé vào cổng')}
                         </div>
                         <div className="flex items-center gap-1 text-[11px] text-gray-500">
                             <span className="material-symbols-outlined text-[14px] text-gray-400">restaurant</span>
-                            Ăn trưa
+                            {t('experience.lunch', 'Ăn trưa')}
                         </div>
                     </div>
 
@@ -119,12 +121,12 @@ export const ExperienceCard: React.FC<{ item: ExperienceResult }> = ({ item }) =
                         <div className="text-xl font-black text-gray-900 mb-0">
                             {fmt(item.price)}
                         </div>
-                        <div className="text-[10px] text-gray-400 mb-2">/ {item.unit || 'người'} · trọn gói</div>
+                        <div className="text-[10px] text-gray-400 mb-2">/ {item.unit || t('experience.person', 'người')} · {t('experience.allInclusive', 'trọn gói')}</div>
                         <button 
                             onClick={(e) => { e.stopPropagation(); handleSelectTour(); }}
                             className="bg-[#7c3aed] text-white px-5 py-1.5 rounded-lg text-xs font-bold hover:bg-[#6d28d9] transition-colors hover-scale"
                         >
-                            Xem Chi Tiết
+                            {t('experience.viewDetails', 'Xem Chi Tiết')}
                         </button>
                     </div>
                 </div>

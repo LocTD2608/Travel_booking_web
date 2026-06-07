@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../context';
 import styles from './HelpCenter.module.css';
 
 interface FAQItem {
@@ -84,6 +85,7 @@ const FAQS: FAQItem[] = [
 ];
 
 const HelpCenter: React.FC = () => {
+    const { t } = useLanguage();
     const [activeCategory, setActiveCategory] = React.useState<'flights' | 'accommodations' | 'account' | 'payment'>('flights');
     const [searchQuery, setSearchQuery] = React.useState('');
     const [appliedSearch, setAppliedSearch] = React.useState('');
@@ -110,15 +112,25 @@ const HelpCenter: React.FC = () => {
         setOpenFaqId(openFaqId === id ? null : id);
     };
 
+    const getFaqQuestion = React.useCallback((faq: FAQItem) => {
+        return t(`help.faq.${faq.id}.q`, faq.question);
+    }, [t]);
+
+    const getFaqAnswer = React.useCallback((faq: FAQItem) => {
+        return t(`help.faq.${faq.id}.a`, faq.answer);
+    }, [t]);
+
     const filteredFaqs = React.useMemo(() => {
         if (appliedSearch) {
-            return FAQS.filter(faq => 
-                faq.question.toLowerCase().includes(appliedSearch.toLowerCase()) ||
-                faq.answer.toLowerCase().includes(appliedSearch.toLowerCase())
-            );
+            return FAQS.filter(faq => {
+                const q = getFaqQuestion(faq).toLowerCase();
+                const a = getFaqAnswer(faq).toLowerCase();
+                const term = appliedSearch.toLowerCase();
+                return q.includes(term) || a.includes(term);
+            });
         }
         return FAQS.filter(faq => faq.category === activeCategory);
-    }, [activeCategory, appliedSearch]);
+    }, [activeCategory, appliedSearch, getFaqQuestion, getFaqAnswer]);
 
     const highlightMatches = (text: string, term: string) => {
         if (!term) return <span>{text}</span>;
@@ -136,10 +148,10 @@ const HelpCenter: React.FC = () => {
 
     const getCategoryLabel = (category: string) => {
         switch (category) {
-            case 'flights': return 'Vé máy bay';
-            case 'accommodations': return 'Nơi lưu trú';
-            case 'account': return 'Tài khoản';
-            case 'payment': return 'Thanh toán';
+            case 'flights': return t('help.catFlights', 'Vé máy bay');
+            case 'accommodations': return t('help.catAccommodations', 'Nơi lưu trú');
+            case 'account': return t('help.catAccount', 'Tài khoản');
+            case 'payment': return t('help.catPayment', 'Thanh toán');
             default: return '';
         }
     };
@@ -147,20 +159,20 @@ const HelpCenter: React.FC = () => {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1>Hello, how can we help you?</h1>
-                <p>Find answers, guides and policies here</p>
+                <h1>{t('help.title', 'Hello, how can we help you?')}</h1>
+                <p>{t('help.subtitle', 'Find answers, guides and policies here')}</p>
             </div>
 
             <div className={styles.searchBox}>
                 <input
                     type="text"
-                    placeholder="Search for guides, topics, or FAQs"
+                    placeholder={t('help.searchPlaceholder', 'Search for guides, topics, or FAQs')}
                     className={styles.searchInput}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
                 />
-                <button className={styles.searchButton} onClick={handleSearch}>Search</button>
+                <button className={styles.searchButton} onClick={handleSearch}>{t('help.searchBtn', 'Search')}</button>
             </div>
 
             <div className={styles.topics}>
@@ -169,48 +181,48 @@ const HelpCenter: React.FC = () => {
                     onClick={() => handleCategoryClick('flights')}
                 >
                     <span className={`material-symbols-outlined ${styles.topicIcon}`}>flight</span>
-                    <h3>Flights</h3>
-                    <p>Booking, Check-in, Reschedule & Refunds</p>
+                    <h3>{t('help.catFlights', 'Flights')}</h3>
+                    <p>{t('help.catFlightsDesc', 'Booking, Check-in, Reschedule & Refunds')}</p>
                 </div>
                 <div 
                     className={activeCategory === 'accommodations' && !appliedSearch ? styles.topicCardActive : styles.topicCard}
                     onClick={() => handleCategoryClick('accommodations')}
                 >
                     <span className={`material-symbols-outlined ${styles.topicIcon}`}>hotel</span>
-                    <h3>Accommodations</h3>
-                    <p>Hotel & Villa bookings, Cancellation</p>
+                    <h3>{t('help.catAccommodations', 'Accommodations')}</h3>
+                    <p>{t('help.catAccommodationsDesc', 'Hotel & Villa bookings, Cancellation')}</p>
                 </div>
                 <div 
                     className={activeCategory === 'account' && !appliedSearch ? styles.topicCardActive : styles.topicCard}
                     onClick={() => handleCategoryClick('account')}
                 >
                     <span className={`material-symbols-outlined ${styles.topicIcon}`}>account_circle</span>
-                    <h3>Account Info</h3>
-                    <p>Managing profile, Password, Email</p>
+                    <h3>{t('help.catAccount', 'Account Info')}</h3>
+                    <p>{t('help.catAccountDesc', 'Managing profile, Password, Email')}</p>
                 </div>
                 <div 
                     className={activeCategory === 'payment' && !appliedSearch ? styles.topicCardActive : styles.topicCard}
                     onClick={() => handleCategoryClick('payment')}
                 >
                     <span className={`material-symbols-outlined ${styles.topicIcon}`}>payments</span>
-                    <h3>Payment</h3>
-                    <p>Payment methods, Failed transactions</p>
+                    <h3>{t('help.catPayment', 'Payment')}</h3>
+                    <p>{t('help.catPaymentDesc', 'Payment methods, Failed transactions')}</p>
                 </div>
             </div>
 
             <div className={styles.faqSection}>
                 <h2 className={styles.faqTitle}>
                     {appliedSearch 
-                        ? `Kết quả tìm kiếm cho "${appliedSearch}" (${filteredFaqs.length})`
-                        : `Câu hỏi thường gặp về ${getCategoryLabel(activeCategory)}`
+                        ? t('help.searchResult', `Kết quả tìm kiếm cho "${appliedSearch}" (${filteredFaqs.length})`).replace('{query}', appliedSearch).replace('{count}', String(filteredFaqs.length))
+                        : t('help.faqTitle', `Câu hỏi thường gặp về {category}`).replace('{category}', getCategoryLabel(activeCategory))
                     }
                 </h2>
 
                 {filteredFaqs.length === 0 ? (
                     <div className={styles.noResults}>
                         <span className={`material-symbols-outlined ${styles.noResultsIcon}`}>search_off</span>
-                        <p>Không tìm thấy câu hỏi hoặc câu trả lời nào phù hợp với tìm kiếm của bạn.</p>
-                        <p style={{ fontSize: '13px', marginTop: '8px' }}>Vui lòng thử lại với từ khóa khác hoặc duyệt theo danh mục ở trên.</p>
+                        <p>{t('help.noResultsTitle', 'Không tìm thấy câu hỏi hoặc câu trả lời nào phù hợp với tìm kiếm của bạn.')}</p>
+                        <p style={{ fontSize: '13px', marginTop: '8px' }}>{t('help.noResultsDesc', 'Vui lòng thử lại với từ khóa khác hoặc duyệt theo danh mục ở trên.')}</p>
                     </div>
                 ) : (
                     <div className={styles.faqList}>
@@ -240,14 +252,14 @@ const HelpCenter: React.FC = () => {
                                                 {getCategoryLabel(faq.category)}
                                             </span>
                                         )}
-                                        {highlightMatches(faq.question, appliedSearch)}
+                                        {highlightMatches(getFaqQuestion(faq), appliedSearch)}
                                     </span>
                                     <span className={`material-symbols-outlined ${styles.faqToggleIcon}`}>
                                         expand_more
                                     </span>
                                 </div>
                                 <div className={styles.faqAnswer}>
-                                    {highlightMatches(faq.answer, appliedSearch)}
+                                    {highlightMatches(getFaqAnswer(faq), appliedSearch)}
                                 </div>
                             </div>
                         ))}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { type FlightCardProps } from '../cards/transport/FlightCard';
 import { fetchFlightSeats } from '../../../services/searchApi';
+import { useLanguage } from '../../../context';
 
 interface FlightSelectionModalProps {
     isOpen: boolean;
@@ -29,6 +30,7 @@ const MOCK_RETURN_FLIGHT = {
 };
 
 const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onClose, onConfirm, outboundFlight, passengerCount = 1 }) => {
+    const { t } = useLanguage();
     const [isRoundTrip, setIsRoundTrip] = useState(false);
     const [activeTab, setActiveTab] = useState<'outbound' | 'return'>('outbound');
     const [selectionMode, setSelectionMode] = useState<'ask' | 'choose' | 'auto'>('ask');
@@ -119,9 +121,9 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
             
             // Build groups (business, premium, eco)
             const grouped = [
-                { id: 'business', name: 'Business Class', bg: 'bg-[#FDF7E3]', borderColor: 'border-[#F4D03F]', items: [] as any[] },
-                { id: 'premium', name: 'Premium Economy', bg: 'bg-[#EAF2F8]', borderColor: 'border-[#5DADE2]', items: [] as any[] },
-                { id: 'eco', name: 'Economy Class', bg: 'bg-[#F2F4F4]', borderColor: 'border-[#BDC3C7]', items: [] as any[] }
+                { id: 'business', name: t('flight.class.business', 'Business Class'), bg: 'bg-[#FDF7E3]', borderColor: 'border-[#F4D03F]', items: [] as any[] },
+                { id: 'premium', name: t('flight.class.premium', 'Premium Economy'), bg: 'bg-[#EAF2F8]', borderColor: 'border-[#5DADE2]', items: [] as any[] },
+                { id: 'eco', name: t('flight.class.economy', 'Economy Class'), bg: 'bg-[#F2F4F4]', borderColor: 'border-[#BDC3C7]', items: [] as any[] }
             ];
 
             generatedSeats.forEach((seat: any) => {
@@ -206,7 +208,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
         const assigned: Seat[] = pool.slice(0, passengerCount).map(s => ({
             id: s.SoGhe,
             classId: s.HangGhe,
-            className: s.HangGhe === 'business' ? 'Business' : s.HangGhe === 'premium' ? 'Premium Economy' : 'Economy',
+            className: s.HangGhe === 'business' ? t('flight.class.business', 'Business Class') : s.HangGhe === 'premium' ? t('flight.class.premium', 'Premium Economy') : t('flight.class.economy', 'Economy Class'),
             priceAddition: 0
         }));
         
@@ -222,8 +224,16 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
         const seatObj = seatData.find(s => s.SoGhe === seatId);
         if (!seatObj || seatObj.TrangThaiGhe !== 'TRONG') return; // Prevent clicking occupied seats
 
+        const currentSeats = selectedSeats[activeTab];
+        const isAlreadySelected = currentSeats.some(s => s.id === seatId);
+
+        if (!isAlreadySelected && currentSeats.length >= passengerCount) {
+            alert(t('flight.alreadySelectedMax', 'Bạn đã chọn đủ số lượng ghế cho {count} hành khách.').replace('{count}', String(passengerCount)));
+            return;
+        }
+
         const priceAddition = parseFloat(seatObj.GiaPhuPhi || '0');
-        const className = classId === 'business' ? 'Business' : classId === 'premium' ? 'Premium Economy' : 'Economy';
+        const className = classId === 'business' ? t('flight.class.business', 'Business Class') : classId === 'premium' ? t('flight.class.premium', 'Premium Economy') : t('flight.class.economy', 'Economy Class');
 
         const newSeat: Seat = {
             id: seatId, // '1A'
@@ -233,20 +243,14 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
         };
 
         setSelectedSeats(prev => {
-            const currentSeats = prev[activeTab];
-            const isAlreadySelected = currentSeats.find(s => s.id === seatId);
-            
-            if (isAlreadySelected) {
+            const current = prev[activeTab];
+            const isSel = current.some(s => s.id === seatId);
+            if (isSel) {
                 // Deselect
-                return { ...prev, [activeTab]: currentSeats.filter(s => s.id !== seatId) };
+                return { ...prev, [activeTab]: current.filter(s => s.id !== seatId) };
             } else {
-                // Limit selection to passengerCount
-                if (currentSeats.length >= passengerCount) {
-                    alert(`Bạn đã chọn đủ số lượng ghế cho ${passengerCount} hành khách.`);
-                    return prev;
-                }
                 // Select
-                return { ...prev, [activeTab]: [...currentSeats, newSeat] };
+                return { ...prev, [activeTab]: [...current, newSeat] };
             }
         });
     };
@@ -326,7 +330,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                     
                     {/* Header & Tabs */}
                     <div className="p-6 pb-0 border-b border-gray-200 shrink-0">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Sơ đồ ghế ngồi</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('flight.seatMap', 'Seat Map')}</h2>
 
                         {isRoundTrip && selectionMode === 'choose' && (
                             <div className="flex gap-4">
@@ -335,7 +339,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                     className={`pb-3 px-2 font-bold text-[15px] flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'outbound' ? 'border-travel-blue text-travel-blue' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                                 >
                                     <span className="material-symbols-outlined text-[18px]">flight_takeoff</span>
-                                    Outbound ({outboundFlight.from.split(' ')[0]} ➔ {outboundFlight.to.split(' ')[0]})
+                                    {t('flight.outbound', 'Outbound')} ({outboundFlight.from.split(' ')[0]} ➔ {outboundFlight.to.split(' ')[0]})
                                     {selectedSeats.outbound.length > 0 && <span className="bg-blue-100 text-travel-blue text-xs py-0.5 px-2 rounded-full ml-1">{selectedSeats.outbound.length}</span>}
                                 </button>
                                 <button 
@@ -343,7 +347,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                     className={`pb-3 px-2 font-bold text-[15px] flex items-center gap-2 border-b-2 transition-colors ${activeTab === 'return' ? 'border-travel-blue text-travel-blue' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                                 >
                                     <span className="material-symbols-outlined text-[18px]">flight_land</span>
-                                    Return ({outboundFlight.to.split(' ')[0]} ➔ {outboundFlight.from.split(' ')[0]})
+                                    {t('flight.return', 'Return')} ({outboundFlight.to.split(' ')[0]} ➔ {outboundFlight.from.split(' ')[0]})
                                     {selectedSeats.return.length > 0 && <span className="bg-blue-100 text-travel-blue text-xs py-0.5 px-2 rounded-full ml-1">{selectedSeats.return.length}</span>}
                                 </button>
                             </div>
@@ -355,9 +359,9 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                         
                         {selectionMode === 'ask' && (
                             <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-2xl mx-auto">
-                                <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">Phương thức chọn chỗ ngồi</h3>
+                                <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">{t('flight.selectMethod', 'Seat Selection Method')}</h3>
                                 <p className="text-sm text-gray-500 mb-8 text-center">
-                                    Vui lòng chọn phương thức sắp xếp chỗ ngồi cho {passengerCount} hành khách trên chuyến đi này.
+                                    {t('flight.selectMethodDesc', 'Please select seat selection method for passenger(s).').replace('hành khách', `${passengerCount} hành khách`).replace('passenger(s)', `${passengerCount} passenger(s)`)}
                                 </p>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-4">
@@ -370,9 +374,9 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                         <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
                                             <span className="material-symbols-outlined text-[28px] text-travel-blue">airline_seat_recline_extra</span>
                                         </div>
-                                        <span className="text-lg font-bold text-gray-800 mb-2">Tự chọn ghế ngồi</span>
+                                        <span className="text-lg font-bold text-gray-800 mb-2">{t('flight.chooseSelf', 'Tự chọn ghế ngồi')}</span>
                                         <span className="text-xs text-gray-500 leading-relaxed">
-                                            Chọn chỗ ngồi ưa thích (cạnh cửa sổ, lối đi hoặc hàng ghế trước). Có phí phụ thu tùy thuộc loại ghế.
+                                            {t('flight.chooseSelfDesc', 'Choose preferred seats (window, aisle or front rows). Additional fee applies depending on seat type.')}
                                         </span>
                                     </button>
 
@@ -385,9 +389,9 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                         <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-4">
                                             <span className="material-symbols-outlined text-[28px] text-green-500">casino</span>
                                         </div>
-                                        <span className="text-lg font-bold text-gray-800 mb-2">Hãng bay tự xếp chỗ</span>
+                                        <span className="text-lg font-bold text-gray-800 mb-2">{t('flight.autoAssign', 'Hãng bay tự xếp chỗ')}</span>
                                         <span className="text-xs text-gray-500 leading-relaxed">
-                                            Hãng hàng không sẽ tự động chọn ghế trống ngẫu nhiên khi bạn làm thủ tục check-in. Hoàn toàn miễn phí.
+                                            {t('flight.autoAssignDesc', 'The airline will automatically assign random empty seats during check-in. Completely free.')}
                                         </span>
                                     </button>
                                 </div>
@@ -399,24 +403,24 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-6">
                                     <span className="material-symbols-outlined text-green-600 text-4xl">check_circle</span>
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-850 mb-2">Đã tự động gán ghế thành công</h3>
+                                <h3 className="text-xl font-bold text-gray-850 mb-2">{t('flight.autoSuccess', 'Đã tự động gán ghế thành công')}</h3>
                                 <div className="bg-white border border-gray-200 rounded-xl p-4 w-full mb-6 text-left shadow-sm">
-                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Ghế ngồi của bạn</div>
+                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('flight.yourSeats', 'Ghế ngồi của bạn')}</div>
                                     <div className="flex flex-col gap-1.5">
                                         <div className="text-sm font-bold text-gray-850 flex justify-between">
-                                            <span>Chiều đi:</span>
+                                            <span>{t('flight.outbound', 'Chiều đi')}:</span>
                                             <span className="text-travel-blue font-mono bg-blue-50 px-2 py-0.5 rounded">{selectedSeats.outbound.map(s => s.id).join(', ')}</span>
                                         </div>
                                         {isRoundTrip && (
                                             <div className="text-sm font-bold text-gray-850 flex justify-between">
-                                                <span>Chiều về:</span>
+                                                <span>{t('flight.return', 'Chiều về')}:</span>
                                                 <span className="text-purple-600 font-mono bg-purple-50 px-2 py-0.5 rounded">{selectedSeats.return.map(s => s.id).join(', ')}</span>
                                             </div>
                                         )}
                                     </div>
                                 </div>
                                 <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-                                    Lựa chọn tự động xếp chỗ này hoàn toàn miễn phí và không làm phát sinh thêm phụ phí ghế ngồi.
+                                    {t('flight.freeAutoNote', 'Lựa chọn tự động xếp chỗ này hoàn toàn miễn phí và không làm phát sinh thêm phụ phí ghế ngồi.')}
                                 </p>
                                 <button 
                                     onClick={() => {
@@ -426,7 +430,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                     className="text-travel-blue hover:text-blue-700 font-bold text-sm flex items-center gap-1.5 transition-colors border border-travel-blue/30 px-4 py-2 rounded-xl bg-white hover:bg-blue-50"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">edit</span>
-                                    Thay đổi sang tự chọn ghế ngồi
+                                    {t('flight.changeToSelf', 'Thay đổi sang tự chọn ghế ngồi')}
                                 </button>
                             </div>
                         )}
@@ -441,33 +445,33 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                     className="mb-6 mr-auto flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-                                    Quay lại chọn phương thức khác
+                                    {t('flight.goBack', 'Quay lại chọn phương thức khác')}
                                 </button>
 
                                 {error ? (
                                     <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm text-gray-500 px-4 my-10">
                                         <span className="material-symbols-outlined text-red-500 text-5xl mb-4">error</span>
-                                        <p className="font-bold text-gray-800 text-lg mb-2">Không thể tải sơ đồ ghế</p>
+                                        <p className="font-bold text-gray-800 text-lg mb-2">{t('flight.cannotLoad', 'Không thể tải sơ đồ ghế')}</p>
                                         <p className="text-sm text-gray-500 mb-6">{error}</p>
                                         <button
                                             onClick={() => loadSeats(outboundFlight?.id?.toString() || '')}
                                             className="bg-travel-blue hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all duration-150"
                                         >
-                                            Thử lại
+                                            {t('flight.tryAgain', 'Thử lại')}
                                         </button>
                                     </div>
                                 ) : isLoading ? (
                                     <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
                                         <span className="material-symbols-outlined animate-spin text-4xl mb-4 text-travel-blue">progress_activity</span>
-                                        <p className="font-semibold">Loading seat map...</p>
+                                        <p className="font-semibold">{t('flight.loadingSeats', 'Loading seat map...')}</p>
                                     </div>
                                 ) : (
                                     <>
                                         {/* Legend */}
                                         <div className="w-full max-w-[400px] flex justify-center gap-6 text-xs font-bold text-gray-600 mb-8 bg-white py-3 px-6 rounded-full shadow-sm border border-gray-100 sticky top-0 z-20">
-                                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-white border border-gray-300"></div> Available</div>
-                                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-green-500 border border-green-600"></div> Selected</div>
-                                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-[#d1d5db] border border-gray-400"></div> Occupied</div>
+                                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-white border border-gray-300"></div> {t('flight.available', 'Available')}</div>
+                                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-green-500 border border-green-600"></div> {t('flight.selected', 'Selected')}</div>
+                                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-md bg-[#d1d5db] border border-gray-400"></div> {t('flight.occupied', 'Occupied')}</div>
                                         </div>
 
                                         {/* Aircraft Body */}
@@ -531,26 +535,26 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                             onClick={() => handleToggleRoundTrip(false)}
                             className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors ${!isRoundTrip ? 'bg-travel-blue text-white shadow' : 'text-gray-500 hover:bg-gray-50'}`}
                         >
-                            One-way
+                            {t('flight.oneWay', 'One-way')}
                         </button>
                         <button 
                             onClick={() => handleToggleRoundTrip(true)}
                             className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors ${isRoundTrip ? 'bg-travel-blue text-white shadow' : 'text-gray-500 hover:bg-gray-50'}`}
                         >
-                            Round-trip
+                            {t('flight.roundTrip', 'Round-trip')}
                         </button>
                     </div>
 
                     {/* Summary List */}
                     <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                        <h3 className="font-bold text-gray-800 mb-4 uppercase tracking-wider text-sm flex justify-between items-center">
-                            Chi tiết đặt chỗ
+                        <h3 className="font-bold text-gray-800 mb-4 tracking-wider text-sm flex justify-between items-center">
+                            {t('flight.detailTitle', 'Chi tiết đặt chỗ')}
                         </h3>
                         
                         {/* Outbound Summary */}
                         <div className="bg-white rounded-xl p-4 shadow-sm mb-4 border border-gray-100">
                             <div className="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
-                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">OUTBOUND</span>
+                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{t('flight.outbound', 'OUTBOUND').toUpperCase()}</span>
                                 <span className="text-xs font-bold text-gray-500">{outboundFlight.airline}</span>
                             </div>
                             <div className="text-[14px] font-bold text-gray-900 mb-1">
@@ -565,20 +569,20 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                 <div className="text-xs font-bold text-green-600 bg-green-50 p-2.5 rounded-lg border border-green-100 flex flex-col gap-1">
                                     <div className="flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[16px]">shuffle</span>
-                                        Ghế tự sắp xếp (Miễn phí)
+                                        {t('flight.autoFreeTag', 'Ghế tự sắp xếp (Miễn phí)')}
                                     </div>
                                     <div className="text-gray-500 font-semibold mt-1">
-                                        Ghế: {selectedSeats.outbound.map(s => s.id).join(', ')}
+                                        {t('flight.seat', 'Ghế')}: {selectedSeats.outbound.map(s => s.id).join(', ')}
                                     </div>
                                 </div>
                             ) : selectedSeats.outbound.length === 0 ? (
-                                <div className="text-sm text-red-500 font-medium italic mt-2">Chưa chọn ghế</div>
+                                <div className="text-sm text-red-500 font-medium italic mt-2">{t('flight.noSeatSelected', 'Chưa chọn ghế')}</div>
                             ) : (
                                 <div className="mt-3 flex flex-col gap-2">
                                     {selectedSeats.outbound.map((s, idx) => (
                                         <div key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
                                             <div>
-                                                <div className="text-sm font-bold text-gray-800">Ghế {s.id}</div>
+                                                <div className="text-sm font-bold text-gray-800">{t('flight.seat', 'Ghế')} {s.id}</div>
                                                 <div className="text-[10px] uppercase font-bold text-gray-500">{s.className}</div>
                                             </div>
                                             <div className="text-sm font-semibold text-gray-700">
@@ -594,7 +598,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                         {isRoundTrip && (
                             <div className="bg-white rounded-xl p-4 shadow-sm mb-4 border border-gray-100">
                                 <div className="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
-                                    <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">RETURN</span>
+                                    <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">{t('flight.return', 'RETURN').toUpperCase()}</span>
                                     <span className="text-xs font-bold text-gray-500">{MOCK_RETURN_FLIGHT.airline}</span>
                                 </div>
                                 <div className="text-[14px] font-bold text-gray-900 mb-1">
@@ -609,20 +613,20 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                     <div className="text-xs font-bold text-green-600 bg-green-50 p-2.5 rounded-lg border border-green-100 flex flex-col gap-1">
                                         <div className="flex items-center gap-1">
                                             <span className="material-symbols-outlined text-[16px]">shuffle</span>
-                                            Ghế tự sắp xếp (Miễn phí)
+                                            {t('flight.autoFreeTag', 'Ghế tự sắp xếp (Miễn phí)')}
                                         </div>
                                         <div className="text-gray-500 font-semibold mt-1">
-                                            Ghế: {selectedSeats.return.map(s => s.id).join(', ')}
+                                            {t('flight.seat', 'Ghế')}: {selectedSeats.return.map(s => s.id).join(', ')}
                                         </div>
                                     </div>
                                 ) : selectedSeats.return.length === 0 ? (
-                                    <div className="text-sm text-red-500 font-medium italic mt-2">Chưa chọn ghế</div>
+                                    <div className="text-sm text-red-500 font-medium italic mt-2">{t('flight.noSeatSelected', 'Chưa chọn ghế')}</div>
                                 ) : (
                                     <div className="mt-3 flex flex-col gap-2">
                                         {selectedSeats.return.map((s, idx) => (
                                             <div key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
                                                 <div>
-                                                    <div className="text-sm font-bold text-gray-800">Ghế {s.id}</div>
+                                                    <div className="text-sm font-bold text-gray-800">{t('flight.seat', 'Ghế')} {s.id}</div>
                                                     <div className="text-[10px] uppercase font-bold text-gray-500">{s.className}</div>
                                                 </div>
                                                 <div className="text-sm font-semibold text-gray-700">
@@ -639,14 +643,14 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                     {/* Bottom Action */}
                     <div className="pt-4 border-t border-gray-200 mt-4 shrink-0 bg-[#f5f7fa]">
                         <div className="flex flex-col mb-4">
-                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng tiền thanh toán</span>
+                            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{t('flight.totalPriceLabel', 'Tổng tiền thanh toán')}</span>
                             <span className="text-[28px] leading-none font-black text-travel-blue">{grandTotal.toLocaleString()} <span className="text-lg">VND</span></span>
                         </div>
                         
                         {selectionMode === 'ask' ? (
                             <div className="flex flex-col gap-2">
                                 <div className="text-center text-xs font-semibold text-gray-400 py-3.5 bg-gray-100 border border-gray-200 rounded-xl mb-1">
-                                    Vui lòng chọn phương thức xếp chỗ bên trái
+                                    {t('flight.selectSeatsLeft', 'Vui lòng chọn phương thức xếp chỗ bên trái')}
                                 </div>
                                 <button 
                                     type="button"
@@ -654,7 +658,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                     className="w-full font-bold py-3.5 rounded-xl border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all flex justify-center items-center gap-2 cursor-pointer shadow-sm text-sm"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">close</span>
-                                    Thoát
+                                    {t('flight.exit', 'Thoát')}
                                 </button>
                             </div>
                         ) : (
@@ -668,7 +672,7 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                     className="flex-1 font-bold py-4 rounded-xl border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-all flex justify-center items-center gap-2 cursor-pointer shadow-sm text-sm"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-                                    Quay lại
+                                    {t('flight.back', 'Quay lại')}
                                 </button>
                                 <button 
                                     type="button"
@@ -681,10 +685,10 @@ const FlightSelectionModal: React.FC<FlightSelectionModalProps> = ({ isOpen, onC
                                     }`}
                                 >
                                     {selectionMode === 'auto' 
-                                        ? 'Tiếp tục' 
+                                        ? t('flight.continue', 'Tiếp tục') 
                                         : (canContinue 
-                                            ? 'Xác nhận' 
-                                            : `Chọn ${passengerCount} ghế`
+                                            ? t('flight.confirm', 'Xác nhận') 
+                                            : (t('flight.selectCountSeats', 'Select seats') === 'Chọn ghế' ? `Chọn ${passengerCount} ghế` : `Select ${passengerCount} seats`)
                                         )
                                     }
                                     <span className="material-symbols-outlined text-[18px]">arrow_forward</span>

@@ -10,3 +10,7 @@ export type { User } from './AuthContext';
 
 export { NotificationProvider, useNotification } from './NotificationContext';
 export type { Notification, NotificationType } from './NotificationContext';
+
+export { LanguageProvider, useLanguage } from './LanguageContext';
+export type { Language } from './translations';
+

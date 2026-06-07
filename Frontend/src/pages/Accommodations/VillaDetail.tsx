@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, useLanguage } from '../../context';
 import AuthModal from '../../components/auth/AuthModal';
 
 const VILLA_DETAILS: Record<string, {
@@ -62,55 +62,108 @@ const VILLA_DETAILS: Record<string, {
     },
 };
 
-const SuiteCard: React.FC<{ suite: typeof VILLA_DETAILS['v1']['suites'][0]; onSelect: () => void }> = ({ suite, onSelect }) => (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
-        <div className="w-44 h-36 flex-shrink-0">
-            <img src={suite.image} alt={suite.name} className="w-full h-full object-cover" />
-        </div>
-        <div className="flex-1 p-4 flex gap-4">
-            <div className="flex-1">
-                <h4 className="font-bold text-gray-900 text-base mb-1">{suite.name}</h4>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mb-2">
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">straighten</span>{suite.size} m²</span>
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">bedroom_parent</span>{suite.bedrooms} Bedroom{suite.bedrooms > 1 ? 's' : ''}</span>
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">person</span>Max {suite.maxGuests} guests</span>
-                </div>
-                <div className="flex flex-wrap gap-1 mb-2">
-                    {suite.amenities.slice(0, 4).map(a => <span key={a} className="bg-gray-100 text-gray-600 text-[11px] px-2 py-0.5 rounded-full">{a}</span>)}
-                    {suite.amenities.length > 4 && <span className="bg-gray-100 text-gray-500 text-[11px] px-2 py-0.5 rounded-full">+{suite.amenities.length - 4} more</span>}
-                </div>
-                <div className={`text-xs font-semibold ${suite.cancellation === 'FREE CANCELLATION' ? 'text-green-600' : 'text-red-500'}`}>{suite.cancellation}</div>
-                {suite.breakfast && <div className="text-xs text-orange-500 font-semibold mt-0.5">🍳 BREAKFAST INCLUDED</div>}
+const SuiteCard: React.FC<{ suite: typeof VILLA_DETAILS['v1']['suites'][0]; onSelect: () => void }> = ({ suite, onSelect }) => {
+    const { t } = useLanguage();
+
+    const translateFacility = (facilityName: string) => {
+        const text = facilityName.toLowerCase();
+        if (text.includes('private pool')) return t('facility.privatePool', 'Private Pool');
+        if (text.includes('pool')) return t('facility.pool', 'Pool');
+        if (text.includes('wifi')) return t('facility.wifi', 'WiFi');
+        if (text.includes('gym')) return t('facility.gym', 'Gym');
+        if (text.includes('bar')) return t('facility.bar', 'Bar');
+        if (text.includes('beach')) return t('facility.beach', 'Beach Access');
+        if (text.includes('spa')) return t('facility.spa', 'Spa');
+        if (text.includes('restaurant') || text.includes('dining')) return t('facility.restaurant', 'Restaurant');
+        if (text.includes('kitchen')) return t('facility.kitchen', 'Kitchen');
+        if (text.includes('wash')) return t('facility.washer', 'Washing Machine');
+        if (text.includes('city view')) return t('facility.cityView', 'City View');
+        if (text.includes('ocean view')) return t('facility.oceanView', 'Ocean View');
+        if (text.includes('bbq')) return t('facility.bbq', 'BBQ Grill');
+        if (text.includes('mountain view')) return t('facility.mountainView', 'Mountain View');
+        if (text.includes('fireplace')) return t('facility.fireplace', 'Fireplace');
+        return facilityName;
+    };
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-44 h-36 flex-shrink-0">
+                <img src={suite.image} alt={suite.name} className="w-full h-full object-cover" />
             </div>
-            <div className="flex flex-col items-end justify-between min-w-[140px]">
-                <div className="text-right">
-                    {suite.originalPrice && <div className="text-xs text-gray-400 line-through">{suite.originalPrice.toLocaleString()} VNĐ</div>}
-                    <div className="text-xl font-black text-gray-900">{suite.price.toLocaleString()}</div>
-                    <div className="text-xs text-gray-500">VNĐ / night</div>
+            <div className="flex-1 p-4 flex gap-4">
+                <div className="flex-1">
+                    <h4 className="font-bold text-gray-900 text-base mb-1">{suite.name}</h4>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mb-2">
+                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">straighten</span>{suite.size} m²</span>
+                        <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">bedroom_parent</span>
+                            {t('detail.bedroomsCount', '{count} Bedrooms').replace('{count}', String(suite.bedrooms))}
+                        </span>
+                        <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">person</span>
+                            {t('detail.maxGuestsCount', 'Max {count} guests').replace('{count}', String(suite.maxGuests))}
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                        {suite.amenities.slice(0, 4).map(a => <span key={a} className="bg-gray-100 text-gray-600 text-[11px] px-2 py-0.5 rounded-full">{translateFacility(a)}</span>)}
+                        {suite.amenities.length > 4 && <span className="bg-gray-100 text-gray-500 text-[11px] px-2 py-0.5 rounded-full">+{suite.amenities.length - 4} {t('home.more', 'more')}</span>}
+                    </div>
+                    <div className={`text-xs font-semibold ${suite.cancellation === 'FREE CANCELLATION' ? 'text-green-600' : 'text-red-500'}`}>
+                        {suite.cancellation === 'FREE CANCELLATION' ? t('detail.freeCancellation', 'FREE CANCELLATION') : t('detail.nonRefundable', 'Non-refundable')}
+                    </div>
+                    {suite.breakfast && <div className="text-xs text-orange-500 font-semibold mt-0.5">{t('detail.breakfastIncluded', '🍳 BREAKFAST INCLUDED')}</div>}
                 </div>
-                <div>
-                    {suite.available <= 2 && <div className="text-[11px] text-orange-500 text-right mb-1">Only {suite.available} left!</div>}
-                    <button onClick={onSelect} className="bg-[#005CE6] text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors w-full">Book Now</button>
+                <div className="flex flex-col items-end justify-between min-w-[140px]">
+                    <div className="text-right">
+                        {suite.originalPrice && <div className="text-xs text-gray-400 line-through">{suite.originalPrice.toLocaleString()} VNĐ</div>}
+                        <div className="text-xl font-black text-gray-900">{suite.price.toLocaleString()}</div>
+                        <div className="text-xs text-gray-505">VNĐ / {t('detail.nightUnit', 'night')}</div>
+                    </div>
+                    <div>
+                        {suite.available <= 2 && <div className="text-[11px] text-orange-500 text-right mb-1">{t('detail.onlyLeft', 'Only {count} left!').replace('{count}', String(suite.available))}</div>}
+                        <button onClick={onSelect} className="bg-[#005CE6] text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors w-full">{t('detail.chooseRoom', 'Book Now')}</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const VillaDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
+    const { t, translateRating } = useLanguage();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [selectedImageIdx, setSelectedImageIdx] = useState(0);
     const [showAllImages, setShowAllImages] = useState(false);
+
+    const translateFacility = (facilityName: string) => {
+        const text = facilityName.toLowerCase();
+        if (text.includes('private pool')) return t('facility.privatePool', 'Private Pool');
+        if (text.includes('pool')) return t('facility.pool', 'Pool');
+        if (text.includes('wifi')) return t('facility.wifi', 'WiFi');
+        if (text.includes('gym')) return t('facility.gym', 'Gym');
+        if (text.includes('bar')) return t('facility.bar', 'Bar');
+        if (text.includes('beach')) return t('facility.beach', 'Beach Access');
+        if (text.includes('spa')) return t('facility.spa', 'Spa');
+        if (text.includes('restaurant') || text.includes('dining')) return t('facility.restaurant', 'Restaurant');
+        if (text.includes('kitchen')) return t('facility.kitchen', 'Kitchen');
+        if (text.includes('wash')) return t('facility.washer', 'Washing Machine');
+        if (text.includes('city view')) return t('facility.cityView', 'City View');
+        if (text.includes('ocean view')) return t('facility.oceanView', 'Ocean View');
+        if (text.includes('bbq')) return t('facility.bbq', 'BBQ Grill');
+        if (text.includes('mountain view')) return t('facility.mountainView', 'Mountain View');
+        if (text.includes('fireplace')) return t('facility.fireplace', 'Fireplace');
+        return facilityName;
+    };
 
     const villa = id ? VILLA_DETAILS[id] : null;
     if (!villa) return (
         <div className="flex flex-col items-center justify-center min-h-screen text-gray-400">
             <span className="material-symbols-outlined text-6xl mb-4">villa</span>
-            <p className="font-bold text-xl">Villa not found</p>
-            <button onClick={() => navigate('/villas')} className="mt-4 text-blue-600 hover:underline">← Back to Villas</button>
+            <p className="font-bold text-xl">{t('detail.villaNotFound', 'Villa not found')}</p>
+            <button onClick={() => navigate('/villas')} className="mt-4 text-blue-600 hover:underline">{t('detail.backToVillas', '← Back to Villas')}</button>
         </div>
     );
 
@@ -132,11 +185,11 @@ const VillaDetail: React.FC = () => {
     };
 
     return (
-        <div className="bg-[#f5f7fa] min-h-screen font-['Plus_Jakarta_Sans']">
+        <div className="bg-[#f5f7fa] min-h-screen font-display">
             <div className="bg-white border-b border-gray-100 py-6">
                 <div className="max-w-[1200px] mx-auto px-4">
                     <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-[#005CE6] font-semibold text-sm mb-4 hover:opacity-80 transition">
-                        <span className="material-symbols-outlined text-[18px]">arrow_back</span>Back to results
+                        <span className="material-symbols-outlined text-[18px]">arrow_back</span>{t('detail.backToResults', 'Back to results')}
                     </button>
                     <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[420px] rounded-2xl overflow-hidden cursor-pointer" onClick={() => setShowAllImages(true)}>
                         <div className="col-span-2 row-span-2 relative">
@@ -145,7 +198,7 @@ const VillaDetail: React.FC = () => {
                         {villa.images.slice(1, 5).map((img, i) => (
                             <div key={i} className="relative overflow-hidden">
                                 <img src={img} alt="" className="w-full h-full object-cover hover:brightness-90 transition-all" />
-                                {i === 3 && villa.images.length > 5 && <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">+{villa.images.length - 5} Photos</div>}
+                                {i === 3 && villa.images.length > 5 && <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">{t('detail.moreImages', '+{count} Photos').replace('{count}', String(villa.images.length - 5))}</div>}
                             </div>
                         ))}
                     </div>
@@ -163,18 +216,23 @@ const VillaDetail: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-3 mb-4">
                             <span className="bg-green-600 text-white font-black px-3 py-1.5 rounded-lg text-base">{villa.rating.toFixed(1)}</span>
-                            <div><div className="font-bold text-gray-900">{villa.ratingText}</div><div className="text-sm text-gray-500">Based on {villa.reviews.toLocaleString()} reviews</div></div>
+                            <div>
+                                <div className="font-bold text-gray-900">{translateRating(villa.ratingText)}</div>
+                                <div className="text-sm text-gray-500">
+                                    {t('detail.basedOnReviews', 'Based on {count} reviews').replace('{count}', villa.reviews.toLocaleString())}
+                                </div>
+                            </div>
                         </div>
                         <p className="text-gray-600 text-sm leading-relaxed">{villa.description}</p>
                     </div>
 
                     {/* Facilities */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-                        <h2 className="font-bold text-lg text-gray-900 mb-4">Villa Amenities</h2>
+                        <h2 className="font-bold text-lg text-gray-900 mb-4">{t('detail.villaAmenities', 'Villa Amenities')}</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">
                             {villa.facilities.map(f => (
                                 <div key={f.name} className="flex items-center gap-2 text-sm text-gray-700">
-                                    <span className="material-symbols-outlined text-[20px] text-green-600">{f.icon}</span>{f.name}
+                                    <span className="material-symbols-outlined text-[20px] text-green-600">{f.icon}</span>{translateFacility(f.name)}
                                 </div>
                             ))}
                         </div>
@@ -182,17 +240,17 @@ const VillaDetail: React.FC = () => {
 
                     {/* Suites */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-                        <h2 className="font-bold text-xl text-gray-900 mb-4">Available Options</h2>
+                        <h2 className="font-bold text-xl text-gray-900 mb-4">{t('detail.availableOptions', 'Available Options')}</h2>
                         {!isAuthenticated && (
                             <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-center justify-between gap-4">
                                 <div className="flex items-center gap-3">
                                     <span className="material-symbols-outlined text-green-600 text-2xl">lock</span>
                                     <div>
-                                        <div className="font-bold text-gray-900 text-sm">Sign in for exclusive member rates</div>
-                                        <div className="text-xs text-gray-500">Unlock prices up to 30% lower on selected villas.</div>
+                                        <div className="font-bold text-gray-900 text-sm">{t('detail.exclusiveMemberRates', 'Sign in for exclusive member rates')}</div>
+                                        <div className="text-xs text-gray-500">{t('detail.exclusiveMemberRatesDesc', 'Unlock prices up to 30% lower on selected villas.')}</div>
                                     </div>
                                 </div>
-                                <button onClick={() => setIsAuthModalOpen(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700 transition-colors whitespace-nowrap">Sign In Now</button>
+                                <button onClick={() => setIsAuthModalOpen(true)} className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700 transition-colors whitespace-nowrap">{t('detail.signInToBook', 'Sign In Now')}</button>
                             </div>
                         )}
                         <div className="flex flex-col gap-4">{villa.suites.map(s => <SuiteCard key={s.id} suite={s} onSelect={() => handleBook(s)} />)}</div>
@@ -201,7 +259,7 @@ const VillaDetail: React.FC = () => {
                     {/* Reviews */}
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-bold text-xl text-gray-900">Guest Reviews</h2>
+                            <h2 className="font-bold text-xl text-gray-900">{t('detail.guestExperiences', 'Guest Reviews')}</h2>
                             <span className="bg-green-600 text-white font-black px-3 py-1 rounded-lg">{villa.rating.toFixed(1)}</span>
                         </div>
                         <div className="flex flex-col gap-5">
@@ -224,19 +282,19 @@ const VillaDetail: React.FC = () => {
                 {/* Sticky Sidebar */}
                 <div className="w-72 flex-shrink-0">
                     <div className="bg-white rounded-xl border border-green-400 shadow-lg p-5 sticky top-24">
-                        <div className="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">Starting from</div>
+                        <div className="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">{t('detail.startingFrom', 'Starting from')}</div>
                         <div className="text-3xl font-black text-green-600 mb-1">{Math.min(...villa.suites.map(s => s.price)).toLocaleString()}</div>
-                        <div className="text-sm text-gray-500 mb-4">VNĐ / night · entire villa</div>
-                        <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-lg mb-4 inline-block">✓ Best price guaranteed</div>
+                        <div className="text-sm text-gray-500 mb-4">VNĐ / {t('detail.nightUnit', 'night')} · {t('search.entireVilla', 'entire villa')}</div>
+                        <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-lg mb-4 inline-block">{t('detail.bestPriceGuaranteed', '✓ Best price guaranteed')}</div>
                         <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
-                            <div className="flex justify-between"><span className="text-gray-500">Check-in</span><span className="font-bold">Nov 20, 2024</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Check-out</span><span className="font-bold">Nov 22, 2024</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Guests</span><span className="font-bold">6 Adults</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">{t('detail.checkinPlaceholder', 'Check-in')}</span><span className="font-bold">Nov 20, 2024</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">{t('detail.checkoutPlaceholder', 'Check-out')}</span><span className="font-bold">Nov 22, 2024</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">{t('search.guests', 'Guests')}</span><span className="font-bold">{t('guests.6adults1entirevilla', '6 Adults')}</span></div>
                         </div>
                         <button onClick={() => handleBook()} className="w-full mt-5 bg-green-600 text-white py-3 rounded-xl font-bold text-base hover:bg-green-700 transition-colors">
-                            {isAuthenticated ? 'Book This Villa' : 'Sign In to Book'}
+                            {isAuthenticated ? t('detail.bookThisVilla', 'Book This Villa') : t('detail.signInToBook', 'Sign In to Book')}
                         </button>
-                        {!isAuthenticated && <p className="text-center text-xs text-gray-400 mt-2">Sign in to unlock member rates</p>}
+                        {!isAuthenticated && <p className="text-center text-xs text-gray-400 mt-2">{t('detail.signInToUnlock', 'Sign in to unlock member rates')}</p>}
                     </div>
                 </div>
             </div>

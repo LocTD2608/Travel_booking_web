@@ -1,11 +1,23 @@
 const { Sequelize } = require("sequelize");
 const db = require("../configs/database");
 
+const normalizeCity = (term) => {
+  if (!term) return null;
+  const normalized = term.toLowerCase().replace(/đ/g, 'd').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (normalized.includes('ha noi') || normalized.includes('hanoi')) return 'Ha Noi';
+  if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('hcm')) return 'Ho Chi Minh';
+  if (normalized.includes('da nang') || normalized.includes('danang')) return 'Da Nang';
+  if (normalized.includes('nha trang') || normalized.includes('cam ranh')) return 'Nha Trang';
+  if (normalized.includes('phu quoc') || normalized.includes('phuquoc')) return 'Phu Quoc';
+  if (normalized.includes('maldives')) return 'Maldives';
+  return term; // Fallback
+};
+
 const getAirportCode = (term) => {
   if (!term) return null;
   const codeMatch = term.match(/\(([A-Z]{3})\)/);
   if (codeMatch) return codeMatch[1];
-  const normalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const normalized = term.toLowerCase().replace(/đ/g, 'd').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   if (normalized.includes('ha noi') || normalized.includes('hanoi') || normalized.includes('han')) return 'HAN';
   if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('sgn')) return 'SGN';
   if (normalized.includes('da nang') || normalized.includes('danang') || normalized.includes('dad')) return 'DAD';
@@ -37,10 +49,10 @@ const searchFlights = async (params) => {
   } = params;
 
   let baseQuery = `
-    FROM CHUYEN_BAY cb
-    JOIN TUYEN_DUONG td ON cb.MaTuyenDuong = td.MaTuyenDuong
-    JOIN SAN_BAY sb1 ON td.MaSanBayXuatPhat = sb1.MaSanBay
-    JOIN SAN_BAY sb2 ON td.MaSanBayDich     = sb2.MaSanBay
+    FROM chuyen_bay cb
+    JOIN tuyen_duong td ON cb.MaTuyenDuong = td.MaTuyenDuong
+    JOIN san_bay sb1 ON td.MaSanBayXuatPhat = sb1.MaSanBay
+    JOIN san_bay sb2 ON td.MaSanBayDich     = sb2.MaSanBay
     WHERE 1=1
   `;
 
@@ -138,27 +150,16 @@ const searchHotels = async (params) => {
     offset = 0
   } = params;
 
-  const normalizeCityForHotel = (term) => {
-    if (!term) return null;
-    const normalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (normalized.includes('ha noi') || normalized.includes('hanoi')) return 'Ha Noi';
-    if (normalized.includes('ho chi minh') || normalized.includes('saigon') || normalized.includes('hcm')) return 'Ho Chi Minh';
-    if (normalized.includes('da nang') || normalized.includes('danang')) return 'Da Nang';
-    if (normalized.includes('nha trang') || normalized.includes('cam ranh')) return 'Nha Trang';
-    if (normalized.includes('phu quoc') || normalized.includes('phuquoc')) return 'Phu Quoc';
-    return term; // Fallback
-  };
-
   let baseQuery = `
-    FROM KHACH_SAN ks
-    LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
+    FROM khach_san ks
+    LEFT JOIN loai_phong lp ON ks.MaKS = lp.MaKS
     WHERE 1=1
   `;
 
   const replacements = {};
 
   if (city) {
-    const normalizedCity = normalizeCityForHotel(city);
+    const normalizedCity = normalizeCity(city);
     baseQuery += ` AND ks.DiaChi LIKE :city`;
     replacements.city = `%${normalizedCity}%`;
   }
@@ -180,7 +181,7 @@ const searchHotels = async (params) => {
     baseQuery += `
       AND EXISTS (
         SELECT 1
-        FROM LOAI_PHONG lp2
+        FROM loai_phong lp2
         WHERE lp2.MaKS = ks.MaKS
         AND (
           lp2.SoLuongPhong - (
@@ -243,8 +244,8 @@ const recommendHotels = async (params) => {
       ks.HangSao AS stars,
       MIN(lp.GiaPhong) AS min_price,
       SUM(COALESCE(ttp.SoLuongPhongCoSan, 0)) AS available_rooms
-    FROM KHACH_SAN ks
-    LEFT JOIN LOAI_PHONG lp ON ks.MaKS = lp.MaKS
+    FROM khach_san ks
+    LEFT JOIN loai_phong lp ON ks.MaKS = lp.MaKS
     LEFT JOIN TINH_TRANG_PHONG_TRONG ttp ON lp.MaLoaiPhong = ttp.MaLoaiPhong
     WHERE 1=1
   `;
@@ -477,7 +478,7 @@ const searchTrains = async ({ from, to, date, priceMax, sortBy }) => {
       tc.DiemDi      AS \`from\`,
       tc.DiemDen     AS \`to\`,
       tc.LoaiVe      AS seat_type
-    FROM DICH_VU dv
+    FROM dich_vu dv
     JOIN DV_TRUNG_CHUYEN tc ON dv.MaDV = tc.MaDV_TC
     WHERE 1=1
   `;
@@ -534,15 +535,16 @@ const searchExperiences = async ({ destination, priceMax, sortBy, rating }) => {
       dv.DonViTinh  AS unit,
       dl.DiemDon             AS pickup,
       dl.DiaDiemThamQuan     AS attraction
-    FROM DICH_VU dv
-    JOIN DV_DU_LICH dl ON dv.MaDV = dl.MaDV_DL
+    FROM dich_vu dv
+    JOIN dv_du_lich dl ON dv.MaDV = dl.MaDV_DL
     WHERE 1=1
   `;
   const replacements = {};
 
   if (destination) {
+    const normalizedDest = normalizeCity(destination);
     query += ` AND (dl.DiaDiemThamQuan LIKE :dest OR dl.DiemDon LIKE :dest)`;
-    replacements.dest = `%${destination}%`;
+    replacements.dest = `%${normalizedDest}%`;
   }
   if (priceMax) { query += ` AND dv.Gia <= :priceMax`; replacements.priceMax = priceMax; }
 
@@ -583,7 +585,7 @@ const checkHotelAvailability = async ({ hotelId, roomId, checkIn, checkOut, gues
           )
         )
       ) AS rooms_left
-    FROM LOAI_PHONG lp
+    FROM loai_phong lp
     WHERE 1=1
   `;
 
@@ -610,4 +612,74 @@ const checkHotelAvailability = async ({ hotelId, roomId, checkIn, checkOut, gues
   };
 };
 
-module.exports = { searchFlights, searchHotels, recommendHotels, recommendFlights, searchTrains, searchExperiences, checkHotelAvailability, getPopularDestinations };
+const getActivePromotions = async () => {
+  const query = `
+    SELECT * 
+    FROM khuyen_mai 
+    WHERE TrangThaiKM = 'ACTIVE'
+      AND (NgayApDung IS NULL OR NgayApDung <= NOW())
+      AND (NgayKetThuc IS NULL OR NgayKetThuc >= NOW())
+  `;
+  const [rows] = await db.query(query);
+  
+  return rows.map(row => {
+    let parsedDieuKien = {};
+    try {
+      parsedDieuKien = row.DieuKien ? JSON.parse(row.DieuKien) : {};
+    } catch (e) {
+      console.error("Failed to parse DieuKien JSON:", e);
+    }
+    return {
+      id: row.MaKM,
+      title: row.TenKM,
+      code: row.TenKM,
+      type: row.LoaiKM,
+      startDate: row.NgayApDung,
+      endDate: row.NgayKetThuc,
+      status: row.TrangThaiKM,
+      ...parsedDieuKien
+    };
+  });
+};
+
+const seedPromotionsOnStartup = async () => {
+  try {
+    const [existing] = await db.query("SELECT COUNT(*) as count FROM khuyen_mai WHERE LoaiKM IN ('PROMO', 'COUPON')");
+    if (existing[0].count === 0) {
+      console.log('No promotions found. Seeding promotions automatically...');
+      await db.query(`
+        INSERT INTO khuyen_mai (TenKM, LoaiKM, NgayApDung, NgayKetThuc, DieuKien, TrangThaiKM) VALUES 
+        ('Up to 20% Off\\nDining Vouchers', 'PROMO', '2026-06-01', '2026-12-31', 
+         '{"badge": "LIMITED TIME", "badgeColor": "yellow", "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCUh0E7h4kKz315MnHIzv_UTPH9iYSAgKp5u59CVwebESS8qSBsR-xoVQ2FnLHoG5zZJl_Fogvhc8S0JhBWbxmRMBY0e2ehHNkC1z1VcRZGaNtQxLDWBvFPsZxf9nlwpRZ4fC5oBPlOw-cT8QWF6VVE7zimKRvocqbiKSv5f4cA9S9W8vrQIgFuW7Yk5ktPwbIWZaPyOG527-J3nX-IawG9l7rUMl5xXTHdd5FRn9LzMkLbuXDkUyImJ5mM6g3gCN9PAqVNmcLU47c", "targetUrl": "/experience"}', 
+         'ACTIVE'),
+
+        ('International Flights\\nStarting from $199', 'PROMO', '2026-06-01', '2026-12-31', 
+         '{"badge": "FLIGHT DEAL", "badgeColor": "blue", "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAMv7gS5O3bc8_67hLa_ydpldx0r7L-BjMVVuBXmPyPgxNAKGl4T3lEVXH7yom2ylDE7ZXpw0ydLkviVAoRUd3fiznhTZOp1e_anYolCVExsN7jbxyhTLXMBiuIIsrjUTR1rSLBebaqGKiWZ57YKgfPR-owgYKTWy1qgRIoFXWfU7YIMmjoBYyH7qnu0j629oPlTus3NFbKsejq68LMsWL2MnMHMmI2TFvTAgPLJkHPb0SJvQoQZNRzy3xC3MbkUjXzR81uOH4M0-g", "targetUrl": "/flights"}', 
+         'ACTIVE'),
+
+        ('Weekend Getaway\\nPackages', 'PROMO', '2026-06-01', '2026-12-31', 
+         '{"badge": "STAYCATION", "badgeColor": "purple", "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAOUxGIqRVbUdCmNozeycTjPhDt_WulULzmrpwAYNT23GLnTpMZIjQx3_lMKlzxDiPhxyoPNv94FFLJ1h5LsFyBY9HCq9S1hDbYRY4rn8cJQUil7v5O8Ii3aJSaS5-tLEvLTVfgYcbBKlyuGWlxWvtpPur_Vl4dqHseFqq9iJIkY4t1srjZcnCy0hJyD_el7_KKlhpACaERsV-cfTdy2YQ-KFLzUobD6DqOpaGzJIm44DDbz1bmqcOOD4IUT7525OZGvfKAZTKNxE0", "targetUrl": "/hotels"}', 
+         'ACTIVE'),
+
+        ('FLYHIGH', 'COUPON', '2026-06-01', '2026-12-31', 
+         '{"title": "International Flights", "discount": "Save $50", "terms": "Min. spend $500 • Valid until Dec 31", "icon": "flight_takeoff", "color": "blue"}', 
+         'ACTIVE'),
+
+        ('STAYLUXE', 'COUPON', '2026-06-01', '2026-12-31', 
+         '{"title": "First Hotel Booking", "discount": "15% OFF", "terms": "Max discount $30 • New users only", "icon": "hotel", "color": "orange"}', 
+         'ACTIVE'),
+
+        ('FUNTIME', 'COUPON', '2026-06-01', '2026-12-31', 
+         '{"title": "Xperience Activity", "discount": "10% Back", "terms": "Cashback in points • All activities", "icon": "local_activity", "color": "purple"}', 
+         'ACTIVE')
+      `);
+      console.log('Promotions seeded successfully!');
+    }
+  } catch (error) {
+    console.error('Error auto-seeding promotions:', error);
+  }
+};
+
+setTimeout(seedPromotionsOnStartup, 1000);
+
+module.exports = { searchFlights, searchHotels, recommendHotels, recommendFlights, searchTrains, searchExperiences, checkHotelAvailability, getPopularDestinations, getActivePromotions };

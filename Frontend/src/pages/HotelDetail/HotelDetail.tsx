@@ -5,6 +5,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { fetchHotelDetail } from '../../services/searchApi';
 import type { HotelDetailResult, RoomTypeInfo, GuestSelection } from '../../types/search';
 import GuestSelector from '../../components/ui/GuestSelector/GuestSelector';
+import { useLanguage } from '../../context';
 import styles from './HotelDetail.module.css';
 
 const { RangePicker } = DatePicker;
@@ -17,6 +18,7 @@ const fmt = (price: number) =>
 const HotelDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { t, language } = useLanguage();
 
     const [detail, setDetail] = useState<HotelDetailResult | null>(null);
     const [loading, setLoading] = useState(true);
@@ -73,7 +75,7 @@ const HotelDetail: React.FC = () => {
         return (
             <div className={styles.loadingState}>
                 <span className={`material-symbols-outlined ${styles.spinner}`}>progress_activity</span>
-                <p>Đang tải thông tin khách sạn...</p>
+                <p>{t('detail.loadingHotel', 'Đang tải thông tin khách sạn...')}</p>
             </div>
         );
     }
@@ -82,9 +84,9 @@ const HotelDetail: React.FC = () => {
         return (
             <div className={styles.errorState}>
                 <span className="material-symbols-outlined" style={{ fontSize: 48 }}>error</span>
-                <p style={{ fontWeight: 700 }}>Không tìm thấy khách sạn</p>
+                <p style={{ fontWeight: 700 }}>{t('detail.hotelNotFound', 'Không tìm thấy khách sạn')}</p>
                 <p style={{ fontSize: 13 }}>{error}</p>
-                <Link to="/hotels" style={{ color: 'var(--vt-primary)', fontWeight: 600 }}>← Quay lại tìm kiếm</Link>
+                <Link to="/hotels" style={{ color: 'var(--vt-primary)', fontWeight: 600 }}>{t('detail.backToSearch', '← Quay lại tìm kiếm')}</Link>
             </div>
         );
     }
@@ -94,7 +96,7 @@ const HotelDetail: React.FC = () => {
     return (
         <div className={styles.detailPage}>
             <div className={styles.breadcrumb}>
-                <Link to="/">Trang chủ</Link> / <Link to="/hotels">Khách sạn</Link> / {hotel.name}
+                <Link to="/">{t('checkout.breadcrumbHome', 'Trang chủ')}</Link> / <Link to="/hotels">{t('checkout.breadcrumbHotels', 'Khách sạn')}</Link> / {hotel.name}
             </div>
 
             <div className={styles.heroGallery}>
@@ -117,10 +119,10 @@ const HotelDetail: React.FC = () => {
             <div className={styles.content}>
                 {/* Left – Rooms & Reviews */}
                 <div className={styles.mainCol}>
-                    <h3 className={styles.sectionTitle}>Chọn loại phòng</h3>
+                    <h3 className={styles.sectionTitle}>{t('detail.selectRoom', 'Chọn loại phòng')}</h3>
 
                     {filteredRooms.length === 0 ? (
-                        <div className={styles.noRooms}>Không có phòng phù hợp</div>
+                        <div className={styles.noRooms}>{t('detail.noRooms', 'Không có phòng phù hợp')}</div>
                     ) : (
                         filteredRooms.map((room) => (
                             <RoomCard
@@ -128,23 +130,24 @@ const HotelDetail: React.FC = () => {
                                 room={room}
                                 isSelected={selectedRoom === room.roomTypeId}
                                 onSelect={() => setSelectedRoom(room.roomTypeId)}
+                                t={t}
                             />
                         ))
                     )}
 
                     {reviews.length > 0 && (
                         <div className={styles.reviewsSection}>
-                            <h3 className={styles.sectionTitle}>Đánh giá ({reviews.length})</h3>
+                            <h3 className={styles.sectionTitle}>{t('detail.reviews', 'Đánh giá')} ({reviews.length})</h3>
                             {reviews.map((review, idx) => (
                                 <div key={idx} className={styles.reviewCard}>
                                     <div className={styles.reviewHeader}>
                                         <span className={styles.reviewUser}>{review.userName}</span>
                                         <span className={styles.reviewDate}>
-                                            {review.date ? new Date(review.date).toLocaleDateString('vi-VN') : ''}
+                                            {review.date ? new Date(review.date).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US') : ''}
                                         </span>
                                     </div>
                                     <div className={styles.reviewStars}>{'⭐'.repeat(Math.min(review.rating, 5))}</div>
-                                    <p className={styles.reviewComment}>{review.comment || 'Không có bình luận'}</p>
+                                    <p className={styles.reviewComment}>{review.comment || t('detail.noComment', 'Không có bình luận')}</p>
                                 </div>
                             ))}
                         </div>
@@ -154,29 +157,29 @@ const HotelDetail: React.FC = () => {
                 {/* Right – Booking Sidebar */}
                 <div className={styles.sidebar}>
                     <div className={styles.bookingCard}>
-                        <h3>Đặt phòng</h3>
+                        <h3>{t('detail.bookTitle', 'Đặt phòng')}</h3>
 
                         <div className={styles.datePickerWrapper}>
-                            <span className={styles.fieldLabel}>Ngày nhận / trả phòng</span>
+                            <span className={styles.fieldLabel}>{t('detail.dates', 'Ngày nhận / trả phòng')}</span>
                             <RangePicker
                                 value={dates}
                                 onChange={handleDateChange}
                                 disabledDate={disabledDate}
                                 format="DD/MM/YYYY"
-                                placeholder={['Nhận phòng', 'Trả phòng']}
+                                placeholder={[t('detail.checkinPlaceholder', 'Nhận phòng'), t('detail.checkoutPlaceholder', 'Trả phòng')]}
                                 style={{ width: '100%' }}
                                 size="large"
                             />
                             {nights > 0 && (
                                 <div className={styles.nightsInfo}>
                                     <span className={`material-symbols-outlined ${styles.icon}`}>dark_mode</span>
-                                    {nights} đêm
+                                    {nights} {nights > 1 ? t('booking.nightsPlural', 'đêm') : t('booking.nights', 'đêm')}
                                 </div>
                             )}
                         </div>
 
                         <div className={styles.guestWrapper}>
-                            <span className={styles.fieldLabel}>Số khách & phòng</span>
+                            <span className={styles.fieldLabel}>{t('detail.guestsRooms', 'Số khách & phòng')}</span>
                             <GuestSelector value={guests} onChange={setGuests} />
                         </div>
 
@@ -184,14 +187,14 @@ const HotelDetail: React.FC = () => {
                             <div className={styles.priceBreakdown}>
                                 <div className={styles.priceRow}>
                                     <span>{selectedRoomData.name}</span>
-                                    <span>{fmt(selectedRoomData.price)} / đêm</span>
+                                    <span>{fmt(selectedRoomData.price)} / {t('detail.nightUnit', 'đêm')}</span>
                                 </div>
                                 <div className={styles.priceRow}>
-                                    <span>{nights} đêm × {guests.rooms} phòng</span>
+                                    <span>{nights} {nights > 1 ? t('booking.nightsPlural', 'đêm') : t('booking.nights', 'đêm')} × {guests.rooms} {t('detail.roomUnit', 'phòng')}</span>
                                     <span>{fmt(totalPrice)}</span>
                                 </div>
                                 <div className={styles.priceTotalRow}>
-                                    <span>Tổng cộng</span>
+                                    <span>{t('detail.total', 'Tổng cộng')}</span>
                                     <span>{fmt(totalPrice)}</span>
                                 </div>
                             </div>
@@ -203,7 +206,7 @@ const HotelDetail: React.FC = () => {
                             disabled={!selectedRoomData || nights <= 0}
                         >
                             <span className="material-symbols-outlined">shopping_cart</span>
-                            {selectedRoomData && nights > 0 ? 'Đặt ngay' : 'Chọn phòng & ngày'}
+                            {selectedRoomData && nights > 0 ? t('detail.bookNow', 'Đặt ngay') : t('detail.selectRoomPrompt', 'Chọn phòng & ngày')}
                         </button>
                     </div>
                 </div>
@@ -216,16 +219,17 @@ interface RoomCardProps {
     room: RoomTypeInfo & { isAvailable: boolean };
     isSelected: boolean;
     onSelect: () => void;
+    t: (key: string, def?: string) => string;
 }
 
-const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected, onSelect }) => (
+const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected, onSelect, t }) => (
     <div className={`${styles.roomCard} ${!room.isAvailable ? styles.unavailable : ''}`}>
         <div className={styles.roomInfo}>
             <h4>{room.name}</h4>
             <div className={styles.roomMeta}>
                 <span>
                     <span className={`material-symbols-outlined ${styles.icon}`}>person</span>
-                    Tối đa {room.maxGuests} khách
+                    {t('detail.maxGuests', 'Tối đa {count} khách').replace('{count}', String(room.maxGuests))}
                 </span>
                 <span>
                     <span className={`material-symbols-outlined ${styles.icon}`}>bed</span>
@@ -235,13 +239,13 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected, onSelect }) => (
         </div>
         <div className={styles.roomPrice}>
             <span className={styles.amount}>{fmt(room.price)}</span>
-            <span className={styles.unit}>/ đêm</span>
+            <span className={styles.unit}>/ {t('detail.nightUnit', 'đêm')}</span>
             <button
                 className={`${styles.selectRoomBtn} ${isSelected ? styles.selected : ''}`}
                 onClick={onSelect}
                 disabled={!room.isAvailable}
             >
-                {isSelected ? '✓ Đã chọn' : 'Chọn phòng'}
+                {isSelected ? t('detail.roomSelected', '✓ Đã chọn') : t('detail.chooseRoom', 'Chọn phòng')}
             </button>
         </div>
     </div>

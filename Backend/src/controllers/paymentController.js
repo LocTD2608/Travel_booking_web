@@ -143,7 +143,7 @@ exports.handleFail = async (req, res) => {
 // Chức năng 1: Tạo URL thanh toán VNPay
 exports.createPaymentUrl = async (req, res) => {
     try {
-        const { amount, orderId } = req.body;
+        const { amount, orderId, returnUrl: customReturnUrl } = req.body;
         
         let date = new Date();
         // Sử dụng moment để định dạng thời gian chuẩn yyyyMMddHHmmss
@@ -159,7 +159,7 @@ exports.createPaymentUrl = async (req, res) => {
         let tmnCode = 'PJIXF7GZ';
         let secretKey = 'AF82U26MITR6OKJ88U75NGBSDUHVNPF5';
         let vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-        let returnUrl = 'http://localhost:5173/payment-return';
+        let returnUrl = customReturnUrl || (req.headers.origin ? `${req.headers.origin}/payment-return` : 'http://localhost:5173/payment-return');
 
         // Khởi tạo các tham số theo tài liệu VNPay
         let currCode = 'VND';
